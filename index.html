@@ -586,9 +586,9 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 
 /* Equipment grid */
 .eq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
-.eq-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;position:relative;overflow:hidden;}
+.eq-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;position:relative;}
 .eq-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--shadow);border-color:var(--borderL);}
-.eq-card-top{height:4px;}
+.eq-card-top{height:4px;border-radius:4px 4px 0 0;}
 .crit-critical{background:var(--red);}
 .crit-major{background:var(--amber);}
 .crit-minor{background:var(--green);}
@@ -606,13 +606,14 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .eq-meta-item .emi-k{font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);margin-bottom:1px;}
 .eq-meta-item .emi-v{font-size:11px;font-weight:500;color:var(--text);}
 .eq-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);}
+.eq-card-btns{display:flex;gap:5px;padding-top:8px;border-top:1px solid var(--border);margin-top:2px;}
 .eq-stats-row{display:flex;gap:10px;}
 .eq-stat{text-align:center;}
 .eq-stat-val{font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
 .eq-stat-lbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--textDim);margin-top:1px;}
 .eq-open-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:2px;background:rgba(232,64,64,.15);color:var(--red);border:1px solid rgba(232,64,64,.3);}
 .eq-open-none{font-size:9px;color:var(--green);}
-.eq-card-actions{position:absolute;top:10px;right:10px;display:none;gap:4px;}
+.eq-card-actions{position:absolute;top:8px;right:8px;display:none;gap:4px;z-index:10;}
 .eq-card:hover .eq-card-actions{display:flex;}
 
 /* Empty dashboard */
@@ -1186,6 +1187,15 @@ function buildEqCard(eq){
   const critClass={critical:'crit-critical',major:'crit-major',minor:'crit-minor'}[eq.criticality]||'crit-unknown';
   const stClass={active:'es-active',standby:'es-standby',maintenance:'es-maintenance'}[eq.status]||'es-active';
   const failures=eq._failures||0, openN=eq._open||0;
+  const canEdit=window._canEdit, canDel=window._canDelete;
+
+  // Build action buttons HTML - placed in footer, always visible for authorized roles
+  const actBtns = canEdit ? `
+    <div class="eq-card-btns" onclick="event.stopPropagation()">
+      ${canEdit?`<button class="btn btn-ghost btn-xs" onclick="openEditEquipment('${eq.id}')" title="Edit Equipment">✎ Edit</button>`:''}
+      ${canDel?`<button class="btn btn-red btn-xs" onclick="confirmDeleteEquipment('${eq.id}')" title="Hapus Equipment">✕ Hapus</button>`:''}
+    </div>` : '';
+
   const card=document.createElement('div');
   card.className='eq-card';
   card.innerHTML=`
@@ -1205,13 +1215,11 @@ function buildEqCard(eq){
         <div style="font-size:10px;color:var(--textDim);">${eq._total||0} events recorded</div>
         ${openN>0?`<span class="eq-open-badge">⚠ ${openN} Open Issue${openN>1?'s':''}</span>`:`<span class="eq-open-none">✓ No Open Issues</span>`}
       </div>
+      ${actBtns}
     </div>`;
-  card.addEventListener('click',(e)=>{if(!e.target.closest('.eq-card-actions'))openEquipment(eq.id);});
-  if(window._canDelete){
-    const acts=document.createElement('div');acts.className='eq-card-actions';
-    acts.innerHTML=`<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openEditEquipment('${eq.id}')" title="Edit">✎</button><button class="btn btn-red btn-xs" onclick="event.stopPropagation();confirmDeleteEquipment('${eq.id}')" title="Hapus">✕</button>`;
-    card.appendChild(acts);
-  }
+  card.addEventListener('click',(e)=>{
+    if(!e.target.closest('.eq-card-btns')) openEquipment(eq.id);
+  });
   return card;
 }
 
