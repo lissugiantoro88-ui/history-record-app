@@ -1269,7 +1269,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 // ══════════════════════════════════════
 // STATE
 // ══════════════════════════════════════
-let equipments=[], events=[];
+let equipments=[], events=[], allEventsCache=[];
 let currentUser=null, currentRole=null;
 let currentEqId=null;
 let editEvId=null, delEvId=null, editEqId=null, delEqId=null;
@@ -1378,6 +1378,7 @@ async function loadEquipments(){
   if(equipments.length>0){
     const{data:evData}=await sb.from('events').select('equipment_id,type,status,downtime,date');
     if(evData){
+      allEventsCache=evData;
       equipments.forEach(eq=>{
         const evs=evData.filter(e=>e.equipment_id===eq.id);
         eq._failures=evs.filter(e=>e.type==='failure').length;
@@ -1465,6 +1466,10 @@ function renderDashboard(){
   else if(eqFilter==='badactor') filtered=filtered.filter(eq=>eq._isBadActor);
   else if(eqFilter==='open') filtered=filtered.filter(eq=>(eq._open||0)>0);
 
+  // Recalculate bad actor status based on current threshold inputs
+  if(allEventsCache.length>0){
+    equipments.forEach(eq=>{ eq._isBadActor=isBadActor(eq, allEventsCache); });
+  }
   // Summary stats
   g('ds-total').textContent=equipments.length;
   const badActorCount=equipments.filter(e=>e._isBadActor).length;
@@ -1751,6 +1756,8 @@ async function refreshEqSummary(eqId){
   eq._mtbf=calcMTBF(eqId,data);
   eq._mttr=calcMTTR(eqId,data);
   eq._isBadActor=isBadActor(eq,data);
+  // Update allEventsCache for this equipment
+  allEventsCache=allEventsCache.filter(e=>e.equipment_id!==eqId).concat(data);
 }
 
 function editEv(id){
