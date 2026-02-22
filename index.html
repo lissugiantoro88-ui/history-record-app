@@ -845,8 +845,11 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
       <button class="fchip" onclick="setEqFilter('minor',this)">Minor</button>
       <div class="tsep"></div>
       <button class="fchip" onclick="setEqFilter('active',this)">Active</button>
-      <button class="fchip" onclick="setEqFilter('maintenance',this)">Under Maintenance</button>
+      <button class="fchip" onclick="setEqFilter('maintenance',this)">Maintenance</button>
       <button class="fchip" onclick="setEqFilter('open',this)">Ada Open Issue</button>
+      <div class="tsep"></div>
+      <button class="fchip" onclick="expandAllGroups()" title="Buka semua grup">▾ Expand All</button>
+      <button class="fchip" onclick="collapseAllGroups()" title="Tutup semua grup">▸ Collapse All</button>
       <span class="filter-count" id="eq-filter-count"></span>
     </div>
 
@@ -1169,10 +1172,53 @@ async function loadEquipments(){
   renderDashboard();
 }
 
+// Track collapsed groups
+const collapsedGroups = new Set(JSON.parse(localStorage.getItem('hr_collapsed_groups')||'[]'));
+
+function toggleGroup(unitKey){
+  if(collapsedGroups.has(unitKey)) collapsedGroups.delete(unitKey);
+  else collapsedGroups.add(unitKey);
+  localStorage.setItem('hr_collapsed_groups', JSON.stringify([...collapsedGroups]));
+  renderDashboard();
+}
+
+function buildEqCard(eq){
+  const critClass={critical:'crit-critical',major:'crit-major',minor:'crit-minor'}[eq.criticality]||'crit-unknown';
+  const stClass={active:'es-active',standby:'es-standby',maintenance:'es-maintenance'}[eq.status]||'es-active';
+  const failures=eq._failures||0, openN=eq._open||0;
+  const card=document.createElement('div');
+  card.className='eq-card';
+  card.innerHTML=`
+    <div class="eq-card-top ${critClass}"></div>
+    <div class="eq-card-body">
+      <div class="eq-card-header">
+        <span class="eq-tag">${esc(eq.tag_no||'—')}</span>
+        <span class="eq-status-badge ${stClass}">${statusLabel(eq.status)}</span>
+      </div>
+      <div class="eq-name">${esc(eq.name)}</div>
+      <div class="eq-meta-row" style="margin-bottom:10px;">
+        <div class="eq-meta-item"><div class="emi-k">Criticality</div><div class="emi-v" style="color:${eq.criticality==='critical'?'var(--red)':eq.criticality==='major'?'var(--amber)':'var(--green)'}">${critLabel(eq.criticality)}</div></div>
+        <div class="eq-meta-item"><div class="emi-k">Total Failure</div><div class="emi-v" style="color:${failures>0?'var(--red)':'var(--textDim)'}">${failures}×</div></div>
+        <div class="eq-meta-item"><div class="emi-k">Downtime</div><div class="emi-v" style="color:var(--amber)">${eq._downtime||0} Jam</div></div>
+      </div>
+      <div class="eq-footer">
+        <div style="font-size:10px;color:var(--textDim);">${eq._total||0} events recorded</div>
+        ${openN>0?`<span class="eq-open-badge">⚠ ${openN} Open Issue${openN>1?'s':''}</span>`:`<span class="eq-open-none">✓ No Open Issues</span>`}
+      </div>
+    </div>`;
+  card.addEventListener('click',(e)=>{if(!e.target.closest('.eq-card-actions'))openEquipment(eq.id);});
+  if(window._canDelete){
+    const acts=document.createElement('div');acts.className='eq-card-actions';
+    acts.innerHTML=`<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openEditEquipment('${eq.id}')" title="Edit">✎</button><button class="btn btn-red btn-xs" onclick="event.stopPropagation();confirmDeleteEquipment('${eq.id}')" title="Hapus">✕</button>`;
+    card.appendChild(acts);
+  }
+  return card;
+}
+
 function renderDashboard(){
   const search=(g('eq-search')?.value||'').toLowerCase().trim();
   let filtered=equipments;
-  if(search) filtered=filtered.filter(eq=>(eq.name||'').toLowerCase().includes(search)||(eq.tag_no||'').toLowerCase().includes(search));
+  if(search) filtered=filtered.filter(eq=>(eq.name||'').toLowerCase().includes(search)||(eq.tag_no||'').toLowerCase().includes(search)||(eq.unit||'').toLowerCase().includes(search));
   if(eqFilter==='critical') filtered=filtered.filter(eq=>eq.criticality==='critical');
   else if(eqFilter==='major') filtered=filtered.filter(eq=>eq.criticality==='major');
   else if(eqFilter==='minor') filtered=filtered.filter(eq=>eq.criticality==='minor');
@@ -1189,53 +1235,93 @@ function renderDashboard(){
   g('eq-filter-count').textContent=filtered.length+' equipment';
 
   const grid=g('eq-grid');
-  grid.querySelectorAll('.eq-card,.dash-empty').forEach(el=>el.remove());
+  grid.innerHTML='';
 
   if(filtered.length===0){
-    const em=document.createElement('div');em.className='dash-empty';em.style.gridColumn='1/-1';
+    const em=document.createElement('div');em.className='dash-empty';
     em.innerHTML=`<div class="ei">${equipments.length===0?'🏭':'🔍'}</div><h3>${equipments.length===0?'Belum Ada Equipment':'Tidak Ditemukan'}</h3><p>${equipments.length===0?'Klik <strong>Tambah Equipment</strong> untuk mulai mencatat history failure.':'Coba kata kunci lain atau ubah filter.'}</p>`;
     grid.appendChild(em);return;
   }
 
+  // Group by unit — preserve insertion order, sort groups by open issues desc
+  const groupMap = new Map();
   filtered.forEach(eq=>{
-    const critClass={critical:'crit-critical',major:'crit-major',minor:'crit-minor'}[eq.criticality]||'crit-unknown';
-    const stClass={active:'es-active',standby:'es-standby',maintenance:'es-maintenance'}[eq.status]||'es-active';
-    const card=document.createElement('div');
-    card.className='eq-card';
-    const failures=eq._failures||0;
-    const openN=eq._open||0;
-    card.innerHTML=`
-      <div class="eq-card-top ${critClass}"></div>
-      <div class="eq-card-body">
-        <div class="eq-card-header">
-          <span class="eq-tag">${esc(eq.tag_no||'—')}</span>
-          <span class="eq-status-badge ${stClass}">${statusLabel(eq.status)}</span>
-        </div>
-        <div class="eq-name">${esc(eq.name)}</div>
-        <div class="eq-unit">${esc(eq.unit||'—')}</div>
-        <div class="eq-meta-row">
-          <div class="eq-meta-item"><div class="emi-k">Criticality</div><div class="emi-v" style="color:${eq.criticality==='critical'?'var(--red)':eq.criticality==='major'?'var(--amber)':'var(--green)'}">${critLabel(eq.criticality)}</div></div>
-          <div class="eq-meta-item"><div class="emi-k">Total Failure</div><div class="emi-v" style="color:${failures>0?'var(--red)':'var(--textDim)'}">${failures}×</div></div>
-          <div class="eq-meta-item"><div class="emi-k">Total Events</div><div class="emi-v">${eq._total||0}</div></div>
-        </div>
-        <div class="eq-footer">
-          <div class="eq-stats-row">
-            <div class="eq-stat"><div class="eq-stat-val" style="color:var(--amber)">${eq._downtime||0}</div><div class="eq-stat-lbl">Jam Downtime</div></div>
-          </div>
-          ${openN>0?`<span class="eq-open-badge">⚠ ${openN} Open Issue${openN>1?'s':''}</span>`:`<span class="eq-open-none">✓ No Open Issues</span>`}
-        </div>
+    const unit = (eq.unit||'Tanpa Unit').trim();
+    if(!groupMap.has(unit)) groupMap.set(unit,[]);
+    groupMap.get(unit).push(eq);
+  });
+
+  // Sort groups: groups with open issues first, then by name
+  const sortedGroups = [...groupMap.entries()].sort((a,b)=>{
+    const aOpen=a[1].reduce((s,e)=>s+(e._open||0),0);
+    const bOpen=b[1].reduce((s,e)=>s+(e._open||0),0);
+    if(bOpen!==aOpen) return bOpen-aOpen;
+    return a[0].localeCompare(b[0]);
+  });
+
+  // If searching, expand all groups temporarily
+  const isSearching = search.length > 0;
+
+  sortedGroups.forEach(([unit, eqs])=>{
+    const unitKey = unit.replace(/\s+/g,'_');
+    const isCollapsed = !isSearching && collapsedGroups.has(unitKey);
+    const groupOpenTotal = eqs.reduce((s,e)=>s+(e._open||0),0);
+    const groupFailTotal = eqs.reduce((s,e)=>s+(e._failures||0),0);
+    const hasMaintenance = eqs.some(e=>e.status==='maintenance');
+    const hasCritical = eqs.some(e=>e.criticality==='critical');
+
+    // Group container
+    const group = document.createElement('div');
+    group.className = 'eq-group';
+
+    // Group header
+    const hdr = document.createElement('div');
+    hdr.className = 'eq-group-header';
+    hdr.onclick = ()=>toggleGroup(unitKey);
+
+    let groupBadges = '';
+    if(groupOpenTotal>0) groupBadges+=`<span class="eq-group-alert">⚠ ${groupOpenTotal} Open</span>`;
+    if(hasMaintenance) groupBadges+=`<span class="eq-group-count" style="color:var(--red);border-color:rgba(232,64,64,.3)">🔧 Maintenance</span>`;
+    if(hasCritical && !groupOpenTotal && !hasMaintenance) groupBadges+=`<span class="eq-group-count" style="color:var(--amber);">Critical</span>`;
+
+    hdr.innerHTML=`
+      <span class="eq-group-icon${isCollapsed?' collapsed':''}">▾</span>
+      <span class="eq-group-title">${esc(unit)}</span>
+      <div class="eq-group-meta">
+        ${groupBadges}
+        <span class="eq-group-count">${eqs.length} equipment</span>
+        <span class="eq-group-count" style="color:var(--red)">${groupFailTotal}× failure</span>
       </div>`;
-    card.addEventListener('click',(e)=>{if(!e.target.closest('.eq-card-actions'))openEquipment(eq.id);});
-    // Card actions (edit/delete) for admin
-    if(window._canDelete){
-      const acts=document.createElement('div');acts.className='eq-card-actions';
-      acts.innerHTML=`<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openEditEquipment('${eq.id}')" title="Edit Equipment">✎</button><button class="btn btn-red btn-xs" onclick="event.stopPropagation();confirmDeleteEquipment('${eq.id}')" title="Hapus Equipment">✕</button>`;
-      card.appendChild(acts);
-    }
-    grid.appendChild(card);
+    group.appendChild(hdr);
+
+    // Cards grid
+    const cardsWrap = document.createElement('div');
+    cardsWrap.className = 'eq-group-cards' + (isCollapsed?' collapsed':'');
+    // Sort cards within group: open issues first, then by criticality
+    const sortedEqs = [...eqs].sort((a,b)=>{
+      if((b._open||0)!==(a._open||0)) return (b._open||0)-(a._open||0);
+      const co={critical:0,major:1,minor:2};
+      return (co[a.criticality]||1)-(co[b.criticality]||1);
+    });
+    sortedEqs.forEach(eq=>cardsWrap.appendChild(buildEqCard(eq)));
+    group.appendChild(cardsWrap);
+    grid.appendChild(group);
   });
 }
 
+function expandAllGroups(){
+  collapsedGroups.clear();
+  localStorage.setItem('hr_collapsed_groups','[]');
+  renderDashboard();
+}
+function collapseAllGroups(){
+  equipments.forEach(eq=>{
+    const unit=(eq.unit||'Tanpa Unit').trim();
+    collapsedGroups.add(unit.replace(/\s+/g,'_'));
+  });
+  localStorage.setItem('hr_collapsed_groups',JSON.stringify([...collapsedGroups]));
+  renderDashboard();
+}
 function setEqFilter(f,el){
   eqFilter=f;
   document.querySelectorAll('.filter-row .fchip').forEach(c=>c.classList.remove('active'));
