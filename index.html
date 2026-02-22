@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>History Record Spesifik Equipment</title>
+<title>Bad Actor History Record</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>/** @license
@@ -775,8 +775,8 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
     <div class="login-logo">
       <div class="login-icon">HR</div>
       <div class="login-brand">
-        <h2>History Record Equipment</h2>
-        <p>TECHNICAL SUPPORT — KPB</p>
+        <h2>Bad Actor History Record</h2>
+        <p>TECHNICAL SUPPORT — PT KPB</p>
       </div>
     </div>
     <div class="login-sub">Sign In to Continue</div>
@@ -797,7 +797,7 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
     <div class="brand" onclick="goHome()">
       <div class="brand-icon">HR</div>
       <div>
-        <div class="brand-name">History Record Equipment</div>
+        <div class="brand-name">Bad Actor History Record</div>
         <div class="brand-dev">Developed by Technical Support — PT KPB</div>
       </div>
     </div>
@@ -826,8 +826,8 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
   <div class="dash-wrap">
     <div class="dash-top">
       <div>
-        <div class="dash-title">Equipment Management</div>
-        <div class="dash-subtitle">History Record Spesifik Equipment</div>
+        <div class="dash-title">Bad Actor Equipment Management</div>
+        <div class="dash-subtitle">Summary</div>
       </div>
       <div class="dash-controls">
         <div class="search-box">
@@ -1593,7 +1593,7 @@ async function exportPDF(){
     pg();
     doc.setFillColor(15,30,53);doc.rect(0,0,W,14,'F');
     doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(232,162,23);
-    doc.text('HISTORY RECORD SPESIFIK EQUIPMENT',12,9);
+    doc.text('BAD ACTOR HISTORY RECORD',12,9);
     doc.setTextColor(148,163,184);doc.setFont('helvetica','normal');doc.setFontSize(7);
     doc.text(`TAG: ${tag} | Unit: ${eq?.unit||'-'} | Criticality: ${critLabel(eq?.criticality)}`,W-12,9,{align:'right'});
     doc.setFont('helvetica','bold');doc.setFontSize(32);doc.setTextColor(226,232,240);doc.text(eqName,12,40);
@@ -1642,7 +1642,7 @@ async function exportPPT(){
 
     const s1=pres.addSlide();s1.background={color:C.navy};
     s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.amber},line:{color:C.amber,width:0}});
-    s1.addText('HISTORY RECORD SPESIFIK EQUIPMENT',{x:.4,y:.22,w:9,h:.28,fontSize:8,fontFace:'Calibri',bold:true,color:C.amber,charSpacing:2,margin:0});
+    s1.addText('BAD ACTOR HISTORY RECORD',{x:.4,y:.22,w:9,h:.28,fontSize:8,fontFace:'Calibri',bold:true,color:C.amber,charSpacing:2,margin:0});
     s1.addText(eqName,{x:.4,y:.65,w:10,h:1.0,fontSize:38,fontFace:'Calibri',color:C.text,bold:false,margin:0});
     s1.addText('Tag No: '+tag,{x:.4,y:1.65,w:6,h:.4,fontSize:14,fontFace:'Calibri',color:C.amber,bold:true,margin:0});
     s1.addShape(pres.shapes.RECTANGLE,{x:.4,y:2.12,w:5,h:.04,fill:{color:C.steel},line:{color:C.steel,width:0}});
