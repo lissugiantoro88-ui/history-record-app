@@ -6,6 +6,7 @@
 <title>Bad Actor History Record</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>/** @license
  *
  * jsPDF - PDF Document creation from JavaScript
@@ -765,6 +766,75 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .xov.open{opacity:1;pointer-events:all;}
 .xspin{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;}
 .xmsg{font-size:14px;color:var(--text);}
+
+/* ══ TABS (Dashboard) ══ */
+.dash-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;}
+.dash-tab{padding:9px 20px;font-size:12px;font-weight:600;color:var(--textDim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'IBM Plex Sans',sans-serif;}
+.dash-tab:hover{color:var(--text);}
+.dash-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* ══ BAD ACTOR SETTINGS ══ */
+.ba-settings{background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--amber);border-radius:4px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.ba-set-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);margin-bottom:3px;}
+.ba-set-val{font-size:13px;font-weight:600;color:var(--text);}
+.ba-set-item{display:flex;flex-direction:column;}
+.ba-set-input{background:var(--inputBg);border:1px solid var(--border);color:var(--text);padding:5px 10px;font-size:13px;font-family:'IBM Plex Mono',monospace;border-radius:3px;outline:none;width:80px;text-align:center;transition:border-color .15s;}
+.ba-set-input:focus{border-color:var(--amber);}
+.ba-set-sep{color:var(--muted);font-size:11px;align-self:flex-end;margin-bottom:8px;}
+.ba-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(232,64,64,.12);color:var(--red);border:1px solid rgba(232,64,64,.35);padding:2px 8px;border-radius:2px;font-size:9px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;}
+
+/* ══ RANKING TABLE ══ */
+.rank-table{width:100%;border-collapse:collapse;font-size:12px;}
+.rank-table th{text-align:left;padding:9px 14px;background:var(--bg2);color:var(--textDim);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border-bottom:2px solid var(--border);font-weight:600;white-space:nowrap;}
+.rank-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;line-height:1.4;}
+.rank-table tr:hover td{background:var(--hover);}
+.rank-table tr:last-child td{border-bottom:none;}
+.rank-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;flex-shrink:0;}
+.rn-1{background:var(--red);color:#fff;}
+.rn-2{background:var(--amber);color:#fff;}
+.rn-3{background:#B87D10;color:#fff;}
+.rn-n{background:var(--border);color:var(--textDim);}
+.score-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;width:100px;display:inline-block;vertical-align:middle;margin-left:8px;}
+.score-fill{height:100%;border-radius:3px;background:var(--red);transition:width .4s;}
+.score-fill.amber{background:var(--amber);}
+.score-fill.green{background:var(--green);}
+.mtbf-val{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.mtbf-good{color:var(--green);}
+.mtbf-warn{color:var(--amber);}
+.mtbf-bad{color:var(--red);}
+
+/* ══ TREND CHART ══ */
+.chart-wrap{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:18px 20px;margin-bottom:16px;}
+.chart-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);font-weight:600;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.chart-legend{display:flex;gap:12px;font-size:10px;color:var(--textDim);}
+.chart-legend-item{display:flex;align-items:center;gap:5px;}
+.chart-legend-dot{width:8px;height:8px;border-radius:50%;}
+canvas{width:100%;max-height:260px;}
+.chart-eq-select{background:var(--inputBg);border:1px solid var(--border);color:var(--text);padding:4px 10px;font-size:11px;font-family:'IBM Plex Sans',sans-serif;border-radius:3px;outline:none;}
+.chart-eq-select:focus{border-color:var(--amber);}
+.chart-empty{text-align:center;padding:40px;color:var(--textDim);font-size:12px;}
+
+/* ══ DETAIL VIEW - MTBF PANEL ══ */
+.mtbf-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mtbf-box{background:var(--panel);padding:9px 14px;text-align:center;}
+.mtbf-box-val{font-size:15px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
+.mtbf-box-lbl{font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);margin-top:2px;}
+.mtbf-box-sub{font-size:9px;color:var(--muted);margin-top:1px;}
+
+/* ══ MINI TREND in detail view ══ */
+.mini-chart-wrap{padding:14px 22px 0;flex-shrink:0;border-bottom:1px solid var(--border);}
+.mini-chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.mini-chart-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);font-weight:600;}
+
+/* ══ REPORT MODAL ══ */
+.report-modal{width:560px;}
+.report-period{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.report-section{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:12px 14px;margin-bottom:10px;}
+.report-section-title{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:10px;font-weight:600;}
+.report-check{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;color:var(--text);cursor:pointer;}
+.report-check input[type=checkbox]{accent-color:var(--amber);width:14px;height:14px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -832,8 +902,9 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
       <div class="dash-controls">
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input type="text" id="eq-search" placeholder="Cari nama / tag no..." oninput="renderDashboard()">
+          <input type="text" id="eq-search" placeholder="Cari nama / tag no / unit..." oninput="renderDashboard()">
         </div>
+        <button class="btn btn-teal btn-sm" onclick="openReportModal()">📋 Monthly Report</button>
         <button class="btn btn-amber" onclick="openAddEquipment()" id="btn-add-eq">＋ Tambah Equipment</button>
       </div>
     </div>
@@ -841,33 +912,116 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
     <!-- Summary Stats -->
     <div class="dash-stats">
       <div class="ds-box" style="border-top-color:var(--text)"><div class="ds-val" id="ds-total" style="color:var(--text)">0</div><div class="ds-lbl">Total Equipment</div></div>
-      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-crit">0</div><div class="ds-lbl">Critical</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-bad-actor">0</div><div class="ds-lbl">Bad Actor</div></div>
       <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-failures">0</div><div class="ds-lbl">Total Failure</div></div>
       <div class="ds-box" style="border-top-color:var(--amber)"><div class="ds-val c-amber" id="ds-open">0</div><div class="ds-lbl">Status Open</div></div>
-      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-maintenance">0</div><div class="ds-lbl">Under Maintenance</div></div>
+      <div class="ds-box" style="border-top-color:var(--amber)"><div class="ds-val c-amber" id="ds-downtime">0</div><div class="ds-lbl">Total Downtime (Jam)</div></div>
     </div>
 
-    <!-- Filters -->
-    <div class="filter-row">
-      <span style="font-size:10px;color:var(--textDim);letter-spacing:1px;text-transform:uppercase;margin-right:2px;">Status:</span>
-      <button class="fchip active" onclick="setEqFilter('all',this)">Semua</button>
-      <button class="fchip" onclick="setEqFilter('active',this)">Active</button>
-      <button class="fchip" onclick="setEqFilter('standby',this)">Standby</button>
-      <button class="fchip" onclick="setEqFilter('maintenance',this)">Maintenance</button>
-      <div class="tsep"></div>
-      <span style="font-size:10px;color:var(--textDim);letter-spacing:1px;text-transform:uppercase;margin-right:2px;">Level:</span>
-      <button class="fchip" onclick="setEqFilter('critical',this)" style="--chip-active-color:var(--red)">Critical</button>
-      <button class="fchip" onclick="setEqFilter('major',this)">Major</button>
-      <button class="fchip" onclick="setEqFilter('minor',this)" style="--chip-active-color:var(--green)">Minor</button>
-      <div class="tsep"></div>
-      <button class="fchip" onclick="setEqFilter('open',this)" style="--chip-active-color:var(--red)">⚠ Open Issue</button>
-      <span class="filter-count" id="eq-filter-count"></span>
+    <!-- TABS -->
+    <div class="dash-tabs">
+      <button class="dash-tab active" onclick="switchTab('tab-equipment',this)">🏭 Equipment List</button>
+      <button class="dash-tab" onclick="switchTab('tab-ranking',this)">🏆 Bad Actor Ranking</button>
+      <button class="dash-tab" onclick="switchTab('tab-trend',this)">📈 Failure Trend</button>
     </div>
 
-    <!-- Grid -->
-    <div id="eq-grid" class="eq-grid">
-      <div class="loading-row" id="dash-loading"><div class="lspin"></div>Memuat equipment...</div>
+    <!-- TAB: Equipment List -->
+    <div class="tab-content active" id="tab-equipment">
+      <!-- Bad Actor Settings -->
+      <div class="ba-settings">
+        <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);font-weight:700;">⚙ Kriteria Bad Actor:</span>
+        <div class="ba-set-item">
+          <div class="ba-set-label">Min. Failure</div>
+          <input type="number" class="ba-set-input" id="ba-min-fail" value="3" min="1" max="99" onchange="renderDashboard()">
+        </div>
+        <div class="ba-set-sep">dalam</div>
+        <div class="ba-set-item">
+          <div class="ba-set-label">Periode (Bulan)</div>
+          <input type="number" class="ba-set-input" id="ba-months" value="12" min="1" max="60" onchange="renderDashboard()">
+        </div>
+        <span style="font-size:11px;color:var(--textDim);">bulan terakhir — atau —</span>
+        <div class="ba-set-item">
+          <div class="ba-set-label">Min. Downtime (Jam)</div>
+          <input type="number" class="ba-set-input" id="ba-min-down" value="100" min="0" onchange="renderDashboard()">
+        </div>
+        <span style="font-size:11px;color:var(--textDim);margin-left:4px;">jam kumulatif</span>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-row">
+        <span style="font-size:10px;color:var(--textDim);letter-spacing:1px;text-transform:uppercase;margin-right:2px;">Status:</span>
+        <button class="fchip active" onclick="setEqFilter('all',this)">Semua</button>
+        <button class="fchip" onclick="setEqFilter('active',this)">Active</button>
+        <button class="fchip" onclick="setEqFilter('standby',this)">Standby</button>
+        <button class="fchip" onclick="setEqFilter('maintenance',this)">Maintenance</button>
+        <div class="tsep"></div>
+        <span style="font-size:10px;color:var(--textDim);letter-spacing:1px;text-transform:uppercase;margin-right:2px;">Level:</span>
+        <button class="fchip" onclick="setEqFilter('critical',this)" style="--chip-active-color:var(--red)">Critical</button>
+        <button class="fchip" onclick="setEqFilter('major',this)">Major</button>
+        <button class="fchip" onclick="setEqFilter('minor',this)" style="--chip-active-color:var(--green)">Minor</button>
+        <div class="tsep"></div>
+        <button class="fchip" onclick="setEqFilter('badactor',this)" style="--chip-active-color:var(--red)">🔴 Bad Actor</button>
+        <button class="fchip" onclick="setEqFilter('open',this)" style="--chip-active-color:var(--red)">⚠ Open Issue</button>
+        <span class="filter-count" id="eq-filter-count"></span>
+      </div>
+
+      <!-- Grid -->
+      <div id="eq-grid" class="eq-grid">
+        <div class="loading-row" id="dash-loading"><div class="lspin"></div>Memuat equipment...</div>
+      </div>
     </div>
+
+    <!-- TAB: Bad Actor Ranking -->
+    <div class="tab-content" id="tab-ranking">
+      <div class="ba-settings" style="margin-bottom:16px;">
+        <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);font-weight:700;">⚙ Scoring:</span>
+        <span style="font-size:11px;color:var(--textDim);">Skor = (Failure × 10) + (Downtime / 10) + (Open Issue × 5) — equipment dengan skor tertinggi = Bad Actor utama</span>
+      </div>
+      <div style="background:var(--panel);border:1px solid var(--border);border-radius:4px;overflow:hidden;">
+        <table class="rank-table">
+          <thead>
+            <tr>
+              <th style="width:50px;">#</th>
+              <th>Equipment</th>
+              <th>Tag No</th>
+              <th>Unit / Area</th>
+              <th>Failure</th>
+              <th>Downtime</th>
+              <th>MTBF</th>
+              <th>MTTR</th>
+              <th>Open</th>
+              <th>Score</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="rank-tbody">
+            <tr><td colspan="11" style="text-align:center;padding:30px;color:var(--textDim);">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: Failure Trend -->
+    <div class="tab-content" id="tab-trend">
+      <div class="chart-wrap">
+        <div class="chart-title">
+          <span>Failure Trend — Per Bulan</span>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <select class="chart-eq-select" id="trend-eq-select" onchange="renderTrendChart()">
+              <option value="all">Semua Equipment</option>
+            </select>
+            <select class="chart-eq-select" id="trend-months-select" onchange="renderTrendChart()">
+              <option value="6">6 Bulan Terakhir</option>
+              <option value="12" selected>12 Bulan Terakhir</option>
+              <option value="24">24 Bulan Terakhir</option>
+            </select>
+          </div>
+        </div>
+        <canvas id="trend-chart" height="240"></canvas>
+        <div class="chart-empty" id="trend-empty" style="display:none;">Belum ada data failure untuk ditampilkan.</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -952,6 +1106,24 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
         <div class="stat-box"><div class="stat-val c-amber" id="st-ot">0</div><div class="stat-lbl">Outstanding</div></div>
         <div class="stat-box"><div class="stat-val c-teal" id="st-t">0</div><div class="stat-lbl">Total Events</div></div>
       </div>
+      <!-- MTBF/MTTR Strip -->
+      <div class="mtbf-strip">
+        <div class="mtbf-box"><div class="mtbf-box-val" id="mt-mtbf" style="color:var(--teal)">—</div><div class="mtbf-box-lbl">MTBF</div><div class="mtbf-box-sub">Mean Time Between Failure</div></div>
+        <div class="mtbf-box"><div class="mtbf-box-val" id="mt-mttr" style="color:var(--amber)">—</div><div class="mtbf-box-lbl">MTTR</div><div class="mtbf-box-sub">Mean Time To Repair</div></div>
+        <div class="mtbf-box"><div class="mtbf-box-val" id="mt-avail" style="color:var(--green)">—</div><div class="mtbf-box-lbl">Availability</div><div class="mtbf-box-sub">Estimasi uptime</div></div>
+        <div class="mtbf-box"><div class="mtbf-box-val" id="mt-badactor" style="color:var(--red)">—</div><div class="mtbf-box-lbl">Bad Actor Status</div><div class="mtbf-box-sub" id="mt-badactor-sub">—</div></div>
+      </div>
+      <!-- Mini Trend Chart -->
+      <div class="mini-chart-wrap">
+        <div class="mini-chart-hdr">
+          <span class="mini-chart-title">Failure Trend — 12 Bulan Terakhir</span>
+          <div class="chart-legend">
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--red)"></div>Failure</div>
+            <div class="chart-legend-item"><div class="chart-legend-dot" style="background:var(--amber)"></div>Repair</div>
+          </div>
+        </div>
+        <canvas id="mini-trend-chart" height="80"></canvas>
+      </div>
       <div class="toolbar">
         <div class="legend">
           <div class="lg-item"><div class="lg-dot ld-f"></div>Failure</div>
@@ -1028,6 +1200,40 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
     <div class="mf">
       <button class="btn btn-outline" onclick="closeModal('modal-del')">Batal</button>
       <button class="btn btn-red" onclick="doDelete()">Ya, Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Monthly Report -->
+<div class="overlay" id="modal-report">
+  <div class="modal report-modal">
+    <div class="mh"><div class="mh-title">📋 Generate Monthly Report</div><button class="mclose" onclick="closeModal('modal-report')">×</button></div>
+    <div class="mb">
+      <div class="report-section">
+        <div class="report-section-title">Periode Laporan</div>
+        <div class="report-period">
+          <div class="fg" style="margin:0"><label>Dari Tanggal</label><input type="date" id="rpt-from" style="color-scheme:dark"></div>
+          <div class="fg" style="margin:0"><label>Sampai Tanggal</label><input type="date" id="rpt-to" style="color-scheme:dark"></div>
+        </div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">Konten Laporan</div>
+        <label class="report-check"><input type="checkbox" id="rpt-summary" checked> Executive Summary (KPI, Bad Actor count, total downtime)</label>
+        <label class="report-check"><input type="checkbox" id="rpt-ranking" checked> Bad Actor Ranking Table (MTBF, MTTR, Score)</label>
+        <label class="report-check"><input type="checkbox" id="rpt-detail" checked> Detail Kronologis per Equipment</label>
+        <label class="report-check"><input type="checkbox" id="rpt-open" checked> Outstanding / Open Issues</label>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">Format Export</div>
+        <div style="display:flex;gap:10px;">
+          <label class="report-check"><input type="radio" name="rpt-fmt" value="pdf" checked> PDF</label>
+          <label class="report-check"><input type="radio" name="rpt-fmt" value="ppt"> PowerPoint</label>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-outline" onclick="closeModal('modal-report')">Batal</button>
+      <button class="btn btn-teal" onclick="generateReport()">Generate Report</button>
     </div>
   </div>
 </div>
@@ -1129,10 +1335,11 @@ async function initApp(user){
   window._canEdit=currentRole==='admin'||currentRole==='editor';
   window._canDelete=currentRole==='admin';
   if(!window._canEdit)g('btn-add-eq').style.display='none';
+  // Show dashboard FIRST before loading data — prevents blank screen on first login
+  showView('dashboard');
   await loadEquipments();
   subscribeRealtime();
   setConn('ok');
-  showView('dashboard');
 }
 
 // ══════════════════════════════════════
@@ -1167,9 +1374,9 @@ async function loadEquipments(){
   if(error){toast('Gagal memuat equipment: '+error.message,'error');setConn('err');return;}
   equipments=data||[];
 
-  // Load event summaries
+  // Load event summaries + MTBF/MTTR
   if(equipments.length>0){
-    const{data:evData}=await sb.from('events').select('equipment_id,type,status,downtime');
+    const{data:evData}=await sb.from('events').select('equipment_id,type,status,downtime,date');
     if(evData){
       equipments.forEach(eq=>{
         const evs=evData.filter(e=>e.equipment_id===eq.id);
@@ -1177,7 +1384,19 @@ async function loadEquipments(){
         eq._downtime=evs.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
         eq._open=evs.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
         eq._total=evs.length;
+        eq._mtbf=calcMTBF(eq.id, evData);
+        eq._mttr=calcMTTR(eq.id, evData);
+        eq._isBadActor=isBadActor(eq, evData);
       });
+      // Populate trend chart equipment select
+      const sel=g('trend-eq-select');
+      if(sel&&sel.options.length<=1){
+        equipments.forEach(eq=>{
+          const opt=document.createElement('option');
+          opt.value=eq.id;opt.textContent=eq.tag_no+' — '+eq.name;
+          sel.appendChild(opt);
+        });
+      }
     }
   }
   renderDashboard();
@@ -1215,7 +1434,7 @@ function buildEqCard(eq){
         <span class="eq-tag">${esc(eq.tag_no||'—')}</span>
         <span class="eq-status-badge ${stClass}">${statusLabel(eq.status)}</span>
       </div>
-      <div class="eq-name">${esc(eq.name)}</div>
+      <div class="eq-name">${esc(eq.name)}${eq._isBadActor?'<span class="ba-badge" style="margin-left:8px;vertical-align:middle;">🔴 BAD ACTOR</span>':''}</div>
       <div class="eq-meta-row" style="margin-bottom:10px;">
         <div class="eq-meta-item"><div class="emi-k">Criticality</div><div class="emi-v" style="color:${eq.criticality==='critical'?'var(--red)':eq.criticality==='major'?'var(--amber)':'var(--green)'}">${critLabel(eq.criticality)}</div></div>
         <div class="eq-meta-item"><div class="emi-k">Total Failure</div><div class="emi-v" style="color:${failures>0?'var(--red)':'var(--textDim)'}">${failures}×</div></div>
@@ -1243,14 +1462,16 @@ function renderDashboard(){
   else if(eqFilter==='active') filtered=filtered.filter(eq=>eq.status==='active');
   else if(eqFilter==='standby') filtered=filtered.filter(eq=>eq.status==='standby');
   else if(eqFilter==='maintenance') filtered=filtered.filter(eq=>eq.status==='maintenance');
+  else if(eqFilter==='badactor') filtered=filtered.filter(eq=>eq._isBadActor);
   else if(eqFilter==='open') filtered=filtered.filter(eq=>(eq._open||0)>0);
 
   // Summary stats
   g('ds-total').textContent=equipments.length;
-  g('ds-crit').textContent=equipments.filter(e=>e.criticality==='critical').length;
+  const badActorCount=equipments.filter(e=>e._isBadActor).length;
+  g('ds-bad-actor').textContent=badActorCount;
   g('ds-failures').textContent=equipments.reduce((s,e)=>s+(e._failures||0),0);
   g('ds-open').textContent=equipments.reduce((s,e)=>s+(e._open||0),0);
-  g('ds-maintenance').textContent=equipments.filter(e=>e.status==='maintenance').length;
+  g('ds-downtime').textContent=equipments.reduce((s,e)=>s+(e._downtime||0),0);
   g('eq-filter-count').textContent=filtered.length+' equipment';
 
   const grid=g('eq-grid');
@@ -1389,6 +1610,46 @@ async function doDeleteEquipment(){
 // ══════════════════════════════════════
 // OPEN EQUIPMENT DETAIL
 // ══════════════════════════════════════
+function updateMtbfStrip(eq, evData){
+  const mtbf = calcMTBF(eq.id, evData);
+  const mttr = calcMTTR(eq.id, evData);
+  const avail = calcAvailability(mtbf, mttr);
+  const {minFail,months,minDown}=getBaThreshold();
+  const cutoff=new Date();cutoff.setMonth(cutoff.getMonth()-months);
+  const recentFails=evData.filter(e=>e.type==='failure'&&new Date(e.date)>=cutoff).length;
+  const totDown=evData.reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0);
+  const ba=eq._isBadActor||(recentFails>=minFail||totDown>=minDown);
+
+  // MTBF
+  const mtbfEl=g('mt-mtbf');
+  if(mtbfEl){
+    mtbfEl.textContent=fmtHours(mtbf);
+    mtbfEl.style.color=!mtbf?'var(--muted)':mtbf>720?'var(--green)':mtbf>240?'var(--amber)':'var(--red)';
+  }
+  // MTTR
+  const mttrEl=g('mt-mttr');
+  if(mttrEl){
+    mttrEl.textContent=fmtHours(mttr);
+    mttrEl.style.color=!mttr?'var(--muted)':mttr<24?'var(--green)':mttr<72?'var(--amber)':'var(--red)';
+  }
+  // Availability
+  const availEl=g('mt-avail');
+  if(availEl){
+    availEl.textContent=avail?avail+'%':'—';
+    availEl.style.color=!avail?'var(--muted)':parseFloat(avail)>95?'var(--green)':parseFloat(avail)>80?'var(--amber)':'var(--red)';
+  }
+  // Bad Actor
+  const baEl=g('mt-badactor');
+  const baSubEl=g('mt-badactor-sub');
+  if(baEl){
+    baEl.textContent=ba?'BAD ACTOR':'NORMAL';
+    baEl.style.color=ba?'var(--red)':'var(--green)';
+  }
+  if(baSubEl){
+    baSubEl.textContent=ba?`${recentFails} failure / ${months} bln | ${totDown}h downtime`:`Dalam ${months} bln terakhir`;
+  }
+}
+
 async function openEquipment(eqId){
   const eq=equipments.find(e=>e.id===eqId);if(!eq)return;
   currentEqId=eqId;events=[];editEvId=null;
@@ -1416,6 +1677,10 @@ async function openEquipment(eqId){
   events=data||[];
   curFilter='all';
   document.querySelectorAll('.toolbar .fchip').forEach((c,i)=>{c.classList.toggle('active',i===0);});
+  // Update MTBF/MTTR strip
+  updateMtbfStrip(eq, events);
+  // Render mini chart
+  renderMiniTrendChart(eqId, events);
   render();
 }
 
@@ -1477,12 +1742,15 @@ async function submitForm(){
   setConn('ok');resetForm();
 }
 async function refreshEqSummary(eqId){
-  const{data}=await sb.from('events').select('type,status,downtime').eq('equipment_id',eqId);
+  const{data}=await sb.from('events').select('type,status,downtime,date').eq('equipment_id',eqId);
   const eq=equipments.find(e=>e.id===eqId);if(!eq||!data)return;
   eq._failures=data.filter(e=>e.type==='failure').length;
   eq._downtime=data.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
   eq._open=data.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
   eq._total=data.length;
+  eq._mtbf=calcMTBF(eqId,data);
+  eq._mttr=calcMTTR(eqId,data);
+  eq._isBadActor=isBadActor(eq,data);
 }
 
 function editEv(id){
@@ -1692,14 +1960,484 @@ async function exportPPT(){
   hideX();
 }
 
+
+// ══════════════════════════════════════
+// ANALYTICS HELPERS
+// ══════════════════════════════════════
+function getBaThreshold(){
+  return {
+    minFail: parseInt(g('ba-min-fail')?.value||3),
+    months: parseInt(g('ba-months')?.value||12),
+    minDown: parseInt(g('ba-min-down')?.value||100)
+  };
+}
+
+function isBadActor(eq, allEvents){
+  const {minFail, months, minDown} = getBaThreshold();
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - months);
+  const evs = allEvents.filter(e => e.equipment_id === eq.id && e.type === 'failure');
+  const recentFails = evs.filter(e => new Date(e.date) >= cutoff).length;
+  const totalDown = evs.reduce((s,e) => s + (parseInt(e.downtime||0)||0), 0);
+  return recentFails >= minFail || totalDown >= minDown;
+}
+
+function calcMTBF(eqId, allEvents){
+  const fails = allEvents
+    .filter(e => e.equipment_id === eqId && e.type === 'failure' && e.date)
+    .sort((a,b) => new Date(a.date) - new Date(b.date));
+  if(fails.length < 2) return null;
+  let totalGap = 0;
+  for(let i=1;i<fails.length;i++){
+    totalGap += (new Date(fails[i].date) - new Date(fails[i-1].date)) / (1000*3600);
+  }
+  return Math.round(totalGap / (fails.length - 1));
+}
+
+function calcMTTR(eqId, allEvents){
+  const fails = allEvents.filter(e => e.equipment_id === eqId && e.type === 'failure' && e.downtime);
+  if(!fails.length) return null;
+  const total = fails.reduce((s,e) => s + (parseInt(e.downtime)||0), 0);
+  return Math.round(total / fails.length);
+}
+
+function calcAvailability(mtbf, mttr){
+  if(!mtbf || !mttr) return null;
+  return ((mtbf / (mtbf + mttr)) * 100).toFixed(1);
+}
+
+function calcScore(eq){
+  return (eq._failures||0)*10 + Math.round((eq._downtime||0)/10) + (eq._open||0)*5;
+}
+
+function fmtHours(h){
+  if(h===null||h===undefined) return '—';
+  if(h>=24) return Math.round(h/24)+'d '+Math.round(h%24)+'h';
+  return h+'h';
+}
+
+// ══════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════
+function switchTab(tabId, btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.dash-tab').forEach(b=>b.classList.remove('active'));
+  g(tabId).classList.add('active');
+  btn.classList.add('active');
+  if(tabId==='tab-ranking') renderRanking();
+  if(tabId==='tab-trend') renderTrendChart();
+}
+
+// ══════════════════════════════════════
+// RANKING TABLE
+// ══════════════════════════════════════
+function renderRanking(){
+  const tbody = g('rank-tbody');
+  if(!tbody) return;
+  if(!equipments.length){
+    tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--textDim);">Belum ada equipment.</td></tr>';
+    return;
+  }
+  // Need all events for MTBF/MTTR - use cached from loadEquipments
+  const sorted = [...equipments].sort((a,b)=>calcScore(b)-calcScore(a));
+  tbody.innerHTML = sorted.map((eq,i)=>{
+    const mtbf = eq._mtbf;
+    const mttr = eq._mttr;
+    const avail = calcAvailability(mtbf, mttr);
+    const score = calcScore(eq);
+    const maxScore = calcScore(sorted[0])||1;
+    const pct = Math.round(score/maxScore*100);
+    const isBa = eq._isBadActor;
+    const rankCls = i===0?'rn-1':i===1?'rn-2':i===2?'rn-3':'rn-n';
+    const mtbfCls = !mtbf?'':mtbf>720?'mtbf-good':mtbf>240?'mtbf-warn':'mtbf-bad';
+    const mttrCls = !mttr?'':mttr<24?'mtbf-good':mttr<72?'mtbf-warn':'mtbf-bad';
+    const critC = eq.criticality==='critical'?'var(--red)':eq.criticality==='major'?'var(--amber)':'var(--green)';
+    return `<tr>
+      <td><div style="display:flex;align-items:center;justify-content:center;"><div class="rank-num ${rankCls}">${i+1}</div></div></td>
+      <td>
+        <div style="font-weight:600;color:var(--text);cursor:pointer;" onclick="openEquipment('${eq.id}')">${esc(eq.name)}</div>
+        ${isBa?'<span class="ba-badge">🔴 BAD ACTOR</span>':''}
+      </td>
+      <td><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);">${esc(eq.tag_no)}</span></td>
+      <td style="font-size:11px;color:var(--textDim);">${esc(eq.unit||'—')}</td>
+      <td><span style="font-weight:700;color:${(eq._failures||0)>0?'var(--red)':'var(--textDim)'};">${eq._failures||0}×</span></td>
+      <td><span style="font-weight:600;color:var(--amber);">${eq._downtime||0} Jam</span></td>
+      <td><span class="mtbf-val ${mtbfCls}">${fmtHours(mtbf)}</span></td>
+      <td><span class="mtbf-val ${mttrCls}">${fmtHours(mttr)}</span></td>
+      <td><span style="color:${(eq._open||0)>0?'var(--red)':'var(--green)'};">${eq._open||0}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:${pct>70?'var(--red)':pct>40?'var(--amber)':'var(--textDim)'};">${score}</span>
+          <div class="score-bar"><div class="score-fill ${pct>70?'':pct>40?'amber':'green'}" style="width:${pct}%"></div></div>
+        </div>
+      </td>
+      <td><span style="font-size:9px;font-weight:700;color:${eq.status==='active'?'var(--green)':eq.status==='maintenance'?'var(--red)':'var(--teal)'};">${statusLabel(eq.status).toUpperCase()}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// TREND CHART (Dashboard)
+// ══════════════════════════════════════
+let trendChartInstance = null;
+let miniChartInstance = null;
+
+function getMonthLabels(n){
+  const labels=[], now=new Date();
+  for(let i=n-1;i>=0;i--){
+    const d=new Date(now.getFullYear(), now.getMonth()-i, 1);
+    labels.push(d.toLocaleString('id-ID',{month:'short',year:'2-digit'}));
+  }
+  return labels;
+}
+
+function getMonthKey(dateStr){
+  if(!dateStr) return null;
+  const d=new Date(dateStr+'T00:00:00');
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+
+function buildMonthKeys(n){
+  const keys=[], now=new Date();
+  for(let i=n-1;i>=0;i--){
+    const d=new Date(now.getFullYear(), now.getMonth()-i, 1);
+    keys.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+  }
+  return keys;
+}
+
+function renderTrendChart(){
+  const canvas = g('trend-chart');
+  const empty = g('trend-empty');
+  if(!canvas) return;
+
+  const eqSelect = g('trend-eq-select');
+  const monthsN = parseInt(g('trend-months-select')?.value||12);
+  const selEqId = eqSelect?.value||'all';
+
+  // Populate select if empty
+  if(eqSelect && eqSelect.options.length<=1){
+    equipments.forEach(eq=>{
+      const opt=document.createElement('option');
+      opt.value=eq.id; opt.textContent=`${eq.tag_no} — ${eq.name}`;
+      eqSelect.appendChild(opt);
+    });
+  }
+
+  // Get all events
+  sb.from('events').select('equipment_id,type,date,downtime')
+    .then(({data:evData})=>{
+      if(!evData||!evData.length){canvas.style.display='none';empty.style.display='block';return;}
+      canvas.style.display='block';empty.style.display='none';
+
+      const monthKeys = buildMonthKeys(monthsN);
+      const labels = getMonthLabels(monthsN);
+      const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+      const gridColor = isDark?'rgba(30,58,95,0.6)':'rgba(200,210,220,0.5)';
+      const textColor = isDark?'#64748B':'#94A3B8';
+
+      // Filter by equipment if selected
+      let filtered = selEqId==='all' ? evData : evData.filter(e=>e.equipment_id===selEqId);
+
+      // Build datasets per equipment or aggregated
+      let datasets = [];
+      if(selEqId==='all'){
+        // Aggregate all failures
+        const failCounts = monthKeys.map(mk=>filtered.filter(e=>e.type==='failure'&&getMonthKey(e.date)===mk).length);
+        const repairCounts = monthKeys.map(mk=>filtered.filter(e=>e.type==='repair'&&getMonthKey(e.date)===mk).length);
+        datasets = [
+          {label:'Failure',data:failCounts,borderColor:'#E84040',backgroundColor:'rgba(232,64,64,0.15)',fill:true,tension:0.3,pointBackgroundColor:'#E84040',pointRadius:4,pointHoverRadius:6},
+          {label:'Repair',data:repairCounts,borderColor:'#E8A217',backgroundColor:'rgba(232,162,23,0.1)',fill:true,tension:0.3,pointBackgroundColor:'#E8A217',pointRadius:4,pointHoverRadius:6}
+        ];
+      } else {
+        const failCounts = monthKeys.map(mk=>filtered.filter(e=>e.type==='failure'&&getMonthKey(e.date)===mk).length);
+        const repairCounts = monthKeys.map(mk=>filtered.filter(e=>e.type==='repair'&&getMonthKey(e.date)===mk).length);
+        const eq = equipments.find(e=>e.id===selEqId);
+        datasets = [
+          {label:'Failure — '+(eq?.name||''),data:failCounts,borderColor:'#E84040',backgroundColor:'rgba(232,64,64,0.15)',fill:true,tension:0.3,pointBackgroundColor:'#E84040',pointRadius:4,pointHoverRadius:6},
+          {label:'Repair — '+(eq?.name||''),data:repairCounts,borderColor:'#E8A217',backgroundColor:'rgba(232,162,23,0.1)',fill:true,tension:0.3,pointBackgroundColor:'#E8A217',pointRadius:4,pointHoverRadius:6}
+        ];
+      }
+
+      if(trendChartInstance){trendChartInstance.destroy();trendChartInstance=null;}
+      trendChartInstance = new Chart(canvas, {
+        type:'line',
+        data:{labels,datasets},
+        options:{
+          responsive:true, maintainAspectRatio:false,
+          interaction:{mode:'index',intersect:false},
+          plugins:{
+            legend:{labels:{color:textColor,font:{family:'IBM Plex Sans',size:11},boxWidth:10}},
+            tooltip:{backgroundColor:isDark?'#0F1E35':'#fff',borderColor:'#1E3A5F',borderWidth:1,titleColor:isDark?'#E2E8F0':'#1E293B',bodyColor:isDark?'#94A3B8':'#64748B',titleFont:{family:'IBM Plex Mono',size:11},bodyFont:{family:'IBM Plex Sans',size:11}}
+          },
+          scales:{
+            x:{grid:{color:gridColor},ticks:{color:textColor,font:{family:'IBM Plex Mono',size:10}}},
+            y:{grid:{color:gridColor},ticks:{color:textColor,font:{family:'IBM Plex Mono',size:10},stepSize:1,precision:0},beginAtZero:true}
+          }
+        }
+      });
+    });
+}
+
+// Mini trend chart in detail view
+function renderMiniTrendChart(eqId, evData){
+  const canvas = g('mini-trend-chart');
+  if(!canvas) return;
+  const monthKeys = buildMonthKeys(12);
+  const labels = getMonthLabels(12);
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  const failCounts = monthKeys.map(mk=>evData.filter(e=>e.type==='failure'&&getMonthKey(e.date)===mk).length);
+  const repairCounts = monthKeys.map(mk=>evData.filter(e=>e.type==='repair'&&getMonthKey(e.date)===mk).length);
+  if(miniChartInstance){miniChartInstance.destroy();miniChartInstance=null;}
+  miniChartInstance = new Chart(canvas,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Failure',data:failCounts,backgroundColor:'rgba(232,64,64,0.7)',borderRadius:2},
+      {label:'Repair',data:repairCounts,backgroundColor:'rgba(232,162,23,0.5)',borderRadius:2}
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:l=>l[0].label}}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:isDark?'#64748B':'#94A3B8',font:{size:9,family:'IBM Plex Mono'}}},
+        y:{grid:{color:isDark?'rgba(30,58,95,0.4)':'rgba(200,210,220,0.4)'},ticks:{color:isDark?'#64748B':'#94A3B8',font:{size:9},stepSize:1,precision:0},beginAtZero:true}
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════
+// REPORT MODAL
+// ══════════════════════════════════════
+function openReportModal(){
+  // Set default dates: first day of current month to today
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  g('rpt-from').value = firstDay.toISOString().split('T')[0];
+  g('rpt-to').value = now.toISOString().split('T')[0];
+  g('modal-report').classList.add('open');
+}
+
+async function generateReport(){
+  const fmt = document.querySelector('input[name="rpt-fmt"]:checked')?.value||'pdf';
+  const from = g('rpt-from').value;
+  const to = g('rpt-to').value;
+  if(!from||!to){toast('Pilih periode laporan!','error');return;}
+  closeModal('modal-report');
+
+  // Fetch all events in range
+  showX('Mengambil data...');
+  const{data:allEvents}=await sb.from('events').select('*')
+    .gte('date',from).lte('date',to).order('date',{ascending:true});
+  const evData = allEvents||[];
+
+  const fromStr = fmtD(from).full, toStr = fmtD(to).full;
+  const incSummary = g('rpt-summary')?.checked!==false;
+  const incRanking = g('rpt-ranking')?.checked!==false;
+  const incDetail = g('rpt-detail')?.checked!==false;
+  const incOpen = g('rpt-open')?.checked!==false;
+
+  if(fmt==='pdf') await generateReportPDF(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen);
+  else await generateReportPPT(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen);
+  hideX();
+}
+
+// ══════════════════════════════════════
+// REPORT PDF
+// ══════════════════════════════════════
+async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen){
+  showX('Membuat PDF Report...');
+  await sl(150);
+  try{
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const W=297,H=210;
+    const pg=()=>{doc.setFillColor(10,22,40);doc.rect(0,0,W,H,'F');doc.setFillColor(232,162,23);doc.rect(0,0,W,1.5,'F');};
+    let pageN=1;
+    const addPgNum=()=>{doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text(`Page ${pageN++}`,W-10,H-4,{align:'right'});doc.text('Developed by Technical Support — PT Kilang Pertamina Balikpapan',W/2,H-4,{align:'center'});};
+
+    // ── COVER ──
+    pg();
+    doc.setFillColor(15,30,53);doc.rect(0,0,W,18,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(232,162,23);
+    doc.text('BAD ACTOR HISTORY RECORD — MONTHLY REPORT',12,12);
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(148,163,184);
+    doc.text(`PT Kilang Pertamina Balikpapan — Technical Support`,W-12,12,{align:'right'});
+    doc.setFont('helvetica','bold');doc.setFontSize(34);doc.setTextColor(226,232,240);
+    doc.text('Monthly Report',12,48);
+    doc.setFont('helvetica','normal');doc.setFontSize(14);doc.setTextColor(232,162,23);
+    doc.text(`Periode: ${fromStr} — ${toStr}`,12,60);
+    doc.setFontSize(11);doc.setTextColor(148,163,184);
+    const totalFail=evData.filter(e=>e.type==='failure').length;
+    const totDown=evData.reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0);
+    const badActorEqs=equipments.filter(eq=>eq._isBadActor);
+    doc.text(`${equipments.length} Equipment  |  ${totalFail} Failure  |  ${totDown} Jam Downtime  |  ${badActorEqs.length} Bad Actor`,12,70);
+
+    // KPI Boxes
+    const kpis=[
+      {v:equipments.length,l:'Total Equipment',c:[14,165,233]},
+      {v:badActorEqs.length,l:'Bad Actor',c:[232,64,64]},
+      {v:totalFail+'×',l:'Total Failure',c:[232,64,64]},
+      {v:totDown+' Jam',l:'Kumulatif Downtime',c:[232,162,23]},
+      {v:evData.filter(e=>['OPEN','OVERDUE'].includes(e.status)).length,l:'Open Issues',c:[232,64,64]}
+    ];
+    kpis.forEach((k,i)=>{
+      const bx=12+i*55;
+      doc.setFillColor(15,30,53);doc.rect(bx,80,52,22,'F');
+      doc.setFillColor(...k.c);doc.rect(bx,80,52,1.5,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...k.c);
+      doc.text(String(k.v),bx+26,91,{align:'center'});
+      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(148,163,184);
+      doc.text(k.l,bx+26,99,{align:'center'});
+    });
+    addPgNum();
+
+    // ── RANKING PAGE ──
+    if(incRanking){
+      doc.addPage();pg();
+      doc.setFillColor(15,30,53);doc.rect(0,0,W,14,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(232,162,23);
+      doc.text('BAD ACTOR RANKING & ANALYTICS',12,9);
+      doc.setFontSize(7);doc.setTextColor(148,163,184);
+      doc.text(`Periode: ${fromStr} — ${toStr}`,W-12,9,{align:'right'});
+
+      const sorted=[...equipments].sort((a,b)=>calcScore(b)-calcScore(a));
+      const hdr=[['#','Equipment','Tag No','Unit','Failure','Downtime','MTBF','MTTR','Avail.','Open','Score','Status']];
+      const cw=[8,42,20,36,16,22,16,16,14,12,16,18];
+      let cx=10,ry=22;
+      doc.setFillColor(30,58,95);doc.rect(10,ry-5,W-20,8,'F');
+      hdr[0].forEach((h,i)=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(255,255,255);doc.text(h,cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=7;
+
+      sorted.forEach((eq,idx)=>{
+        if(ry>H-14){doc.addPage();pg();ry=20;addPgNum();}
+        const mtbf=eq._mtbf,mttr=eq._mttr,avail=calcAvailability(mtbf,mttr);
+        const score=calcScore(eq);
+        doc.setFillColor(idx%2===0?10:15,idx%2===0?22:30,idx%2===0?40:53);
+        doc.rect(10,ry-4,W-20,8,'F');
+        const row=[String(idx+1),eq.name,eq.tag_no,eq.unit||'—',eq._failures+'×',eq._downtime+'h',fmtHours(mtbf),fmtHours(mttr),avail?avail+'%':'—',String(eq._open||0),String(score),statusLabel(eq.status)];
+        cx=10;
+        row.forEach((cell,ci)=>{
+          let tc=[226,232,240];
+          if(ci===4&&eq._failures>0) tc=[232,64,64];
+          if(ci===9&&eq._open>0) tc=[232,64,64];
+          if(ci===10) tc=score>50?[232,64,64]:score>25?[232,162,23]:[34,197,94];
+          doc.setFont('helvetica',ci===0||ci===10?'bold':'normal');doc.setFontSize(6.5);doc.setTextColor(...tc);
+          doc.text(String(cell).substring(0,cw[ci]/2.5),cx+1,ry,{maxWidth:cw[ci]-2});cx+=cw[ci];
+        });
+        if(eq._isBadActor){doc.setFillColor(232,64,64);doc.rect(10,ry-4,2,8,'F');}
+        ry+=9;
+      });
+      addPgNum();
+    }
+
+    // ── DETAIL / OPEN ISSUES ──
+    if(incDetail||incOpen){
+      const eqsWithEvents=equipments.filter(eq=>evData.some(e=>e.equipment_id===eq.id));
+      eqsWithEvents.forEach(eq=>{
+        const eqEvs=evData.filter(e=>e.equipment_id===eq.id);
+        const toShow=incOpen?eqEvs:eqEvs;
+        if(!toShow.length) return;
+        doc.addPage();pg();
+        doc.setFillColor(15,30,53);doc.rect(0,0,W,14,'F');
+        doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(232,162,23);
+        doc.text((eq.tag_no?eq.tag_no+' — ':'')+eq.name,12,9);
+        doc.setFontSize(7);doc.setTextColor(148,163,184);
+        doc.text(`Unit: ${eq.unit||'—'} | ${critLabel(eq.criticality)} | ${statusLabel(eq.status)}`,W-12,9,{align:'right'});
+
+        let ry=20;
+        toShow.forEach((ev)=>{
+          if(ry>H-26){doc.addPage();pg();ry=20;addPgNum();}
+          const df=fmtD(ev.date);
+          const tc2=ev.type==='failure'?[232,64,64]:ev.type==='action'?[14,165,233]:ev.type==='repair'?[232,162,23]:[34,197,94];
+          doc.setFillColor(15,30,53);doc.rect(10,ry-4,W-20,8,'F');
+          doc.setFillColor(...tc2);doc.rect(10,ry-4,2,8,'F');
+          doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...tc2);
+          doc.text(typeLbl(ev.type),12,ry);
+          doc.setTextColor(226,232,240);
+          doc.text(df.full,30,ry);
+          doc.setFont('helvetica','normal');
+          doc.text((ev.title||'').substring(0,100),68,ry);
+          doc.setTextColor(148,163,184);
+          if(ev.status) doc.text(ev.status,W-12,ry,{align:'right'});
+          ry+=9;
+          if(ev.cause){doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(252,165,165);doc.text('Root Cause: '+ev.cause.substring(0,120),14,ry);ry+=7;}
+          if(ev.outstanding){doc.setTextColor(232,162,23);doc.text('\u26A0 Outstanding: '+(ev.outstanding||'').replace(/[\r\n]+/g,' ').substring(0,120),14,ry);ry+=7;}
+        });
+        addPgNum();
+      });
+    }
+
+    doc.save(`BadActor_Report_${from}_to_${to}.pdf`);
+    toast('PDF Report berhasil dibuat! ✓');
+  }catch(err){console.error(err);toast('Error PDF: '+err.message,'error');}
+  hideX();
+}
+
+// ══════════════════════════════════════
+// REPORT PPT (simplified - key slides)
+// ══════════════════════════════════════
+async function generateReportPPT(evData, from, to, fromStr, toStr){
+  showX('Membuat PowerPoint Report...');
+  await sl(200);
+  try{
+    const pres=new PptxGenJS();pres.layout='LAYOUT_WIDE';
+    const C={navy:'0A1628',navyL:'0F1E35',steel:'1E3A5F',amber:'E8A217',red:'E84040',green:'22C55E',teal:'0EA5E9',white:'FFFFFF',text:'E2E8F0',dim:'94A3B8',muted:'64748B'};
+    const totalFail=evData.filter(e=>e.type==='failure').length;
+    const totDown=evData.reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0);
+    const badActorEqs=equipments.filter(eq=>eq._isBadActor);
+
+    // Cover
+    const s1=pres.addSlide();s1.background={color:C.navy};
+    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.amber},line:{color:C.amber,width:0}});
+    s1.addText('MONTHLY REPORT — BAD ACTOR HISTORY RECORD',{x:.4,y:.25,w:12,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:2,bold:true,margin:0});
+    s1.addText('Monthly Report',{x:.4,y:.65,w:10,h:.9,fontSize:36,fontFace:'Calibri',color:C.text,bold:false,margin:0});
+    s1.addText(`Periode: ${fromStr} — ${toStr}`,{x:.4,y:1.6,w:10,h:.4,fontSize:14,fontFace:'Calibri',color:C.amber,bold:true,margin:0});
+    s1.addText('PT Kilang Pertamina Balikpapan | Technical Support',{x:.4,y:2.1,w:10,h:.3,fontSize:11,fontFace:'Calibri',color:C.dim,margin:0});
+    const kpis=[{v:equipments.length,l:'Total Equipment',c:C.teal},{v:badActorEqs.length,l:'Bad Actor',c:C.red},{v:totalFail+'×',l:'Total Failure',c:C.red},{v:totDown+' Jam',l:'Kumulatif Downtime',c:C.amber},{v:evData.filter(e=>['OPEN','OVERDUE'].includes(e.status)).length,l:'Open Issues',c:C.red}];
+    kpis.forEach((k,i)=>{const bx=.4+i*2.5;s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:2.8,w:2.3,h:1.1,fill:{color:C.navyL},line:{color:C.steel,width:1}});s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:2.8,w:2.3,h:.07,fill:{color:k.c},line:{color:k.c,width:0}});s1.addText(String(k.v),{x:bx,y:2.92,w:2.3,h:.55,fontSize:22,fontFace:'Calibri',color:k.c,bold:true,align:'center',margin:0});s1.addText(k.l,{x:bx,y:3.47,w:2.3,h:.28,fontSize:9,fontFace:'Calibri',color:C.dim,align:'center',margin:0});});
+    s1.addText('Developed by Technical Support | PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
+
+    // Ranking Slide
+    const s2=pres.addSlide();s2.background={color:C.navy};
+    s2.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.amber},line:{color:C.amber,width:0}});
+    s2.addText('BAD ACTOR RANKING',{x:.4,y:.22,w:8,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:2,bold:true,margin:0});
+    s2.addText(`Periode: ${fromStr} — ${toStr}`,{x:.4,y:.52,w:12,h:.35,fontSize:13,fontFace:'Calibri',color:C.text,bold:true,margin:0});
+    const sorted=[...equipments].sort((a,b)=>calcScore(b)-calcScore(a)).slice(0,12);
+    const hdr=[[{text:'#',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'Equipment',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Tag',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Failure',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'Downtime',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'MTBF',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'MTTR',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'Score',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'Status',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}}]];
+    const rows=sorted.map((eq,i)=>{const score=calcScore(eq);const sc=score>50?C.red:score>25?C.amber:'22C55E';return [{text:String(i+1),options:{align:'center',bold:true,color:eq._isBadActor?C.red:C.text}},{text:(eq._isBadActor?'🔴 ':'')+eq.name,options:{bold:eq._isBadActor,color:eq._isBadActor?C.red:C.text}},{text:eq.tag_no,options:{color:C.amber,fontFace:'Courier New'}},{text:eq._failures+'×',options:{align:'center',bold:true,color:eq._failures>0?C.red:C.dim}},{text:eq._downtime+' Jam',options:{align:'center',color:C.amber}},{text:fmtHours(eq._mtbf),options:{align:'center',fontFace:'Courier New'}},{text:fmtHours(eq._mttr),options:{align:'center',fontFace:'Courier New'}},{text:String(score),options:{align:'center',bold:true,color:sc}},{text:statusLabel(eq.status),options:{align:'center',color:eq.status==='active'?C.green:eq.status==='maintenance'?C.red:C.teal}}];});
+    s2.addTable([...hdr,...rows],{x:.4,y:1.0,w:12.5,fontSize:9,fontFace:'Calibri',color:C.text,border:{pt:.5,color:C.steel},fill:{color:C.navyL},rowH:.46,colW:[.5,2.8,1.2,1.0,1.4,1.1,1.1,1.0,1.4]});
+    s2.addText('Developed by Technical Support | PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
+
+    await pres.writeFile({fileName:`BadActor_Report_${from}_to_${to}.pptx`});
+    toast('PowerPoint Report berhasil dibuat! ✓');
+  }catch(err){console.error(err);toast('Error PPT: '+err.message,'error');}
+  hideX();
+}
+
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
 initTheme();
 (async()=>{
+  // Check existing session first (page reload)
   const{data:{session}}=await sb.auth.getSession();
-  if(session?.user)await initApp(session.user);
-  else g('login-screen').style.display='flex';
+  if(session?.user){
+    await initApp(session.user);
+  } else {
+    g('login-screen').style.display='flex';
+    // Only listen for new logins when no existing session
+    sb.auth.onAuthStateChange(async(event, session)=>{
+      if(event==='SIGNED_IN' && session?.user && !currentUser){
+        await initApp(session.user);
+      } else if(event==='SIGNED_OUT'){
+        currentUser=null; currentRole=null;
+        g('topbar').style.display='none';
+        g('view-dashboard').classList.remove('active');
+        g('view-detail').classList.remove('active');
+        g('login-screen').style.display='flex';
+      }
+    });
+  }
 })();
 </script>
 </body>
