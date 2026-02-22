@@ -582,8 +582,7 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 /* Filter chips */
 .filter-row{display:flex;gap:7px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
 .fchip{padding:4px 12px;font-size:10px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--textDim);cursor:pointer;border-radius:20px;font-family:'IBM Plex Sans',sans-serif;transition:all .15s;}
-.fchip:hover,.fchip.active{border-color:var(--amber);color:var(--amber);background:rgba(232,162,23,.08);}
-.fchip-crit{}.fchip-crit.active{border-color:var(--red);color:var(--red);background:rgba(232,64,64,.08);}
+.fchip:hover,.fchip.active{border-color:var(--chip-active-color,var(--amber));color:var(--chip-active-color,var(--amber));background:color-mix(in srgb, var(--chip-active-color,var(--amber)) 10%, transparent);}
 .filter-count{font-size:10px;color:var(--textDim);margin-left:4px;}
 
 /* Equipment grid */
@@ -850,18 +849,18 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 
     <!-- Filters -->
     <div class="filter-row">
-      <span style="font-size:10px;color:var(--textDim);margin-right:4px;">Filter:</span>
+      <span style="font-size:10px;color:var(--textDim);letter-spacing:1px;text-transform:uppercase;margin-right:2px;">Status:</span>
       <button class="fchip active" onclick="setEqFilter('all',this)">Semua</button>
-      <button class="fchip fchip-crit" onclick="setEqFilter('critical',this)">Critical</button>
-      <button class="fchip" onclick="setEqFilter('major',this)">Major</button>
-      <button class="fchip" onclick="setEqFilter('minor',this)">Minor</button>
-      <div class="tsep"></div>
       <button class="fchip" onclick="setEqFilter('active',this)">Active</button>
+      <button class="fchip" onclick="setEqFilter('standby',this)">Standby</button>
       <button class="fchip" onclick="setEqFilter('maintenance',this)">Maintenance</button>
-      <button class="fchip" onclick="setEqFilter('open',this)">Ada Open Issue</button>
       <div class="tsep"></div>
-      <button class="fchip" onclick="expandAllGroups()" title="Buka semua grup">▾ Expand All</button>
-      <button class="fchip" onclick="collapseAllGroups()" title="Tutup semua grup">▸ Collapse All</button>
+      <span style="font-size:10px;color:var(--textDim);letter-spacing:1px;text-transform:uppercase;margin-right:2px;">Level:</span>
+      <button class="fchip" onclick="setEqFilter('critical',this)" style="--chip-active-color:var(--red)">Critical</button>
+      <button class="fchip" onclick="setEqFilter('major',this)">Major</button>
+      <button class="fchip" onclick="setEqFilter('minor',this)" style="--chip-active-color:var(--green)">Minor</button>
+      <div class="tsep"></div>
+      <button class="fchip" onclick="setEqFilter('open',this)" style="--chip-active-color:var(--red)">⚠ Open Issue</button>
       <span class="filter-count" id="eq-filter-count"></span>
     </div>
 
@@ -1242,6 +1241,7 @@ function renderDashboard(){
   else if(eqFilter==='major') filtered=filtered.filter(eq=>eq.criticality==='major');
   else if(eqFilter==='minor') filtered=filtered.filter(eq=>eq.criticality==='minor');
   else if(eqFilter==='active') filtered=filtered.filter(eq=>eq.status==='active');
+  else if(eqFilter==='standby') filtered=filtered.filter(eq=>eq.status==='standby');
   else if(eqFilter==='maintenance') filtered=filtered.filter(eq=>eq.status==='maintenance');
   else if(eqFilter==='open') filtered=filtered.filter(eq=>(eq._open||0)>0);
 
@@ -1328,19 +1328,6 @@ function renderDashboard(){
   });
 }
 
-function expandAllGroups(){
-  collapsedGroups.clear();
-  localStorage.setItem('hr_collapsed_groups','[]');
-  renderDashboard();
-}
-function collapseAllGroups(){
-  equipments.forEach(eq=>{
-    const unit=(eq.unit||'Tanpa Unit').trim();
-    collapsedGroups.add(unit.replace(/\s+/g,'_'));
-  });
-  localStorage.setItem('hr_collapsed_groups',JSON.stringify([...collapsedGroups]));
-  renderDashboard();
-}
 function setEqFilter(f,el){
   eqFilter=f;
   document.querySelectorAll('.filter-row .fchip').forEach(c=>c.classList.remove('active'));
