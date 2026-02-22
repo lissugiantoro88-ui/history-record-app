@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>History Record Spesifik Equipment</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<!-- Supabase CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>/** @license
  *
@@ -479,123 +478,165 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 //# sourceMappingURL=pptxgen.bundle.js.map
 </script>
 <style>
-/* ══════════════════════════════════════
-   THEMES
-══════════════════════════════════════ */
+/* ══ THEMES ══ */
 :root[data-theme="dark"]{
-  --bg:#0A1628; --bg2:#0F1E35; --bg3:#091222;
-  --panel:#0F1E35; --border:#1E3A5F; --borderL:#2A4F7A;
-  --text:#E2E8F0; --textDim:#94A3B8; --muted:#64748B;
-  --inputBg:#091222; --cardBg:#0F1E35;
-  --amber:#E8A217; --amberD:#B87D10;
-  --red:#E84040; --green:#22C55E; --teal:#0EA5E9;
-  --shadow:rgba(0,0,0,.45);
-  --tborder:#E8A217;
+  --bg:#0A1628;--bg2:#0F1E35;--bg3:#091222;--panel:#0F1E35;
+  --border:#1E3A5F;--borderL:#2A4F7A;--text:#E2E8F0;--textDim:#94A3B8;--muted:#64748B;
+  --inputBg:#091222;--cardBg:#0F1E35;--hover:#162035;
+  --amber:#E8A217;--amberD:#B87D10;--red:#E84040;--green:#22C55E;--teal:#0EA5E9;--purple:#7C3AED;
+  --shadow:rgba(0,0,0,.45);--tborder:#E8A217;
   --tline:linear-gradient(to bottom,#E8A217,#1E3A5F 70%,transparent);
 }
 :root[data-theme="light"]{
-  --bg:#F0F4FA; --bg2:#FFFFFF; --bg3:#F8FAFC;
-  --panel:#FFFFFF; --border:#CBD5E1; --borderL:#94A3B8;
-  --text:#1E293B; --textDim:#64748B; --muted:#94A3B8;
-  --inputBg:#F8FAFC; --cardBg:#FFFFFF;
-  --amber:#D97706; --amberD:#B45309;
-  --red:#DC2626; --green:#16A34A; --teal:#0284C7;
-  --shadow:rgba(0,0,0,.1);
-  --tborder:#D97706;
+  --bg:#F0F4FA;--bg2:#FFFFFF;--bg3:#F8FAFC;--panel:#FFFFFF;
+  --border:#CBD5E1;--borderL:#94A3B8;--text:#1E293B;--textDim:#64748B;--muted:#94A3B8;
+  --inputBg:#F8FAFC;--cardBg:#FFFFFF;--hover:#F1F5F9;
+  --amber:#D97706;--amberD:#B45309;--red:#DC2626;--green:#16A34A;--teal:#0284C7;--purple:#7C3AED;
+  --shadow:rgba(0,0,0,.1);--tborder:#D97706;
   --tline:linear-gradient(to bottom,#D97706,#CBD5E1 70%,transparent);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;transition:background .25s,color .25s;}
 
-/* ══════════════════════════════════════
-   LOGIN SCREEN
-══════════════════════════════════════ */
-#login-screen{
-  position:fixed;inset:0;background:var(--bg);z-index:500;
-  display:flex;align-items:center;justify-content:center;
-}
-.login-box{
-  background:var(--panel);border:1px solid var(--border);
-  border-top:3px solid var(--amber);
-  width:400px;padding:36px 32px;
-  box-shadow:0 20px 60px var(--shadow);
-}
+/* ══ LOGIN ══ */
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;align-items:center;justify-content:center;}
+.login-box{background:var(--panel);border:1px solid var(--border);border-top:3px solid var(--amber);width:400px;padding:36px 32px;box-shadow:0 20px 60px var(--shadow);border-radius:4px;}
 .login-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
-.login-icon{width:38px;height:38px;background:var(--amber);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;font-family:'IBM Plex Mono',monospace;flex-shrink:0;}
+.login-icon{width:40px;height:40px;background:var(--amber);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;font-family:'IBM Plex Mono',monospace;flex-shrink:0;border-radius:3px;}
 .login-brand h2{font-size:15px;font-weight:700;color:var(--text);}
-.login-brand p{font-size:10px;color:var(--textDim);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;margin-top:2px;}
-.login-title{font-size:13px;font-weight:600;color:var(--textDim);margin-bottom:20px;text-transform:uppercase;letter-spacing:2px;}
-.lf{margin-bottom:14px;}
+.login-brand p{font-size:9px;color:var(--textDim);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;margin-top:2px;}
+.login-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--textDim);margin-bottom:20px;}
+.lf{margin-bottom:13px;}
 .lf label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);display:block;margin-bottom:4px;}
 .lf input{width:100%;background:var(--inputBg);border:1px solid var(--border);color:var(--text);padding:10px 12px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;outline:none;border-radius:3px;transition:border-color .15s;}
 .lf input:focus{border-color:var(--amber);}
-.login-err{font-size:12px;color:var(--red);margin-bottom:12px;min-height:18px;text-align:center;}
-.login-footer{text-align:center;margin-top:20px;font-size:10px;color:var(--muted);line-height:1.7;}
+.login-err{font-size:12px;color:var(--red);min-height:18px;margin-bottom:10px;text-align:center;}
+.login-foot{text-align:center;margin-top:18px;font-size:10px;color:var(--muted);line-height:1.8;}
 
-/* ══════════════════════════════════════
-   TOPBAR
-══════════════════════════════════════ */
-.topbar{
-  background:var(--panel);border-bottom:2px solid var(--tborder);
-  padding:0 24px;display:flex;align-items:center;justify-content:space-between;
-  height:54px;position:sticky;top:0;z-index:100;
-  box-shadow:0 2px 12px var(--shadow);transition:background .25s;
-}
-.brand{display:flex;align-items:center;gap:11px;}
-.brand-icon{width:30px;height:30px;background:var(--amber);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;font-family:'IBM Plex Mono',monospace;flex-shrink:0;}
-.brand-name{font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.3px;}
-.brand-dev{font-size:9px;color:var(--textDim);font-family:'IBM Plex Mono',monospace;letter-spacing:0.5px;margin-top:1px;}
-.topbar-right{display:flex;gap:8px;align-items:center;}
+/* ══ TOPBAR ══ */
+.topbar{background:var(--panel);border-bottom:2px solid var(--tborder);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px var(--shadow);transition:background .25s;}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.brand:hover .brand-name{color:var(--amber);}
+.brand-icon{width:28px;height:28px;background:var(--amber);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;font-family:'IBM Plex Mono',monospace;border-radius:2px;flex-shrink:0;}
+.brand-name{font-size:13px;font-weight:700;color:var(--text);transition:color .15s;}
+.brand-dev{font-size:9px;color:var(--textDim);font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--textDim);}
+.breadcrumb-sep{color:var(--border);}
+.breadcrumb-cur{color:var(--text);font-weight:600;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.topbar-right{display:flex;gap:7px;align-items:center;}
+.user-chip{display:flex;align-items:center;gap:6px;padding:3px 9px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;}
+.user-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+.ua-a{background:var(--purple);}
+.ua-e{background:var(--teal);}
+.ua-v{background:var(--muted);}
+.user-em{font-size:10px;color:var(--textDim);font-family:'IBM Plex Mono',monospace;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rbadge{font-size:8px;font-weight:700;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:2px;text-transform:uppercase;}
+.rb-a{background:rgba(124,58,237,.15);color:var(--purple);border:1px solid var(--purple);}
+.rb-e{background:rgba(14,165,233,.12);color:var(--teal);border:1px solid var(--teal);}
+.rb-v{background:rgba(100,116,139,.12);color:var(--muted);border:1px solid var(--muted);}
+.conn-row{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--textDim);}
+.conn-dot{width:6px;height:6px;border-radius:50%;}
+.cd-ok{background:var(--green);}
+.cd-sync{background:var(--amber);animation:pulse .8s infinite;}
+.cd-err{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.theme-tog{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px;display:flex;align-items:center;cursor:pointer;width:52px;height:25px;position:relative;}
+.tog-thumb{width:19px;height:19px;border-radius:50%;background:var(--amber);position:absolute;left:3px;transition:left .2s;display:flex;align-items:center;justify-content:center;font-size:10px;}
+[data-theme="light"] .tog-thumb{left:30px;}
 
-/* User chip */
-.user-chip{display:flex;align-items:center;gap:7px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;cursor:default;}
-.user-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
-.ua-admin{background:#7C3AED;}
-.ua-editor{background:var(--teal);}
-.ua-viewer{background:var(--muted);}
-.user-email{font-size:10px;color:var(--textDim);font-family:'IBM Plex Mono',monospace;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.role-badge{font-size:8px;font-weight:700;font-family:'IBM Plex Mono',monospace;padding:1px 5px;border-radius:2px;text-transform:uppercase;}
-.rb-admin{background:rgba(124,58,237,.15);color:#7C3AED;border:1px solid #7C3AED;}
-.rb-editor{background:rgba(14,165,233,.12);color:var(--teal);border:1px solid var(--teal);}
-.rb-viewer{background:rgba(100,116,139,.12);color:var(--muted);border:1px solid var(--muted);}
-
-/* Theme toggle */
-.theme-tog{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px;display:flex;align-items:center;cursor:pointer;width:54px;height:26px;position:relative;transition:background .2s;}
-.tog-thumb{width:20px;height:20px;border-radius:50%;background:var(--amber);position:absolute;left:3px;transition:left .2s;display:flex;align-items:center;justify-content:center;font-size:11px;}
-[data-theme="light"] .tog-thumb{left:31px;}
-
-/* ══════════════════════════════════════
-   BUTTONS
-══════════════════════════════════════ */
-.btn{padding:6px 13px;font-size:11px;font-family:'IBM Plex Sans',sans-serif;font-weight:600;border:none;cursor:pointer;border-radius:3px;letter-spacing:.5px;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+/* ══ BUTTONS ══ */
+.btn{padding:6px 13px;font-size:11px;font-family:'IBM Plex Sans',sans-serif;font-weight:600;border:none;cursor:pointer;border-radius:3px;letter-spacing:.4px;transition:all .15s;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
 .btn:disabled{opacity:.4;cursor:not-allowed;}
 .btn-amber{background:var(--amber);color:#fff;}.btn-amber:hover:not(:disabled){background:var(--amberD);}
 .btn-outline{background:transparent;color:var(--textDim);border:1px solid var(--border);}.btn-outline:hover:not(:disabled){border-color:var(--amber);color:var(--amber);}
 .btn-red{background:var(--red);color:#fff;}.btn-red:hover:not(:disabled){filter:brightness(.88);}
 .btn-teal{background:var(--teal);color:#fff;}.btn-teal:hover:not(:disabled){filter:brightness(.88);}
 .btn-ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border);}.btn-ghost:hover:not(:disabled){border-color:var(--borderL);}
+.btn-green{background:var(--green);color:#fff;}.btn-green:hover:not(:disabled){filter:brightness(.88);}
 .btn-sm{padding:4px 9px;font-size:10px;}
+.btn-xs{padding:2px 7px;font-size:9px;}
 
-/* ══════════════════════════════════════
-   LAYOUT
-══════════════════════════════════════ */
-.layout{display:grid;grid-template-columns:365px 1fr;min-height:calc(100vh - 54px);}
+/* ══ VIEWS ══ */
+#view-dashboard,#view-detail{display:none;}
+#view-dashboard.active,#view-detail.active{display:block;}
 
-/* ══════════════════════════════════════
-   SIDEBAR
-══════════════════════════════════════ */
-.sidebar{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;height:calc(100vh - 54px);position:sticky;top:54px;overflow:hidden;transition:background .25s;}
-.sb-head{padding:14px 17px 11px;border-bottom:1px solid var(--border);flex-shrink:0;}
+/* ══ DASHBOARD ══ */
+.dash-wrap{max-width:1400px;margin:0 auto;padding:24px 28px;}
+.dash-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.dash-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);font-weight:600;}
+.dash-subtitle{font-size:22px;font-weight:700;color:var(--text);margin-top:3px;}
+.dash-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.search-box{position:relative;}
+.search-box input{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 12px 7px 32px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;border-radius:3px;outline:none;width:220px;transition:border-color .15s;}
+.search-box input:focus{border-color:var(--amber);}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--textDim);}
+
+/* Summary stats */
+.dash-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+.ds-box{background:var(--panel);border:1px solid var(--border);padding:12px 16px;border-radius:4px;text-align:center;border-top:3px solid;}
+.ds-val{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
+.ds-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);margin-top:3px;}
+
+/* Filter chips */
+.filter-row{display:flex;gap:7px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+.fchip{padding:4px 12px;font-size:10px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--textDim);cursor:pointer;border-radius:20px;font-family:'IBM Plex Sans',sans-serif;transition:all .15s;}
+.fchip:hover,.fchip.active{border-color:var(--amber);color:var(--amber);background:rgba(232,162,23,.08);}
+.fchip-crit{}.fchip-crit.active{border-color:var(--red);color:var(--red);background:rgba(232,64,64,.08);}
+.filter-count{font-size:10px;color:var(--textDim);margin-left:4px;}
+
+/* Equipment grid */
+.eq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+.eq-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;position:relative;overflow:hidden;}
+.eq-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--shadow);border-color:var(--borderL);}
+.eq-card-top{height:4px;}
+.crit-critical{background:var(--red);}
+.crit-major{background:var(--amber);}
+.crit-minor{background:var(--green);}
+.crit-unknown{background:var(--muted);}
+.eq-card-body{padding:14px 16px;}
+.eq-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.eq-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber);font-weight:600;letter-spacing:1px;background:rgba(232,162,23,.08);border:1px solid rgba(232,162,23,.2);padding:2px 7px;border-radius:2px;}
+.eq-status-badge{font-size:8px;font-weight:600;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:2px;border:1px solid;text-transform:uppercase;}
+.es-active{background:rgba(34,197,94,.1);color:var(--green);border-color:var(--green);}
+.es-standby{background:rgba(14,165,233,.1);color:var(--teal);border-color:var(--teal);}
+.es-maintenance{background:rgba(232,64,64,.1);color:var(--red);border-color:var(--red);}
+.eq-name{font-size:15px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:4px;}
+.eq-unit{font-size:11px;color:var(--textDim);margin-bottom:10px;}
+.eq-meta-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.eq-meta-item .emi-k{font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);margin-bottom:1px;}
+.eq-meta-item .emi-v{font-size:11px;font-weight:500;color:var(--text);}
+.eq-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);}
+.eq-stats-row{display:flex;gap:10px;}
+.eq-stat{text-align:center;}
+.eq-stat-val{font-size:14px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
+.eq-stat-lbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--textDim);margin-top:1px;}
+.eq-open-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:2px;background:rgba(232,64,64,.15);color:var(--red);border:1px solid rgba(232,64,64,.3);}
+.eq-open-none{font-size:9px;color:var(--green);}
+.eq-card-actions{position:absolute;top:10px;right:10px;display:none;gap:4px;}
+.eq-card:hover .eq-card-actions{display:flex;}
+
+/* Empty dashboard */
+.dash-empty{text-align:center;padding:70px 40px;color:var(--textDim);}
+.dash-empty .ei{font-size:48px;margin-bottom:16px;opacity:.3;}
+.dash-empty h3{font-size:18px;color:var(--text);margin-bottom:8px;}
+.dash-empty p{font-size:13px;line-height:1.7;}
+
+/* ══ DETAIL VIEW ══ */
+.detail-wrap{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 52px);}
+
+/* Sidebar */
+.sidebar{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;height:calc(100vh - 52px);position:sticky;top:52px;overflow:hidden;transition:background .25s;}
+.sb-head{padding:14px 16px 11px;border-bottom:1px solid var(--border);flex-shrink:0;}
 .sb-title{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);font-weight:600;margin-bottom:3px;}
 .sb-sub{font-size:11px;color:var(--textDim);}
-
-.sb-meta{padding:12px 17px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.sb-meta-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--textDim);margin-bottom:8px;}
-.meta-grid{display:grid;gap:7px;}
-
-.sb-form{flex:1;overflow-y:auto;padding:13px 17px;}
+.sb-eq-info{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sei-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.sei-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);}
+.sei-badges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.sb-form{flex:1;overflow-y:auto;padding:13px 16px;}
 .sb-form::-webkit-scrollbar{width:4px;}
 .sb-form::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.sb-foot{padding:11px 16px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:7px;}
 
 .fsect{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin:4px 0 9px;display:flex;align-items:center;gap:8px;}
 .fsect::after{content:'';flex:1;height:1px;background:var(--border);}
@@ -607,25 +648,19 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .fg textarea{resize:vertical;min-height:56px;line-height:1.5;}
 .fg select option{background:var(--panel);color:var(--text);}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.readonly-notice{background:rgba(232,162,23,.08);border:1px solid rgba(232,162,23,.25);border-radius:3px;padding:7px 11px;margin-bottom:10px;font-size:11px;color:var(--amber);}
 
-.sb-foot{padding:11px 17px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:7px;}
-
-/* ══════════════════════════════════════
-   MAIN
-══════════════════════════════════════ */
+/* Main area */
 .main{display:flex;flex-direction:column;overflow:hidden;}
-
 .stats-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
 .stat-box{background:var(--panel);padding:10px 12px;text-align:center;transition:background .25s;}
-.stat-val{font-size:19px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
+.stat-val{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
 .stat-lbl{font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);margin-top:2px;}
 .c-red{color:var(--red);}.c-amber{color:var(--amber);}.c-green{color:var(--green);}.c-teal{color:var(--teal);}
 
-.toolbar{padding:9px 22px;display:flex;gap:7px;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;transition:background .25s;}
+.toolbar{padding:9px 22px;display:flex;gap:7px;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
 .tsep{width:1px;height:20px;background:var(--border);margin:0 3px;}
-.fchip{padding:3px 11px;font-size:10px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--textDim);cursor:pointer;border-radius:20px;font-family:'IBM Plex Sans',sans-serif;transition:all .15s;}
-.fchip:hover,.fchip.active{border-color:var(--amber);color:var(--amber);background:rgba(232,162,23,.08);}
-.legend{display:flex;gap:13px;align-items:center;flex-wrap:wrap;}
+.legend{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 .lg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--textDim);}
 .lg-dot{width:8px;height:8px;border-radius:50%;border:2px solid;flex-shrink:0;}
 .ld-f{border-color:var(--red);background:rgba(232,64,64,.15);}
@@ -633,46 +668,32 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .ld-r{border-color:var(--amber);background:rgba(232,162,23,.15);}
 .ld-s{border-color:var(--green);background:rgba(34,197,94,.15);}
 
-/* Connection status */
-.conn-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.conn-ok{background:var(--green);}
-.conn-err{background:var(--red);}
-.conn-sync{background:var(--amber);animation:pulse .8s infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-
 .tl-area{flex:1;overflow-y:auto;padding:22px 26px;}
 .tl-area::-webkit-scrollbar{width:5px;}
 .tl-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-/* ══════════════════════════════════════
-   TIMELINE
-══════════════════════════════════════ */
+/* Timeline */
 .timeline{position:relative;}
-.timeline::before{content:'';position:absolute;left:132px;top:0;bottom:0;width:2px;background:var(--tline);}
-.tl-entry{display:flex;margin-bottom:19px;animation:fadeUp .3s ease both;}
-.tl-entry.hidden{display:none;}
+.timeline::before{content:'';position:absolute;left:128px;top:0;bottom:0;width:2px;background:var(--tline);}
+.tl-entry{display:flex;margin-bottom:18px;animation:fadeUp .3s ease both;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-.tl-date{width:116px;flex-shrink:0;padding-right:17px;text-align:right;padding-top:12px;}
-.tl-day{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text);line-height:1;}
-.tl-mon{font-size:10px;color:var(--textDim);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
-.tl-time{font-size:10px;color:var(--amber);font-family:'IBM Plex Mono',monospace;margin-top:2px;font-weight:500;}
-
-.tl-node{width:34px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:12px;}
+.tl-date{width:112px;flex-shrink:0;padding-right:16px;text-align:right;padding-top:11px;}
+.tl-day{font-size:17px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text);line-height:1;}
+.tl-mon{font-size:10px;color:var(--textDim);font-family:'IBM Plex Mono',monospace;}
+.tl-time{font-size:10px;color:var(--amber);font-family:'IBM Plex Mono',monospace;font-weight:500;margin-top:2px;}
+.tl-node{width:32px;flex-shrink:0;display:flex;align-items:center;padding-top:11px;justify-content:center;}
 .tl-dot{width:16px;height:16px;border-radius:50%;border:2px solid;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;z-index:1;position:relative;}
 .dot-f{border-color:var(--red);color:var(--red);}
 .dot-a{border-color:var(--teal);color:var(--teal);}
 .dot-r{border-color:var(--amber);color:var(--amber);}
 .dot-s{border-color:var(--green);color:var(--green);}
-
-.tl-card{flex:1;margin-left:15px;background:var(--cardBg);border:1px solid var(--border);border-left:4px solid;padding:12px 14px;position:relative;transition:transform .15s,box-shadow .15s,background .25s;border-radius:0 4px 4px 0;}
-.tl-card:hover{transform:translateX(3px);box-shadow:-3px 0 16px var(--shadow);}
-.c-card-f{border-left-color:var(--red);}
-.c-card-a{border-left-color:var(--teal);}
-.c-card-r{border-left-color:var(--amber);}
-.c-card-s{border-left-color:var(--green);}
-
-.ct{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px;gap:8px;}
+.tl-card{flex:1;margin-left:14px;background:var(--cardBg);border:1px solid var(--border);border-left:4px solid;padding:12px 14px;position:relative;transition:transform .15s,box-shadow .15s,background .25s;border-radius:0 4px 4px 0;}
+.tl-card:hover{transform:translateX(3px);box-shadow:-3px 0 14px var(--shadow);}
+.cc-f{border-left-color:var(--red);}
+.cc-a{border-left-color:var(--teal);}
+.cc-r{border-left-color:var(--amber);}
+.cc-s{border-left-color:var(--green);}
+.ct{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;}
 .ct-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.4;flex:1;}
 .ct-right{display:flex;gap:5px;align-items:center;flex-shrink:0;}
 .tbadge{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 6px;border-radius:2px;border:1px solid;}
@@ -680,84 +701,64 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .tb-a{background:rgba(14,165,233,.1);color:var(--teal);border-color:var(--teal);}
 .tb-r{background:rgba(232,162,23,.1);color:var(--amber);border-color:var(--amber);}
 .tb-s{background:rgba(34,197,94,.1);color:var(--green);border-color:var(--green);}
-
-.ci-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px;}
+.ci-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:8px;}
 .ci-k{font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);margin-bottom:2px;}
 .ci-v{font-size:11px;font-weight:500;line-height:1.4;color:var(--text);}
-.ci-v.vr{color:var(--red);}.ci-v.va{color:var(--amber);}.ci-v.vg{color:var(--green);}.ci-v.vi{color:var(--teal);}
-
+.ci-v.vr{color:var(--red);}.ci-v.va{color:var(--amber);}.ci-v.vi{color:var(--teal);}
 .cdiv{height:1px;background:var(--border);margin:7px 0;}
 .clbl{font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);margin-bottom:4px;}
 .ctext{font-size:11px;color:var(--text);line-height:1.6;}
 .act-item{display:flex;gap:6px;margin-bottom:3px;font-size:11px;color:var(--text);line-height:1.5;align-items:flex-start;}
 .act-item::before{content:'→';color:var(--amber);flex-shrink:0;font-size:10px;}
-
 .c-out{background:rgba(220,38,38,.06);border:1px solid rgba(220,38,38,.22);border-radius:3px;padding:7px 10px;margin-top:8px;}
 .co-k{font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:var(--red);margin-bottom:4px;}
 .co-item{font-size:11px;line-height:1.5;margin-bottom:3px;padding-left:13px;position:relative;color:var(--text);}
 .co-item::before{content:'!';position:absolute;left:0;color:var(--red);font-weight:700;font-size:10px;}
-
 .c-foot{display:flex;flex-wrap:wrap;gap:13px;margin-top:8px;padding-top:7px;border-top:1px solid var(--border);}
 .cf-k{font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);margin-bottom:1px;}
 .cf-v{font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:500;color:var(--text);}
 .cf-r{color:var(--red);}.cf-g{color:var(--green);}.cf-a{color:var(--amber);}.cf-t{color:var(--teal);}
-
-/* Modified by */
-.c-meta-row{display:flex;justify-content:flex-end;margin-top:6px;}
-.c-modified{font-size:9px;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
-
+.c-modified{font-size:9px;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-align:right;margin-top:5px;}
 .f-pill{position:absolute;top:-9px;right:12px;background:var(--red);color:#fff;font-size:9px;font-weight:700;font-family:'IBM Plex Mono',monospace;padding:1px 8px;border-radius:2px;letter-spacing:1px;}
 
-/* ══════════════════════════════════════
-   EMPTY / LOADING
-══════════════════════════════════════ */
-.empty{text-align:center;padding:60px 40px;color:var(--textDim);}
-.empty .ei{font-size:42px;margin-bottom:12px;opacity:.35;}
-.empty h3{font-size:15px;color:var(--text);margin-bottom:6px;}
+/* Empty/loading */
+.empty{text-align:center;padding:50px 30px;color:var(--textDim);}
+.empty .ei{font-size:40px;margin-bottom:12px;opacity:.3;}
+.empty h3{font-size:14px;color:var(--text);margin-bottom:6px;}
 .empty p{font-size:12px;line-height:1.7;}
+.no-res{text-align:center;padding:28px;font-size:13px;color:var(--textDim);}
 .loading-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:40px;color:var(--textDim);font-size:13px;}
-.load-spin{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;}
+.lspin{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ══════════════════════════════════════
-   MODAL
-══════════════════════════════════════ */
+/* ══ MODAL ══ */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
 .overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--panel);border:1px solid var(--border);border-top:3px solid var(--amber);width:440px;display:flex;flex-direction:column;border-radius:4px;transform:translateY(-14px);transition:transform .2s;max-height:85vh;}
+.modal{background:var(--panel);border:1px solid var(--border);border-top:3px solid var(--amber);display:flex;flex-direction:column;border-radius:4px;transform:translateY(-14px);transition:transform .2s;max-height:90vh;width:480px;}
 .overlay.open .modal{transform:translateY(0);}
-.mh{padding:13px 17px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.mh{padding:13px 17px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
 .mh-title{font-size:14px;font-weight:600;}
-.mclose{background:none;border:none;color:var(--textDim);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;transition:color .15s;}
+.mclose{background:none;border:none;color:var(--textDim);cursor:pointer;font-size:18px;padding:2px 6px;transition:color .15s;}
 .mclose:hover{color:var(--red);}
-.mb{padding:14px 17px;overflow-y:auto;}
-.mf{padding:10px 17px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;}
+.mb{padding:14px 17px;overflow-y:auto;flex:1;}
+.mf{padding:10px 17px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;}
 
-/* ══════════════════════════════════════
-   TOAST
-══════════════════════════════════════ */
+/* ══ TOAST + EXPORT ══ */
 .tc{position:fixed;bottom:18px;right:18px;z-index:999;display:flex;flex-direction:column;gap:7px;}
 .toast{background:var(--panel);border:1px solid var(--border);padding:9px 14px;border-radius:3px;font-size:12px;color:var(--text);animation:toastIn .3s ease;min-width:230px;display:flex;gap:7px;align-items:center;box-shadow:0 4px 16px var(--shadow);}
 .t-ok{border-left:4px solid var(--green);}
 .t-err{border-left:4px solid var(--red);}
 .t-warn{border-left:4px solid var(--amber);}
 @keyframes toastIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
-
-/* Export overlay */
 .xov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;pointer-events:none;transition:opacity .2s;}
 .xov.open{opacity:1;pointer-events:all;}
 .xspin{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;}
 .xmsg{font-size:14px;color:var(--text);}
-
-/* Readonly notice */
-.readonly-notice{background:rgba(232,162,23,.08);border:1px solid rgba(232,162,23,.25);border-radius:3px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--amber);display:none;}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════
-     LOGIN SCREEN
-══════════════════════════════════════ -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">
@@ -767,510 +768,696 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
         <p>TECHNICAL SUPPORT — KPB</p>
       </div>
     </div>
-    <div class="login-title">Sign In</div>
-    <div class="lf"><label>Email</label><input type="email" id="l-email" placeholder="name@company.com" autocomplete="email"></div>
+    <div class="login-sub">Sign In to Continue</div>
+    <div class="lf"><label>Email</label><input type="email" id="l-email" placeholder="nama@pertamina.com" autocomplete="email"></div>
     <div class="lf"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div class="login-err" id="l-err"></div>
     <button class="btn btn-amber" style="width:100%;justify-content:center;padding:11px;" onclick="doLogin()" id="l-btn">Sign In</button>
-    <div class="login-footer">
+    <div class="login-foot">
       Developed by <strong>Technical Support Team</strong><br>
       PT Kilang Pertamina Balikpapan
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     TOPBAR
-══════════════════════════════════════ -->
-<div class="topbar" id="main-app" style="display:none">
-  <div class="brand">
-    <div class="brand-icon">HR</div>
-    <div>
-      <div class="brand-name">History Record Spesifik Equipment</div>
-      <div class="brand-dev">Developed by Technical Support — PT Kilang Pertamina Balikpapan</div>
+<!-- TOPBAR -->
+<div class="topbar" id="topbar" style="display:none">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div class="brand" onclick="goHome()">
+      <div class="brand-icon">HR</div>
+      <div>
+        <div class="brand-name">History Record Equipment</div>
+        <div class="brand-dev">Developed by Technical Support — PT KPB</div>
+      </div>
+    </div>
+    <div class="breadcrumb" id="breadcrumb" style="display:none">
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-cur" id="bc-text"></span>
     </div>
   </div>
   <div class="topbar-right">
-    <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--textDim);" id="conn-status">
-      <div class="conn-dot conn-sync" id="conn-dot"></div>
-      <span id="conn-lbl">Connecting...</span>
+    <div class="conn-row"><div class="conn-dot cd-sync" id="conn-dot"></div><span id="conn-lbl" style="font-size:10px;color:var(--textDim);">Connecting...</span></div>
+    <div class="tsep" style="width:1px;height:20px;background:var(--border);margin:0 2px;"></div>
+    <div class="user-chip">
+      <div class="user-av" id="user-av">?</div>
+      <span class="user-em" id="user-em">—</span>
+      <span class="rbadge" id="role-badge">—</span>
     </div>
-    <div class="tsep" style="height:22px;width:1px;background:var(--border);margin:0 4px;"></div>
-    <div class="user-chip" id="user-chip">
-      <div class="user-avatar" id="user-avatar">?</div>
-      <span class="user-email" id="user-email">—</span>
-      <span class="role-badge" id="role-badge">—</span>
-    </div>
-    <div class="theme-tog" onclick="toggleTheme()" title="Ganti tema">
-      <div class="tog-thumb" id="tog-thumb"><span id="tog-icon">🌙</span></div>
-    </div>
-    <button class="btn btn-teal btn-sm" onclick="exportPDF()" id="btn-pdf">📄 PDF</button>
-    <button class="btn btn-amber btn-sm" onclick="exportPPT()" id="btn-ppt">📊 PPT</button>
+    <div class="theme-tog" onclick="toggleTheme()"><div class="tog-thumb"><span id="tog-icon">🌙</span></div></div>
+    <button class="btn btn-teal btn-sm" onclick="exportPDF()" id="btn-pdf" style="display:none">📄 PDF</button>
+    <button class="btn btn-amber btn-sm" onclick="exportPPT()" id="btn-ppt" style="display:none">📊 PPT</button>
     <button class="btn btn-outline btn-sm" onclick="doLogout()">Sign Out</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════
-     APP LAYOUT
-══════════════════════════════════════ -->
-<div class="layout" id="app-layout" style="display:none">
-  <div class="sidebar">
-    <div class="sb-head">
-      <div class="sb-title">Form Input Event</div>
-      <div class="sb-sub" id="form-lbl">Tambah event baru ke timeline</div>
-    </div>
-    <div class="sb-meta">
-      <div class="sb-meta-lbl">Informasi Dokumen</div>
-      <div class="meta-grid">
-        <div class="fg"><label>Nama Equipment</label><input id="m-eq" placeholder="Air Compressor K1C" oninput="saveMeta()"></div>
-        <div class="fg"><label>No. Dokumen</label><input id="m-doc" placeholder="KPB-RFCC-EQ-2025-047" oninput="saveMeta()"></div>
-        <div class="fg"><label>Unit / Lokasi</label><input id="m-unit" placeholder="RFCC — Utilities Section" oninput="saveMeta()"></div>
-        <div class="fg"><label>Prepared By</label><input id="m-by" placeholder="Technical Support Team" oninput="saveMeta()"></div>
+<!-- DASHBOARD VIEW -->
+<div id="view-dashboard">
+  <div class="dash-wrap">
+    <div class="dash-top">
+      <div>
+        <div class="dash-title">Equipment Management</div>
+        <div class="dash-subtitle">History Record Spesifik Equipment</div>
       </div>
-    </div>
-    <div class="sb-form">
-      <div class="readonly-notice" id="readonly-notice">⚠ Anda login sebagai <strong>Viewer</strong> — hanya dapat melihat data.</div>
-      <div class="fsect">Detail Event</div>
-      <div class="frow">
-        <div class="fg"><label>Tanggal *</label><input type="date" id="f-date"></div>
-        <div class="fg"><label>Waktu</label><input type="time" id="f-time"></div>
-      </div>
-      <div class="fg"><label>Tipe Event *</label>
-        <select id="f-type" onchange="onTypeChange()">
-          <option value="failure">🔴 Failure / Trip</option>
-          <option value="action">🔵 Action / Investigasi</option>
-          <option value="repair">🟡 Repair / Perbaikan</option>
-          <option value="resolved">🟢 Resolved / Selesai</option>
-        </select>
-      </div>
-      <div class="fg"><label>Judul / Deskripsi *</label><input id="f-title" placeholder="cth: Sudden Trip — Vibration HH"></div>
-      <div id="f-fail-block">
-        <div class="fsect">Detail Failure</div>
-        <div class="fg"><label>Failure Mode</label><input id="f-mode" placeholder="cth: Failed to Start, Sudden Trip"></div>
-        <div class="fg"><label>Root Cause</label><input id="f-cause" placeholder="cth: Low Lube Oil Pressure"></div>
-        <div class="frow">
-          <div class="fg"><label>Downtime (jam)</label><input id="f-down" type="number" min="0" placeholder="48"></div>
-          <div class="fg"><label>Failure ke-</label><input id="f-fno" type="number" min="1" placeholder="1"></div>
+      <div class="dash-controls">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="eq-search" placeholder="Cari nama / tag no..." oninput="renderDashboard()">
         </div>
-        <div class="fg"><label>Dampak Operasional</label><textarea id="f-impact" placeholder="Dampak terhadap operasi / produksi..."></textarea></div>
+        <button class="btn btn-amber" onclick="openAddEquipment()" id="btn-add-eq">＋ Tambah Equipment</button>
       </div>
-      <div class="fsect">Action & Outstanding</div>
-      <div class="fg"><label>Action yang Sudah Dilakukan</label><textarea id="f-act" placeholder="Pisahkan tiap baris dengan Enter&#10;cth:&#10;Isolasi unit dan koordinasi vendor&#10;Penggantian bearing dari warehouse"></textarea></div>
-      <div class="fg"><label>Outstanding / Remaining Work</label><textarea id="f-out" placeholder="Pekerjaan yang belum selesai (pisah per baris)"></textarea></div>
-      <div class="fsect">PIC & Target</div>
-      <div class="fg"><label>PIC</label><input id="f-pic" placeholder="cth: Ir. Hendra / Vendor Rep"></div>
-      <div class="frow">
-        <div class="fg"><label>Target Selesai</label><input type="date" id="f-tgt"></div>
-        <div class="fg"><label>No. Work Order</label><input id="f-wo" placeholder="WO-KPB-2025-xxx"></div>
-      </div>
-      <div class="fg"><label>Status</label>
-        <select id="f-status">
-          <option value="OPEN">OPEN</option>
-          <option value="ON PROGRESS">ON PROGRESS</option>
-          <option value="PARTIAL">PARTIALLY CLOSED</option>
-          <option value="CLOSED">CLOSED</option>
-          <option value="OVERDUE">OVERDUE</option>
-          <option value="DRAFT">DRAFT</option>
-        </select>
-      </div>
-      <div class="fg"><label>Referensi / No. Surat</label><input id="f-ref" placeholder="KPB/TS/IV/2025/089"></div>
     </div>
-    <div class="sb-foot">
-      <div style="display:flex;gap:7px;">
-        <button class="btn btn-amber" style="flex:1;justify-content:center;" onclick="submitForm()" id="btn-submit">
-          <span id="fs-icon">＋</span><span id="fs-lbl">Tambah Event</span>
-        </button>
-        <button class="btn btn-outline" onclick="resetForm()" title="Reset form">✕</button>
-      </div>
+
+    <!-- Summary Stats -->
+    <div class="dash-stats">
+      <div class="ds-box" style="border-top-color:var(--text)"><div class="ds-val" id="ds-total" style="color:var(--text)">0</div><div class="ds-lbl">Total Equipment</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-crit">0</div><div class="ds-lbl">Critical</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-failures">0</div><div class="ds-lbl">Total Failure</div></div>
+      <div class="ds-box" style="border-top-color:var(--amber)"><div class="ds-val c-amber" id="ds-open">0</div><div class="ds-lbl">Status Open</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-maintenance">0</div><div class="ds-lbl">Under Maintenance</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-row">
+      <span style="font-size:10px;color:var(--textDim);margin-right:4px;">Filter:</span>
+      <button class="fchip active" onclick="setEqFilter('all',this)">Semua</button>
+      <button class="fchip fchip-crit" onclick="setEqFilter('critical',this)">Critical</button>
+      <button class="fchip" onclick="setEqFilter('major',this)">Major</button>
+      <button class="fchip" onclick="setEqFilter('minor',this)">Minor</button>
+      <div class="tsep"></div>
+      <button class="fchip" onclick="setEqFilter('active',this)">Active</button>
+      <button class="fchip" onclick="setEqFilter('maintenance',this)">Under Maintenance</button>
+      <button class="fchip" onclick="setEqFilter('open',this)">Ada Open Issue</button>
+      <span class="filter-count" id="eq-filter-count"></span>
+    </div>
+
+    <!-- Grid -->
+    <div id="eq-grid" class="eq-grid">
+      <div class="loading-row" id="dash-loading"><div class="lspin"></div>Memuat equipment...</div>
     </div>
   </div>
+</div>
 
-  <div class="main">
-    <div class="stats-strip">
-      <div class="stat-box"><div class="stat-val c-red" id="st-f">0×</div><div class="stat-lbl">Total Failure</div></div>
-      <div class="stat-box"><div class="stat-val c-amber" id="st-d">—</div><div class="stat-lbl">Total Downtime</div></div>
-      <div class="stat-box"><div class="stat-val c-red" id="st-o">0</div><div class="stat-lbl">Status Open</div></div>
-      <div class="stat-box"><div class="stat-val c-amber" id="st-ot">0</div><div class="stat-lbl">Outstanding</div></div>
-      <div class="stat-box"><div class="stat-val c-teal" id="st-t">0</div><div class="stat-lbl">Total Events</div></div>
-    </div>
-    <div class="toolbar">
-      <div class="legend">
-        <div class="lg-item"><div class="lg-dot ld-f"></div>Failure</div>
-        <div class="lg-item"><div class="lg-dot ld-a"></div>Action</div>
-        <div class="lg-item"><div class="lg-dot ld-r"></div>Repair</div>
-        <div class="lg-item"><div class="lg-dot ld-s"></div>Resolved</div>
+<!-- DETAIL VIEW -->
+<div id="view-detail">
+  <div class="detail-wrap">
+    <!-- Sidebar Form -->
+    <div class="sidebar">
+      <div class="sb-head">
+        <div class="sb-title">Form Input Event</div>
+        <div class="sb-sub" id="form-lbl">Tambah event baru</div>
       </div>
-      <div class="tsep"></div>
-      <button class="fchip active" onclick="doFilter('all',this)">Semua</button>
-      <button class="fchip" onclick="doFilter('failure',this)">Failure</button>
-      <button class="fchip" onclick="doFilter('action',this)">Action</button>
-      <button class="fchip" onclick="doFilter('repair',this)">Repair</button>
-      <button class="fchip" onclick="doFilter('resolved',this)">Resolved</button>
-      <div class="tsep"></div>
-      <span style="font-size:10px;color:var(--textDim);" id="fc-lbl"></span>
+      <div class="sb-eq-info" id="sb-eq-info">
+        <div class="sei-name" id="sei-name">—</div>
+        <div class="sei-tag" id="sei-tag">TAG: —</div>
+        <div class="sei-badges" id="sei-badges"></div>
+      </div>
+      <div class="sb-form">
+        <div class="readonly-notice" id="readonly-notice" style="display:none">⚠ Viewer — hanya dapat melihat data.</div>
+        <div class="fsect">Detail Event</div>
+        <div class="frow">
+          <div class="fg"><label>Tanggal *</label><input type="date" id="f-date"></div>
+          <div class="fg"><label>Waktu</label><input type="time" id="f-time"></div>
+        </div>
+        <div class="fg"><label>Tipe Event *</label>
+          <select id="f-type" onchange="onTypeChange()">
+            <option value="failure">🔴 Failure / Trip</option>
+            <option value="action">🔵 Action / Investigasi</option>
+            <option value="repair">🟡 Repair / Perbaikan</option>
+            <option value="resolved">🟢 Resolved / Selesai</option>
+          </select>
+        </div>
+        <div class="fg"><label>Judul / Deskripsi *</label><input id="f-title" placeholder="cth: Sudden Trip — Vibration HH"></div>
+        <div id="f-fail-block">
+          <div class="fsect">Detail Failure</div>
+          <div class="fg"><label>Failure Mode</label><input id="f-mode" placeholder="cth: Failed to Start, Sudden Trip"></div>
+          <div class="fg"><label>Root Cause</label><input id="f-cause" placeholder="cth: Low Lube Oil Pressure"></div>
+          <div class="frow">
+            <div class="fg"><label>Downtime (jam)</label><input id="f-down" type="number" min="0" placeholder="48"></div>
+            <div class="fg"><label>Failure ke-</label><input id="f-fno" type="number" min="1" placeholder="1"></div>
+          </div>
+          <div class="fg"><label>Dampak Operasional</label><textarea id="f-impact" placeholder="Dampak terhadap operasi / produksi..."></textarea></div>
+        </div>
+        <div class="fsect">Action & Outstanding</div>
+        <div class="fg"><label>Action yang Sudah Dilakukan</label><textarea id="f-act" placeholder="Pisahkan tiap baris dengan Enter&#10;cth:&#10;Isolasi unit dan koordinasi vendor&#10;Penggantian bearing dari warehouse"></textarea></div>
+        <div class="fg"><label>Outstanding / Remaining Work</label><textarea id="f-out" placeholder="Pekerjaan yang belum selesai (pisah per baris)"></textarea></div>
+        <div class="fsect">PIC & Target</div>
+        <div class="fg"><label>PIC</label><input id="f-pic" placeholder="cth: Ir. Hendra / Vendor Rep"></div>
+        <div class="frow">
+          <div class="fg"><label>Target Selesai</label><input type="date" id="f-tgt"></div>
+          <div class="fg"><label>No. Work Order</label><input id="f-wo" placeholder="WO-KPB-2025-xxx"></div>
+        </div>
+        <div class="fg"><label>Status</label>
+          <select id="f-status">
+            <option value="OPEN">OPEN</option>
+            <option value="ON PROGRESS">ON PROGRESS</option>
+            <option value="PARTIAL">PARTIALLY CLOSED</option>
+            <option value="CLOSED">CLOSED</option>
+            <option value="OVERDUE">OVERDUE</option>
+            <option value="DRAFT">DRAFT</option>
+          </select>
+        </div>
+        <div class="fg"><label>Referensi / No. Surat</label><input id="f-ref" placeholder="KPB/TS/IV/2025/089"></div>
+      </div>
+      <div class="sb-foot">
+        <div style="display:flex;gap:7px;">
+          <button class="btn btn-amber" style="flex:1;justify-content:center;" onclick="submitForm()" id="btn-submit">
+            <span id="fs-icon">＋</span><span id="fs-lbl">Tambah Event</span>
+          </button>
+          <button class="btn btn-outline" onclick="resetForm()">✕</button>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="goHome()" style="justify-content:center;">← Kembali ke Dashboard</button>
+      </div>
     </div>
-    <div class="tl-area">
-      <div class="timeline" id="tl-wrap">
-        <div class="loading-row" id="loading-row"><div class="load-spin"></div>Memuat data...</div>
-        <div class="empty" id="empty-state" style="display:none">
-          <div class="ei">📋</div>
-          <h3>Belum Ada Event</h3>
-          <p>Gunakan form di sebelah kiri untuk menambahkan event kronologis.</p>
+
+    <!-- Main Content -->
+    <div class="main">
+      <div class="stats-strip">
+        <div class="stat-box"><div class="stat-val c-red" id="st-f">0×</div><div class="stat-lbl">Total Failure</div></div>
+        <div class="stat-box"><div class="stat-val c-amber" id="st-d">—</div><div class="stat-lbl">Total Downtime</div></div>
+        <div class="stat-box"><div class="stat-val c-red" id="st-o">0</div><div class="stat-lbl">Status Open</div></div>
+        <div class="stat-box"><div class="stat-val c-amber" id="st-ot">0</div><div class="stat-lbl">Outstanding</div></div>
+        <div class="stat-box"><div class="stat-val c-teal" id="st-t">0</div><div class="stat-lbl">Total Events</div></div>
+      </div>
+      <div class="toolbar">
+        <div class="legend">
+          <div class="lg-item"><div class="lg-dot ld-f"></div>Failure</div>
+          <div class="lg-item"><div class="lg-dot ld-a"></div>Action</div>
+          <div class="lg-item"><div class="lg-dot ld-r"></div>Repair</div>
+          <div class="lg-item"><div class="lg-dot ld-s"></div>Resolved</div>
+        </div>
+        <div class="tsep"></div>
+        <button class="fchip active" onclick="doFilter('all',this)">Semua</button>
+        <button class="fchip" onclick="doFilter('failure',this)">Failure</button>
+        <button class="fchip" onclick="doFilter('action',this)">Action</button>
+        <button class="fchip" onclick="doFilter('repair',this)">Repair</button>
+        <button class="fchip" onclick="doFilter('resolved',this)">Resolved</button>
+        <div class="tsep"></div>
+        <span style="font-size:10px;color:var(--textDim);" id="fc-lbl"></span>
+      </div>
+      <div class="tl-area">
+        <div class="timeline" id="tl-wrap">
+          <div class="loading-row" id="tl-loading"><div class="lspin"></div>Memuat history...</div>
+          <div class="empty" id="tl-empty" style="display:none">
+            <div class="ei">📋</div>
+            <h3>Belum Ada History</h3>
+            <p>Gunakan form di sebelah kiri untuk menambahkan event kronologis failure.</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- DELETE MODAL -->
-<div class="overlay" id="del-modal">
+<!-- MODAL: Add/Edit Equipment -->
+<div class="overlay" id="modal-eq">
+  <div class="modal" style="width:520px;">
+    <div class="mh"><div class="mh-title" id="modal-eq-title">Tambah Equipment Baru</div><button class="mclose" onclick="closeModal('modal-eq')">×</button></div>
+    <div class="mb">
+      <div class="frow" style="margin-bottom:9px;">
+        <div class="fg" style="margin:0"><label>Nama Equipment *</label><input id="eq-name" placeholder="cth: Air Compressor K1C"></div>
+        <div class="fg" style="margin:0"><label>Tag No *</label><input id="eq-tag" placeholder="cth: K1C / MAB-01 / GT-01"></div>
+      </div>
+      <div class="fg"><label>Unit / Area / Lokasi *</label><input id="eq-unit" placeholder="cth: RFCC — Utilities Section"></div>
+      <div class="frow">
+        <div class="fg"><label>Status Equipment</label>
+          <select id="eq-status">
+            <option value="active">Active</option>
+            <option value="standby">Standby</option>
+            <option value="maintenance">Under Maintenance</option>
+          </select>
+        </div>
+        <div class="fg"><label>Criticality Level</label>
+          <select id="eq-crit">
+            <option value="critical">Critical</option>
+            <option value="major">Major</option>
+            <option value="minor">Minor</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label>Deskripsi / Keterangan (opsional)</label><textarea id="eq-desc" placeholder="Deskripsi singkat tentang equipment..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-outline" onclick="closeModal('modal-eq')">Batal</button>
+      <button class="btn btn-amber" onclick="saveEquipment()" id="btn-save-eq">Simpan Equipment</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Delete Event -->
+<div class="overlay" id="modal-del">
   <div class="modal" style="width:400px;">
-    <div class="mh"><div class="mh-title">Hapus Event?</div><button class="mclose" onclick="closeModal('del-modal')">×</button></div>
+    <div class="mh"><div class="mh-title">Hapus Event?</div><button class="mclose" onclick="closeModal('modal-del')">×</button></div>
     <div class="mb">
       <p style="font-size:13px;color:var(--textDim);line-height:1.7">Event ini akan dihapus dari database secara permanen.</p>
       <p style="font-size:12px;color:var(--red);margin-top:10px;" id="del-name"></p>
     </div>
     <div class="mf">
-      <button class="btn btn-outline" onclick="closeModal('del-modal')">Batal</button>
+      <button class="btn btn-outline" onclick="closeModal('modal-del')">Batal</button>
       <button class="btn btn-red" onclick="doDelete()">Ya, Hapus</button>
     </div>
   </div>
 </div>
 
-<!-- EXPORT OVERLAY -->
+<!-- MODAL: Delete Equipment -->
+<div class="overlay" id="modal-del-eq">
+  <div class="modal" style="width:420px;">
+    <div class="mh"><div class="mh-title" style="color:var(--red);">⚠ Hapus Equipment?</div><button class="mclose" onclick="closeModal('modal-del-eq')">×</button></div>
+    <div class="mb">
+      <p style="font-size:13px;color:var(--textDim);line-height:1.7">Seluruh history events untuk equipment ini akan <strong style="color:var(--red)">dihapus permanen</strong>. Tindakan ini tidak dapat dibatalkan.</p>
+      <p style="font-size:12px;color:var(--red);margin-top:10px;font-weight:600;" id="del-eq-name"></p>
+    </div>
+    <div class="mf">
+      <button class="btn btn-outline" onclick="closeModal('modal-del-eq')">Batal</button>
+      <button class="btn btn-red" onclick="doDeleteEquipment()">Ya, Hapus Semua</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT -->
 <div class="xov" id="xov"><div class="xspin"></div><div class="xmsg" id="xmsg">Memproses...</div></div>
 <!-- TOAST -->
 <div class="tc" id="tc"></div>
 
 <script>
 // ══════════════════════════════════════
-// SUPABASE CONFIG — GANTI DENGAN MILIK ANDA
+// CONFIG — GANTI DENGAN MILIK ANDA
 // ══════════════════════════════════════
 const SUPABASE_URL  = 'https://mvhgccreqqkewhneamuq.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12aGdjY3JlcXFrZXdobmVhbXVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzYwMTAsImV4cCI6MjA4NzMxMjAxMH0.Xl4K1ydP-8vHnxHCMfC7PGybV32hDY57nxSuz5FpTPk';
-
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ══════════════════════════════════════
 // STATE
 // ══════════════════════════════════════
-let events=[], meta={equipment:'',docno:'',unit:'',prepby:''};
-let editId=null, delId=null, curFilter='all';
+let equipments=[], events=[];
 let currentUser=null, currentRole=null;
+let currentEqId=null;
+let editEvId=null, delEvId=null, editEqId=null, delEqId=null;
+let curFilter='all', eqFilter='all';
 let realtimeCh=null;
 const TK='hr_theme';
 
 // ══════════════════════════════════════
 // THEME
 // ══════════════════════════════════════
-function initTheme(){
-  const t=localStorage.getItem(TK)||'dark';
-  document.documentElement.setAttribute('data-theme',t);
-  updateThemeUI(t);
-}
-function toggleTheme(){
-  const cur=document.documentElement.getAttribute('data-theme');
-  const next=cur==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem(TK,next);
-  updateThemeUI(next);
-}
-function updateThemeUI(t){
-  const icon=t==='dark'?'🌙':'☀️';
-  g('tog-icon').textContent=icon;
-}
+function initTheme(){const t=localStorage.getItem(TK)||'dark';document.documentElement.setAttribute('data-theme',t);g('tog-icon').textContent=t==='dark'?'🌙':'☀️';}
+function toggleTheme(){const c=document.documentElement.getAttribute('data-theme'),n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem(TK,n);g('tog-icon').textContent=n==='dark'?'🌙':'☀️';}
 
 // ══════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════
 function g(id){return document.getElementById(id);}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
-function fmtD(ds){
-  if(!ds) return {day:'--',mon:'---',yr:'----',full:'—'};
-  const d=new Date(ds+'T00:00:00');
-  const M=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
-  return{day:String(d.getDate()).padStart(2,'0'),mon:M[d.getMonth()],yr:d.getFullYear(),full:`${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}`};
-}
-function scColor(s){
-  if(!s) return 'var(--textDim)'; s=s.toUpperCase();
-  if(s==='CLOSED') return 'var(--green)';
-  if(s==='OPEN'||s==='OVERDUE') return 'var(--red)';
-  if(s==='ON PROGRESS') return 'var(--teal)';
-  return 'var(--amber)';
-}
-function typeLbl(t){return{failure:'FAILURE',action:'ACTION',repair:'REPAIR',resolved:'RESOLVED'}[t]||t.toUpperCase();}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-function toast(msg,type='ok'){
-  const el=document.createElement('div');
-  el.className=`toast t-${type==='error'?'err':type==='warn'?'warn':'ok'}`;
-  el.innerHTML=`<span>${type==='ok'?'✓':type==='error'?'✗':'⚠'}</span><span>${msg}</span>`;
-  g('tc').appendChild(el); setTimeout(()=>el.remove(),3500);
-}
 function sl(ms){return new Promise(r=>setTimeout(r,ms));}
+function fmtD(ds){if(!ds)return{day:'--',mon:'---',yr:'----',full:'—'};const d=new Date(ds+'T00:00:00'),M=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];return{day:String(d.getDate()).padStart(2,'0'),mon:M[d.getMonth()],yr:d.getFullYear(),full:`${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}`};}
+function scColor(s){if(!s)return 'var(--textDim)';s=s.toUpperCase();if(s==='CLOSED')return 'var(--green)';if(s==='OPEN'||s==='OVERDUE')return 'var(--red)';if(s==='ON PROGRESS')return 'var(--teal)';return 'var(--amber)';}
+function typeLbl(t){return{failure:'FAILURE',action:'ACTION',repair:'REPAIR',resolved:'RESOLVED'}[t]||t.toUpperCase();}
+function critLabel(c){return{critical:'Critical',major:'Major',minor:'Minor'}[c]||c;}
+function statusLabel(s){return{active:'Active',standby:'Standby',maintenance:'Under Maintenance'}[s]||s;}
+function toast(msg,type='ok'){const el=document.createElement('div');el.className=`toast t-${type==='error'?'err':type==='warn'?'warn':'ok'}`;el.innerHTML=`<span>${type==='ok'?'✓':type==='error'?'✗':'⚠'}</span><span>${msg}</span>`;g('tc').appendChild(el);setTimeout(()=>el.remove(),3500);}
 function showX(m){g('xmsg').textContent=m;g('xov').classList.add('open');}
 function hideX(){g('xov').classList.remove('open');}
-function setConn(status){
-  const dot=g('conn-dot'), lbl=g('conn-lbl');
-  dot.className='conn-dot';
-  if(status==='ok'){dot.classList.add('conn-ok');lbl.textContent='Connected';}
-  else if(status==='sync'){dot.classList.add('conn-sync');lbl.textContent='Syncing...';}
-  else{dot.classList.add('conn-err');lbl.textContent='Offline';}
-}
+function closeModal(id){g(id).classList.remove('open');}
+function setConn(s){const dot=g('conn-dot'),lbl=g('conn-lbl');dot.className='conn-dot';if(s==='ok'){dot.classList.add('cd-ok');lbl.textContent='Connected';}else if(s==='sync'){dot.classList.add('cd-sync');lbl.textContent='Syncing...';}else{dot.classList.add('cd-err');lbl.textContent='Offline';}}
 
 // ══════════════════════════════════════
 // AUTH
 // ══════════════════════════════════════
 async function doLogin(){
-  const email=g('l-email').value.trim(), pass=g('l-pass').value;
+  const email=g('l-email').value.trim(),pass=g('l-pass').value;
   if(!email||!pass){g('l-err').textContent='Email dan password wajib diisi.';return;}
-  g('l-btn').textContent='Signing in...'; g('l-btn').disabled=true; g('l-err').textContent='';
-  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){
-    g('l-err').textContent=error.message==='Invalid login credentials'?'Email atau password salah.':error.message;
-    g('l-btn').textContent='Sign In'; g('l-btn').disabled=false; return;
-  }
+  g('l-btn').textContent='Signing in...';g('l-btn').disabled=true;g('l-err').textContent='';
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){g('l-err').textContent=error.message==='Invalid login credentials'?'Email atau password salah.':error.message;g('l-btn').textContent='Sign In';g('l-btn').disabled=false;return;}
   await initApp(data.user);
 }
-
 async function doLogout(){
-  if(realtimeCh) sb.removeChannel(realtimeCh);
+  if(realtimeCh)sb.removeChannel(realtimeCh);
   await sb.auth.signOut();
-  currentUser=null; currentRole=null; events=[];
-  g('login-screen').style.display='flex';
-  g('main-app').style.display='none';
-  g('app-layout').style.display='none';
-  g('l-email').value=''; g('l-pass').value=''; g('l-err').textContent='';
-  g('l-btn').textContent='Sign In'; g('l-btn').disabled=false;
+  currentUser=null;currentRole=null;equipments=[];events=[];currentEqId=null;
+  g('login-screen').style.display='flex';g('topbar').style.display='none';
+  showView(null);
+  g('l-email').value='';g('l-pass').value='';g('l-err').textContent='';g('l-btn').textContent='Sign In';g('l-btn').disabled=false;
 }
-
 async function initApp(user){
   currentUser=user;
-  // Fetch role from profiles table
-  const {data:profile}=await sb.from('profiles').select('role').eq('id',user.id).single();
-  currentRole=profile?.role||'viewer';
-
-  // Show app
+  const{data:prof}=await sb.from('profiles').select('role').eq('id',user.id).single();
+  currentRole=prof?.role||'viewer';
   g('login-screen').style.display='none';
-  g('main-app').style.display='flex';
-  g('app-layout').style.display='grid';
-
-  // User chip
-  const roleColors={admin:'ua-admin',editor:'ua-editor',viewer:'ua-viewer'};
-  const roleBadgeClass={admin:'rb-admin',editor:'rb-editor',viewer:'rb-viewer'};
-  const initials=user.email.substring(0,2).toUpperCase();
-  g('user-avatar').textContent=initials;
-  g('user-avatar').className='user-avatar '+(roleColors[currentRole]||'ua-viewer');
-  g('user-email').textContent=user.email;
+  g('topbar').style.display='flex';
+  const rMap={admin:'ua-a rb-a',editor:'ua-e rb-e',viewer:'ua-v rb-v'};
+  const cls=rMap[currentRole]||'ua-v rb-v';const [avCls,rbCls]=cls.split(' ');
+  g('user-av').textContent=user.email.substring(0,2).toUpperCase();
+  g('user-av').className='user-av '+avCls;
+  g('user-em').textContent=user.email;
   g('role-badge').textContent=currentRole.toUpperCase();
-  g('role-badge').className='role-badge '+(roleBadgeClass[currentRole]||'rb-viewer');
-
-  // Apply role restrictions
-  applyRoleUI();
-
-  // Load data
-  await loadMeta();
-  await loadEvents();
-
-  // Realtime subscription
+  g('role-badge').className='rbadge '+rbCls;
+  window._canEdit=currentRole==='admin'||currentRole==='editor';
+  window._canDelete=currentRole==='admin';
+  if(!window._canEdit)g('btn-add-eq').style.display='none';
+  await loadEquipments();
   subscribeRealtime();
   setConn('ok');
-}
-
-function applyRoleUI(){
-  const canEdit=currentRole==='admin'||currentRole==='editor';
-  const canDelete=currentRole==='admin';
-  // Form inputs
-  ['f-date','f-time','f-type','f-title','f-mode','f-cause','f-down','f-fno','f-impact','f-act','f-out','f-pic','f-tgt','f-wo','f-status','f-ref','m-eq','m-doc','m-unit','m-by'].forEach(id=>{
-    const el=g(id); if(el) el.disabled=!canEdit;
-  });
-  const sb=g('btn-submit'); if(sb){sb.disabled=!canEdit;}
-  if(!canEdit) g('readonly-notice').style.display='block';
-  // Store canDelete for render
-  window._canDelete=canDelete;
-  window._canEdit=canEdit;
+  showView('dashboard');
 }
 
 // ══════════════════════════════════════
-// META (document info)
+// VIEWS
 // ══════════════════════════════════════
-async function loadMeta(){
-  const{data}=await sb.from('equipment_meta').select('*').limit(1).maybeSingle();
-  if(data){
-    meta=data;
-    g('m-eq').value=meta.equipment||''; g('m-doc').value=meta.docno||'';
-    g('m-unit').value=meta.unit||''; g('m-by').value=meta.prepby||'';
+function showView(view){
+  g('view-dashboard').classList.remove('active');
+  g('view-detail').classList.remove('active');
+  g('breadcrumb').style.display='none';
+  g('btn-pdf').style.display='none';
+  g('btn-ppt').style.display='none';
+  if(view==='dashboard'){g('view-dashboard').classList.add('active');}
+  else if(view==='detail'){
+    g('view-detail').classList.add('active');
+    g('breadcrumb').style.display='flex';
+    g('btn-pdf').style.display='';
+    g('btn-ppt').style.display='';
   }
 }
-async function saveMeta(){
-  if(!window._canEdit) return;
-  meta.equipment=g('m-eq').value; meta.docno=g('m-doc').value;
-  meta.unit=g('m-unit').value; meta.prepby=g('m-by').value;
-  await sb.from('equipment_meta').upsert({id:1,...meta});
+function goHome(){
+  currentEqId=null;events=[];editEvId=null;
+  showView('dashboard');
+  renderDashboard();
 }
 
 // ══════════════════════════════════════
-// EVENTS CRUD
+// EQUIPMENT CRUD
 // ══════════════════════════════════════
-async function loadEvents(){
-  g('loading-row').style.display='flex';
-  const{data,error}=await sb.from('events').select('*').order('date',{ascending:true}).order('created_at',{ascending:true});
-  g('loading-row').style.display='none';
-  if(error){toast('Gagal memuat data: '+error.message,'error');setConn('err');return;}
-  events=data||[]; render();
+async function loadEquipments(){
+  const{data,error}=await sb.from('equipments').select('*').order('created_at',{ascending:true});
+  g('dash-loading').style.display='none';
+  if(error){toast('Gagal memuat equipment: '+error.message,'error');setConn('err');return;}
+  equipments=data||[];
+
+  // Load event summaries
+  if(equipments.length>0){
+    const{data:evData}=await sb.from('events').select('equipment_id,type,status,downtime');
+    if(evData){
+      equipments.forEach(eq=>{
+        const evs=evData.filter(e=>e.equipment_id===eq.id);
+        eq._failures=evs.filter(e=>e.type==='failure').length;
+        eq._downtime=evs.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
+        eq._open=evs.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
+        eq._total=evs.length;
+      });
+    }
+  }
+  renderDashboard();
 }
 
+function renderDashboard(){
+  const search=(g('eq-search')?.value||'').toLowerCase().trim();
+  let filtered=equipments;
+  if(search) filtered=filtered.filter(eq=>(eq.name||'').toLowerCase().includes(search)||(eq.tag_no||'').toLowerCase().includes(search));
+  if(eqFilter==='critical') filtered=filtered.filter(eq=>eq.criticality==='critical');
+  else if(eqFilter==='major') filtered=filtered.filter(eq=>eq.criticality==='major');
+  else if(eqFilter==='minor') filtered=filtered.filter(eq=>eq.criticality==='minor');
+  else if(eqFilter==='active') filtered=filtered.filter(eq=>eq.status==='active');
+  else if(eqFilter==='maintenance') filtered=filtered.filter(eq=>eq.status==='maintenance');
+  else if(eqFilter==='open') filtered=filtered.filter(eq=>(eq._open||0)>0);
+
+  // Summary stats
+  g('ds-total').textContent=equipments.length;
+  g('ds-crit').textContent=equipments.filter(e=>e.criticality==='critical').length;
+  g('ds-failures').textContent=equipments.reduce((s,e)=>s+(e._failures||0),0);
+  g('ds-open').textContent=equipments.reduce((s,e)=>s+(e._open||0),0);
+  g('ds-maintenance').textContent=equipments.filter(e=>e.status==='maintenance').length;
+  g('eq-filter-count').textContent=filtered.length+' equipment';
+
+  const grid=g('eq-grid');
+  grid.querySelectorAll('.eq-card,.dash-empty').forEach(el=>el.remove());
+
+  if(filtered.length===0){
+    const em=document.createElement('div');em.className='dash-empty';em.style.gridColumn='1/-1';
+    em.innerHTML=`<div class="ei">${equipments.length===0?'🏭':'🔍'}</div><h3>${equipments.length===0?'Belum Ada Equipment':'Tidak Ditemukan'}</h3><p>${equipments.length===0?'Klik <strong>Tambah Equipment</strong> untuk mulai mencatat history failure.':'Coba kata kunci lain atau ubah filter.'}</p>`;
+    grid.appendChild(em);return;
+  }
+
+  filtered.forEach(eq=>{
+    const critClass={critical:'crit-critical',major:'crit-major',minor:'crit-minor'}[eq.criticality]||'crit-unknown';
+    const stClass={active:'es-active',standby:'es-standby',maintenance:'es-maintenance'}[eq.status]||'es-active';
+    const card=document.createElement('div');
+    card.className='eq-card';
+    const failures=eq._failures||0;
+    const openN=eq._open||0;
+    card.innerHTML=`
+      <div class="eq-card-top ${critClass}"></div>
+      <div class="eq-card-body">
+        <div class="eq-card-header">
+          <span class="eq-tag">${esc(eq.tag_no||'—')}</span>
+          <span class="eq-status-badge ${stClass}">${statusLabel(eq.status)}</span>
+        </div>
+        <div class="eq-name">${esc(eq.name)}</div>
+        <div class="eq-unit">${esc(eq.unit||'—')}</div>
+        <div class="eq-meta-row">
+          <div class="eq-meta-item"><div class="emi-k">Criticality</div><div class="emi-v" style="color:${eq.criticality==='critical'?'var(--red)':eq.criticality==='major'?'var(--amber)':'var(--green)'}">${critLabel(eq.criticality)}</div></div>
+          <div class="eq-meta-item"><div class="emi-k">Total Failure</div><div class="emi-v" style="color:${failures>0?'var(--red)':'var(--textDim)'}">${failures}×</div></div>
+          <div class="eq-meta-item"><div class="emi-k">Total Events</div><div class="emi-v">${eq._total||0}</div></div>
+        </div>
+        <div class="eq-footer">
+          <div class="eq-stats-row">
+            <div class="eq-stat"><div class="eq-stat-val" style="color:var(--amber)">${eq._downtime||0}</div><div class="eq-stat-lbl">Jam Downtime</div></div>
+          </div>
+          ${openN>0?`<span class="eq-open-badge">⚠ ${openN} Open Issue${openN>1?'s':''}</span>`:`<span class="eq-open-none">✓ No Open Issues</span>`}
+        </div>
+      </div>`;
+    card.addEventListener('click',(e)=>{if(!e.target.closest('.eq-card-actions'))openEquipment(eq.id);});
+    // Card actions (edit/delete) for admin
+    if(window._canDelete){
+      const acts=document.createElement('div');acts.className='eq-card-actions';
+      acts.innerHTML=`<button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openEditEquipment('${eq.id}')" title="Edit Equipment">✎</button><button class="btn btn-red btn-xs" onclick="event.stopPropagation();confirmDeleteEquipment('${eq.id}')" title="Hapus Equipment">✕</button>`;
+      card.appendChild(acts);
+    }
+    grid.appendChild(card);
+  });
+}
+
+function setEqFilter(f,el){
+  eqFilter=f;
+  document.querySelectorAll('.filter-row .fchip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderDashboard();
+}
+
+// ══════════════════════════════════════
+// ADD / EDIT EQUIPMENT MODAL
+// ══════════════════════════════════════
+function openAddEquipment(){
+  if(!window._canEdit){toast('Tidak memiliki akses.','error');return;}
+  editEqId=null;
+  g('modal-eq-title').textContent='Tambah Equipment Baru';
+  g('btn-save-eq').textContent='Simpan Equipment';
+  ['eq-name','eq-tag','eq-unit','eq-desc'].forEach(id=>g(id).value='');
+  g('eq-status').value='active';g('eq-crit').value='critical';
+  g('modal-eq').classList.add('open');
+}
+function openEditEquipment(id){
+  const eq=equipments.find(e=>e.id===id);if(!eq)return;
+  editEqId=id;
+  g('modal-eq-title').textContent='Edit Equipment';
+  g('btn-save-eq').textContent='Update Equipment';
+  g('eq-name').value=eq.name||'';g('eq-tag').value=eq.tag_no||'';
+  g('eq-unit').value=eq.unit||'';g('eq-status').value=eq.status||'active';
+  g('eq-crit').value=eq.criticality||'critical';g('eq-desc').value=eq.description||'';
+  g('modal-eq').classList.add('open');
+}
+async function saveEquipment(){
+  const name=g('eq-name').value.trim(),tag=g('eq-tag').value.trim(),unit=g('eq-unit').value.trim();
+  if(!name||!tag||!unit){toast('Nama, Tag No, dan Unit wajib diisi!','error');return;}
+  const payload={name,tag_no:tag,unit,status:g('eq-status').value,criticality:g('eq-crit').value,description:g('eq-desc').value.trim()||null};
+  let error;
+  if(editEqId){
+    const res=await sb.from('equipments').update(payload).eq('id',editEqId);error=res.error;
+    if(!error){const i=equipments.findIndex(e=>e.id===editEqId);if(i>-1)equipments[i]={...equipments[i],...payload};toast('Equipment diupdate ✓');}
+  } else {
+    const res=await sb.from('equipments').insert(payload).select().single();error=res.error;
+    if(!error&&res.data){res.data._failures=0;res.data._downtime=0;res.data._open=0;res.data._total=0;equipments.push(res.data);toast('Equipment berhasil ditambahkan ✓');}
+  }
+  if(error){toast('Error: '+error.message,'error');return;}
+  closeModal('modal-eq');renderDashboard();
+}
+function confirmDeleteEquipment(id){
+  const eq=equipments.find(e=>e.id===id);
+  delEqId=id;
+  g('del-eq-name').textContent=eq?`${eq.name} (${eq.tag_no})`:'';
+  g('modal-del-eq').classList.add('open');
+}
+async function doDeleteEquipment(){
+  await sb.from('events').delete().eq('equipment_id',delEqId);
+  const{error}=await sb.from('equipments').delete().eq('id',delEqId);
+  equipments=equipments.filter(e=>e.id!==delEqId);
+  delEqId=null;closeModal('modal-del-eq');renderDashboard();
+  if(!error)toast('Equipment dihapus','warn');
+}
+
+// ══════════════════════════════════════
+// OPEN EQUIPMENT DETAIL
+// ══════════════════════════════════════
+async function openEquipment(eqId){
+  const eq=equipments.find(e=>e.id===eqId);if(!eq)return;
+  currentEqId=eqId;events=[];editEvId=null;
+  showView('detail');
+  // Breadcrumb
+  g('bc-text').textContent=`${eq.tag_no} — ${eq.name}`;
+  // Sidebar info
+  g('sei-name').textContent=eq.name;
+  g('sei-tag').textContent='TAG: '+eq.tag_no;
+  const critC={critical:'var(--red)',major:'var(--amber)',minor:'var(--green)'}[eq.criticality]||'var(--muted)';
+  const stClass={active:'es-active',standby:'es-standby',maintenance:'es-maintenance'}[eq.status]||'es-active';
+  g('sei-badges').innerHTML=`<span class="eq-status-badge ${stClass}">${statusLabel(eq.status)}</span><span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:2px;background:rgba(0,0,0,.1);color:${critC};border:1px solid ${critC};">${critLabel(eq.criticality)}</span>`;
+  // Role UI
+  const canEdit=window._canEdit;
+  g('readonly-notice').style.display=canEdit?'none':'block';
+  g('btn-submit').disabled=!canEdit;
+  ['f-date','f-time','f-type','f-title','f-mode','f-cause','f-down','f-fno','f-impact','f-act','f-out','f-pic','f-tgt','f-wo','f-status','f-ref'].forEach(id=>{const el=g(id);if(el)el.disabled=!canEdit;});
+  resetForm();
+  // Load events
+  g('tl-loading').style.display='flex';
+  g('tl-empty').style.display='none';
+  const{data,error}=await sb.from('events').select('*').eq('equipment_id',eqId).order('date',{ascending:true}).order('created_at',{ascending:true});
+  g('tl-loading').style.display='none';
+  if(error){toast('Gagal memuat events: '+error.message,'error');return;}
+  events=data||[];
+  curFilter='all';
+  document.querySelectorAll('.toolbar .fchip').forEach((c,i)=>{c.classList.toggle('active',i===0);});
+  render();
+}
+
+// ══════════════════════════════════════
+// REALTIME
+// ══════════════════════════════════════
 function subscribeRealtime(){
-  realtimeCh=sb.channel('events-changes')
+  realtimeCh=sb.channel('rt-all')
     .on('postgres_changes',{event:'*',schema:'public',table:'events'},payload=>{
+      if(payload.new?.equipment_id!==currentEqId&&payload.old?.equipment_id!==currentEqId)return;
       setConn('sync');
-      if(payload.eventType==='INSERT'){
-        events.push(payload.new); events.sort((a,b)=>new Date(a.date)-new Date(b.date));
-      } else if(payload.eventType==='UPDATE'){
-        const i=events.findIndex(e=>e.id===payload.new.id); if(i>-1) events[i]=payload.new;
-      } else if(payload.eventType==='DELETE'){
-        events=events.filter(e=>e.id!==payload.old.id);
-      }
-      render(); setTimeout(()=>setConn('ok'),800);
+      if(payload.eventType==='INSERT'){events.push(payload.new);events.sort((a,b)=>new Date(a.date)-new Date(b.date));}
+      else if(payload.eventType==='UPDATE'){const i=events.findIndex(e=>e.id===payload.new.id);if(i>-1)events[i]=payload.new;}
+      else if(payload.eventType==='DELETE'){events=events.filter(e=>e.id!==payload.old.id);}
+      render();setTimeout(()=>setConn('ok'),800);
     })
     .subscribe();
 }
 
-function onTypeChange(){
-  g('f-fail-block').style.display=g('f-type').value==='failure'?'block':'none';
-}
+// ══════════════════════════════════════
+// EVENT FORM
+// ══════════════════════════════════════
+function onTypeChange(){g('f-fail-block').style.display=g('f-type').value==='failure'?'block':'none';}
 onTypeChange();
-
 function resetForm(){
-  editId=null;
-  g('form-lbl').textContent='Tambah event baru ke timeline';
-  g('fs-icon').textContent='＋'; g('fs-lbl').textContent='Tambah Event';
+  editEvId=null;g('form-lbl').textContent='Tambah event baru';
+  g('fs-icon').textContent='＋';g('fs-lbl').textContent='Tambah Event';
   ['f-date','f-time','f-title','f-mode','f-cause','f-down','f-fno','f-impact','f-act','f-out','f-pic','f-tgt','f-wo','f-ref'].forEach(id=>{const el=g(id);if(el)el.value='';});
-  g('f-type').value='failure'; g('f-status').value='OPEN'; onTypeChange();
+  g('f-type').value='failure';g('f-status').value='OPEN';onTypeChange();
 }
-
 async function submitForm(){
-  if(!window._canEdit){toast('Anda tidak memiliki akses untuk mengedit.','error');return;}
-  const date=g('f-date').value, title=g('f-title').value.trim();
+  if(!window._canEdit){toast('Tidak memiliki akses edit.','error');return;}
+  const date=g('f-date').value,title=g('f-title').value.trim();
   if(!date||!title){toast('Tanggal dan Judul wajib diisi!','error');return;}
   const ev={
-    date, time:g('f-time').value||null,
-    type:g('f-type').value, title,
-    mode:g('f-mode').value.trim()||null, cause:g('f-cause').value.trim()||null,
+    equipment_id:currentEqId,date,time:g('f-time').value||null,
+    type:g('f-type').value,title,
+    mode:g('f-mode').value.trim()||null,cause:g('f-cause').value.trim()||null,
     downtime:g('f-down').value?parseInt(g('f-down').value):null,
     fail_no:g('f-fno').value?parseInt(g('f-fno').value):null,
-    impact:g('f-impact').value.trim()||null,
-    actions:g('f-act').value.trim()||null,
-    outstanding:g('f-out').value.trim()||null,
-    pic:g('f-pic').value.trim()||null,
-    target_date:g('f-tgt').value||null,
-    wo:g('f-wo').value.trim()||null,
-    status:g('f-status').value,
-    ref:g('f-ref').value.trim()||null,
+    impact:g('f-impact').value.trim()||null,actions:g('f-act').value.trim()||null,
+    outstanding:g('f-out').value.trim()||null,pic:g('f-pic').value.trim()||null,
+    target_date:g('f-tgt').value||null,wo:g('f-wo').value.trim()||null,
+    status:g('f-status').value,ref:g('f-ref').value.trim()||null,
     modified_by:currentUser?.email||null,
   };
-
   setConn('sync');
   let error;
-  if(editId){
-    const res=await sb.from('events').update(ev).eq('id',editId);
-    error=res.error;
-    if(!error) toast('Event berhasil diupdate ✓');
+  if(editEvId){
+    const res=await sb.from('events').update(ev).eq('id',editEvId);error=res.error;
+    if(!error)toast('Event diupdate ✓');
   } else {
-    const res=await sb.from('events').insert(ev);
-    error=res.error;
-    if(!error) toast('Event berhasil ditambahkan ✓');
+    const res=await sb.from('events').insert(ev);error=res.error;
+    if(!error)toast('Event ditambahkan ✓');
   }
   if(error){toast('Error: '+error.message,'error');setConn('err');return;}
-  setConn('ok'); resetForm();
+  // Update equipment summary in memory
+  await refreshEqSummary(currentEqId);
+  setConn('ok');resetForm();
+}
+async function refreshEqSummary(eqId){
+  const{data}=await sb.from('events').select('type,status,downtime').eq('equipment_id',eqId);
+  const eq=equipments.find(e=>e.id===eqId);if(!eq||!data)return;
+  eq._failures=data.filter(e=>e.type==='failure').length;
+  eq._downtime=data.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
+  eq._open=data.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
+  eq._total=data.length;
 }
 
 function editEv(id){
-  if(!window._canEdit){toast('Anda tidak memiliki akses untuk mengedit.','error');return;}
-  const ev=events.find(e=>e.id===id); if(!ev) return;
-  editId=id;
-  g('form-lbl').textContent='Edit: '+ev.title.substring(0,45)+'...';
-  g('fs-icon').textContent='✎'; g('fs-lbl').textContent='Update Event';
-  g('f-date').value=ev.date||''; g('f-time').value=ev.time||'';
-  g('f-type').value=ev.type||'failure'; g('f-title').value=ev.title||'';
-  g('f-mode').value=ev.mode||''; g('f-cause').value=ev.cause||'';
-  g('f-down').value=ev.downtime||''; g('f-fno').value=ev.fail_no||'';
-  g('f-impact').value=ev.impact||''; g('f-act').value=ev.actions||'';
-  g('f-out').value=ev.outstanding||''; g('f-pic').value=ev.pic||'';
-  g('f-tgt').value=ev.target_date||''; g('f-wo').value=ev.wo||'';
-  g('f-status').value=ev.status||'OPEN'; g('f-ref').value=ev.ref||'';
-  onTypeChange();
-  document.querySelector('.sb-form').scrollTop=0;
+  if(!window._canEdit){toast('Tidak memiliki akses edit.','error');return;}
+  const ev=events.find(e=>e.id===id);if(!ev)return;
+  editEvId=id;g('form-lbl').textContent='Edit: '+ev.title.substring(0,40)+'...';
+  g('fs-icon').textContent='✎';g('fs-lbl').textContent='Update Event';
+  g('f-date').value=ev.date||'';g('f-time').value=ev.time||'';
+  g('f-type').value=ev.type||'failure';g('f-title').value=ev.title||'';
+  g('f-mode').value=ev.mode||'';g('f-cause').value=ev.cause||'';
+  g('f-down').value=ev.downtime||'';g('f-fno').value=ev.fail_no||'';
+  g('f-impact').value=ev.impact||'';g('f-act').value=ev.actions||'';
+  g('f-out').value=ev.outstanding||'';g('f-pic').value=ev.pic||'';
+  g('f-tgt').value=ev.target_date||'';g('f-wo').value=ev.wo||'';
+  g('f-status').value=ev.status||'OPEN';g('f-ref').value=ev.ref||'';
+  onTypeChange();document.querySelector('.sb-form').scrollTop=0;
 }
-
 function delEv(id){
-  if(!window._canDelete){toast('Hanya Admin yang dapat menghapus event.','error');return;}
-  delId=id; const ev=events.find(e=>e.id===id);
+  if(!window._canDelete){toast('Hanya Admin yang dapat menghapus.','error');return;}
+  delEvId=id;const ev=events.find(e=>e.id===id);
   g('del-name').textContent=ev?'"'+ev.title+'"':'';
-  g('del-modal').classList.add('open');
+  g('modal-del').classList.add('open');
 }
 async function doDelete(){
-  const{error}=await sb.from('events').delete().eq('id',delId);
-  delId=null; closeModal('del-modal');
+  const{error}=await sb.from('events').delete().eq('id',delEvId);
+  delEvId=null;closeModal('modal-del');
   if(error){toast('Gagal hapus: '+error.message,'error');return;}
+  await refreshEqSummary(currentEqId);
   toast('Event dihapus','warn');
 }
-function closeModal(id){g(id).classList.remove('open');}
 
 // ══════════════════════════════════════
-// RENDER
+// RENDER TIMELINE
 // ══════════════════════════════════════
 function doFilter(f,el){
-  curFilter=f;
-  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active'); render();
+  curFilter=f;document.querySelectorAll('.toolbar .fchip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');render();
 }
-
 function render(){
-  const wrap=g('tl-wrap'), empty=g('empty-state');
-  // Stats
+  const wrap=g('tl-wrap');
   const fails=events.filter(e=>e.type==='failure');
   const totDown=fails.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
   const openN=events.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
   const outN=events.filter(e=>e.outstanding&&e.outstanding.trim()).length;
-  g('st-f').textContent=fails.length+'×';
-  g('st-d').textContent=totDown>0?totDown+' Jam':'—';
-  g('st-o').textContent=openN; g('st-ot').textContent=outN; g('st-t').textContent=events.length;
+  g('st-f').textContent=fails.length+'×';g('st-d').textContent=totDown>0?totDown+' Jam':'—';
+  g('st-o').textContent=openN;g('st-ot').textContent=outN;g('st-t').textContent=events.length;
 
   const filtered=curFilter==='all'?events:events.filter(e=>e.type===curFilter);
   g('fc-lbl').textContent=filtered.length+' event';
-
   wrap.querySelectorAll('.tl-entry,.no-res').forEach(el=>el.remove());
-  if(empty) empty.style.display=events.length===0?'block':'none';
-  if(events.length===0||filtered.length===0){
-    if(filtered.length===0&&events.length>0){
-      const nr=document.createElement('div'); nr.className='no-res';
-      nr.style.cssText='text-align:center;padding:32px;font-size:13px;color:var(--textDim);';
-      nr.textContent='Tidak ada event untuk filter ini.'; wrap.appendChild(nr);
-    }
-    return;
-  }
+  g('tl-empty').style.display=events.length===0?'block':'none';
+  if(events.length===0)return;
+  if(filtered.length===0){const nr=document.createElement('div');nr.className='no-res';nr.textContent='Tidak ada event untuk filter ini.';wrap.appendChild(nr);return;}
 
   filtered.forEach((ev,idx)=>{
-    const df=fmtD(ev.date), tc=ev.type;
+    const df=fmtD(ev.date),tc=ev.type;
     const dotCls={failure:'dot-f',action:'dot-a',repair:'dot-r',resolved:'dot-s'}[tc]||'dot-f';
-    const cardCls={failure:'c-card-f',action:'c-card-a',repair:'c-card-r',resolved:'c-card-s'}[tc]||'c-card-f';
+    const cardCls={failure:'cc-f',action:'cc-a',repair:'cc-r',resolved:'cc-s'}[tc]||'cc-f';
     const tbCls={failure:'tb-f',action:'tb-a',repair:'tb-r',resolved:'tb-s'}[tc]||'tb-f';
     const actsHtml=ev.actions?ev.actions.split('\n').filter(a=>a.trim()).map(a=>`<div class="act-item">${esc(a.trim())}</div>`).join(''):'';
     const outHtml=ev.outstanding?ev.outstanding.split('\n').filter(a=>a.trim()).map(a=>`<div class="co-item">${esc(a.trim())}</div>`).join(''):'';
     const pill=ev.fail_no?`<div class="f-pill">FAILURE #${ev.fail_no}</div>`:'';
     const sc=scColor(ev.status);
-    const showEdit=window._canEdit, showDel=window._canDelete;
-    const modifiedBy=ev.modified_by?`<div class="c-meta-row"><span class="c-modified">Last modified by: ${esc(ev.modified_by)}</span></div>`:'';
-
     const entry=document.createElement('div');
-    entry.className='tl-entry'; entry.dataset.id=ev.id;
-    entry.style.animationDelay=(idx*0.04)+'s';
+    entry.className='tl-entry';entry.style.animationDelay=(idx*.04)+'s';
     entry.innerHTML=`
-      <div class="tl-date">
-        <div class="tl-day">${df.day}</div>
-        <div class="tl-mon">${df.mon} ${df.yr}</div>
-        ${ev.time?`<div class="tl-time">${ev.time} WIB</div>`:''}
-      </div>
+      <div class="tl-date"><div class="tl-day">${df.day}</div><div class="tl-mon">${df.mon} ${df.yr}</div>${ev.time?`<div class="tl-time">${ev.time} WIB</div>`:''}</div>
       <div class="tl-node"><div class="tl-dot ${dotCls}">${tc==='failure'?'F':tc==='action'?'A':tc==='repair'?'R':'✓'}</div></div>
       <div class="tl-card ${cardCls}" style="position:relative">
         ${pill}
@@ -1278,16 +1465,11 @@ function render(){
           <div class="ct-title">${esc(ev.title)}</div>
           <div class="ct-right">
             <span class="tbadge ${tbCls}">${typeLbl(tc)}</span>
-            ${showEdit?`<button class="btn btn-ghost btn-sm" onclick="editEv('${ev.id}')" title="Edit">✎</button>`:''}
-            ${showDel?`<button class="btn btn-red btn-sm" onclick="delEv('${ev.id}')" title="Hapus">✕</button>`:''}
+            ${window._canEdit?`<button class="btn btn-ghost btn-sm" onclick="editEv('${ev.id}')" title="Edit">✎</button>`:''}
+            ${window._canDelete?`<button class="btn btn-red btn-sm" onclick="delEv('${ev.id}')" title="Hapus">✕</button>`:''}
           </div>
         </div>
-        ${tc==='failure'&&(ev.mode||ev.cause||ev.downtime)?`
-        <div class="ci-grid">
-          ${ev.mode?`<div><div class="ci-k">Failure Mode</div><div class="ci-v vr">${esc(ev.mode)}</div></div>`:''}
-          ${ev.cause?`<div><div class="ci-k">Root Cause</div><div class="ci-v va">${esc(ev.cause)}</div></div>`:''}
-          ${ev.downtime?`<div><div class="ci-k">Downtime</div><div class="ci-v vr">${ev.downtime} Jam</div></div>`:''}
-        </div>`:''}
+        ${tc==='failure'&&(ev.mode||ev.cause||ev.downtime)?`<div class="ci-grid">${ev.mode?`<div><div class="ci-k">Failure Mode</div><div class="ci-v vr">${esc(ev.mode)}</div></div>`:''} ${ev.cause?`<div><div class="ci-k">Root Cause</div><div class="ci-v va">${esc(ev.cause)}</div></div>`:''} ${ev.downtime?`<div><div class="ci-k">Downtime</div><div class="ci-v vr">${ev.downtime} Jam</div></div>`:''}</div>`:''}
         ${ev.impact?`<div style="margin-bottom:8px"><div class="clbl">Dampak Operasional</div><div class="ctext">${esc(ev.impact)}</div></div>`:''}
         ${actsHtml?`<div class="cdiv"></div><div class="clbl">Action yang Sudah Dilakukan</div>${actsHtml}`:''}
         ${outHtml?`<div class="c-out"><div class="co-k">⚠ Outstanding / Remaining Work</div>${outHtml}</div>`:''}
@@ -1298,7 +1480,7 @@ function render(){
           ${ev.ref?`<div><div class="cf-k">Referensi</div><div class="cf-v cf-t">${esc(ev.ref)}</div></div>`:''}
           ${ev.status?`<div><div class="cf-k">Status</div><div class="cf-v" style="color:${sc};font-weight:700">${ev.status}</div></div>`:''}
         </div>
-        ${modifiedBy}
+        ${ev.modified_by?`<div class="c-modified">Last modified by: ${esc(ev.modified_by)}</div>`:''}
       </div>`;
     wrap.appendChild(entry);
   });
@@ -1309,68 +1491,43 @@ function render(){
 // ══════════════════════════════════════
 async function exportPDF(){
   if(!events.length){toast('Tidak ada event!','warn');return;}
+  const eq=equipments.find(e=>e.id===currentEqId);
   showX('Membuat PDF...'); await sl(150);
   try{
     const{jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-    const W=297,H=210,eq=meta.equipment||'Equipment';
+    const W=297,H=210,eqName=eq?.name||'Equipment',tag=eq?.tag_no||'';
     const pg=()=>{doc.setFillColor(10,22,40);doc.rect(0,0,W,H,'F');doc.setFillColor(232,162,23);doc.rect(0,0,W,1.5,'F');};
-
     pg();
     doc.setFillColor(15,30,53);doc.rect(0,0,W,14,'F');
     doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(232,162,23);
     doc.text('HISTORY RECORD SPESIFIK EQUIPMENT',12,9);
     doc.setTextColor(148,163,184);doc.setFont('helvetica','normal');doc.setFontSize(7);
-    doc.text(`Doc: ${meta.docno||'-'} | Unit: ${meta.unit||'-'} | By: ${meta.prepby||'-'}`,W-12,9,{align:'right'});
-    doc.setFont('helvetica','bold');doc.setFontSize(34);doc.setTextColor(226,232,240);doc.text(eq,12,42);
-    doc.setTextColor(232,162,23);doc.text('Failure History Report',12,54);
+    doc.text(`TAG: ${tag} | Unit: ${eq?.unit||'-'} | Criticality: ${critLabel(eq?.criticality)}`,W-12,9,{align:'right'});
+    doc.setFont('helvetica','bold');doc.setFontSize(32);doc.setTextColor(226,232,240);doc.text(eqName,12,40);
+    doc.setFontSize(13);doc.setTextColor(232,162,23);doc.text(tag?'Tag No: '+tag:'',12,50);
     doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(148,163,184);
-    doc.text(`Total ${events.length} event | ${events.filter(e=>e.type==='failure').length} failure kejadian`,12,64);
+    doc.text(`Total ${events.length} event recorded | ${events.filter(e=>e.type==='failure').length} failure kejadian`,12,60);
     const stats=[{v:events.filter(e=>e.type==='failure').length+'×',l:'Total Failure',c:[232,64,64]},{v:events.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0)+' Jam',l:'Downtime Kumulatif',c:[232,162,23]},{v:events.filter(e=>['OPEN','OVERDUE'].includes(e.status)).length,l:'Status Open',c:[232,64,64]},{v:events.filter(e=>e.outstanding&&e.outstanding.trim()).length,l:'Outstanding',c:[232,162,23]}];
-    stats.forEach((s,i)=>{const bx=12+i*60;doc.setFillColor(15,30,53);doc.rect(bx,76,55,18,'F');doc.setFillColor(...s.c);doc.rect(bx,76,55,1.5,'F');doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...s.c);doc.text(String(s.v),bx+27.5,86,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(148,163,184);doc.text(s.l,bx+27.5,92,{align:'center'});});
-    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);
-    doc.text('Developed by Technical Support — PT Kilang Pertamina Balikpapan',W/2,H-4,{align:'center'});
+    stats.forEach((s,i)=>{const bx=12+i*60;doc.setFillColor(15,30,53);doc.rect(bx,72,55,18,'F');doc.setFillColor(...s.c);doc.rect(bx,72,55,1.5,'F');doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...s.c);doc.text(String(s.v),bx+27.5,82,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(148,163,184);doc.text(s.l,bx+27.5,88,{align:'center'});});
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text('Developed by Technical Support — PT Kilang Pertamina Balikpapan',W/2,H-4,{align:'center'});
 
     doc.addPage();pg();
     doc.setFillColor(15,30,53);doc.rect(0,0,W,14,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(232,162,23);doc.text('RINGKASAN TABEL KRONOLOGIS',12,9);
-    const cols=['No','Tanggal','Tipe','Judul / Deskripsi','Mode','Root Cause','Down(Jam)','PIC','Status'];
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(232,162,23);doc.text('RINGKASAN TABEL KRONOLOGIS — '+eqName.toUpperCase(),12,9);
+    const cols=['No','Tanggal','Tipe','Judul','Mode','Root Cause','Down(Jam)','PIC','Status'];
     const cw=[10,24,18,62,30,34,18,26,18];
     let cx=10,ry=22;doc.setFillColor(30,58,95);doc.rect(10,ry-5,W-20,8,'F');
-    cols.forEach((c,i)=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(255,255,255);doc.text(c,cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});
-    ry+=6;
+    cols.forEach((c,i)=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(255,255,255);doc.text(c,cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=6;
     events.forEach((ev,idx)=>{
       if(ry>H-12){doc.addPage();pg();ry=22;}
       doc.setFillColor(idx%2===0?10:15,idx%2===0?22:30,idx%2===0?40:53);doc.rect(10,ry-4,W-20,8,'F');
       const df=fmtD(ev.date);
-      const row=[String(idx+1),df.full,typeLbl(ev.type),ev.title,ev.mode||'—',ev.cause||'—',ev.downtime||'—',ev.pic||'—',ev.status||'—'];
-      cx=10;row.forEach((cell,i)=>{const tc=i===2?(ev.type==='failure'?[232,64,64]:ev.type==='action'?[14,165,233]:ev.type==='repair'?[232,162,23]:[34,197,94]):[226,232,240];doc.setFont('helvetica',i===2?'bold':'normal');doc.setFontSize(6.5);doc.setTextColor(...tc);doc.text(String(cell),cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});
-      ry+=9;
+      const row=[String(idx+1),df.full,typeLbl(ev.type),ev.title||'',ev.mode||'—',ev.cause||'—',ev.downtime||'—',ev.pic||'—',ev.status||'—'];
+      cx=10;row.forEach((cell,i)=>{const tc2=i===2?(ev.type==='failure'?[232,64,64]:ev.type==='action'?[14,165,233]:ev.type==='repair'?[232,162,23]:[34,197,94]):[226,232,240];doc.setFont('helvetica',i===2?'bold':'normal');doc.setFontSize(6.5);doc.setTextColor(...tc2);doc.text(String(cell),cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=9;
     });
     doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text('Developed by Technical Support — PT Kilang Pertamina Balikpapan',W/2,H-4,{align:'center'});
-
-    events.forEach((ev,idx)=>{
-      doc.addPage();pg();
-      doc.setFillColor(15,30,53);doc.rect(0,0,W,14,'F');
-      const tc2=ev.type==='failure'?[232,64,64]:ev.type==='action'?[14,165,233]:ev.type==='repair'?[232,162,23]:[34,197,94];
-      doc.setFillColor(...tc2);doc.rect(0,14,4,H-14,'F');
-      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...tc2);
-      doc.text(`EVENT ${idx+1}  |  ${typeLbl(ev.type)}${ev.fail_no?' — FAILURE #'+ev.fail_no:''}`,10,9);
-      const df=fmtD(ev.date);doc.setTextColor(226,232,240);
-      doc.text(`${df.full}${ev.time?' | '+ev.time+' WIB':''}`,W-12,9,{align:'right'});
-      doc.setFontSize(15);doc.setTextColor(255,255,255);doc.text(ev.title,10,26,{maxWidth:W-20});
-      let y=38;
-      const sec=(lbl)=>{if(y>H-18){doc.addPage();pg();y=22;}doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(232,162,23);doc.text(lbl.toUpperCase(),10,y);y+=4;doc.setFillColor(30,58,95);doc.rect(10,y,W-20,.5,'F');y+=4;};
-      const txt=(k,v,col)=>{if(!v)return;if(y>H-16){doc.addPage();pg();y=22;}doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(148,163,184);doc.text(k+':',10,y);doc.setFont('helvetica','normal');doc.setTextColor(...(col||[226,232,240]));const lines=doc.splitTextToSize(String(v),W-60);doc.text(lines,52,y);y+=6*lines.length;};
-      if(ev.mode||ev.cause||ev.downtime||ev.impact){sec('Detail Failure');txt('Failure Mode',ev.mode,[232,64,64]);txt('Root Cause',ev.cause,[232,162,23]);txt('Downtime',ev.downtime?ev.downtime+' Jam':null,[232,64,64]);txt('Dampak',ev.impact);y+=2;}
-      if(ev.actions){sec('Action Dilakukan');ev.actions.split('\n').filter(a=>a.trim()).forEach(a=>{if(y>H-16){doc.addPage();pg();y=22;}doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(226,232,240);const lines=doc.splitTextToSize('→ '+a.trim(),W-22);doc.text(lines,12,y);y+=6*lines.length;});y+=2;}
-      if(ev.outstanding){sec('Outstanding');ev.outstanding.split('\n').filter(a=>a.trim()).forEach(a=>{if(y>H-16){doc.addPage();pg();y=22;}doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(248,196,196);const lines=doc.splitTextToSize('! '+a.trim(),W-22);doc.text(lines,12,y);y+=6*lines.length;});y+=2;}
-      sec('PIC & Status');
-      const sc2=ev.status==='CLOSED'?[34,197,94]:ev.status==='OPEN'||ev.status==='OVERDUE'?[232,64,64]:[232,162,23];
-      txt('PIC',ev.pic,[14,165,233]);txt('Target',ev.target_date?fmtD(ev.target_date).full:null);txt('Work Order',ev.wo,[14,165,233]);txt('Referensi',ev.ref,[14,165,233]);txt('Status',ev.status,sc2);
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text('Developed by Technical Support — PT Kilang Pertamina Balikpapan',W/2,H-4,{align:'center'});
-    });
-    doc.save(`History_Record_${(eq).replace(/\s+/g,'_')}_${Date.now()}.pdf`);
+    doc.save(`History_${tag||eqName}_${Date.now()}.pdf`);
     toast(`PDF diexport — ${doc.getNumberOfPages()} halaman`);
   }catch(err){console.error(err);toast('Error PDF: '+err.message,'error');}
   hideX();
@@ -1381,86 +1538,63 @@ async function exportPDF(){
 // ══════════════════════════════════════
 async function exportPPT(){
   if(!events.length){toast('Tidak ada event!','warn');return;}
+  const eq=equipments.find(e=>e.id===currentEqId);
   showX('Membuat PowerPoint...'); await sl(200);
   try{
-    const pres=new PptxGenJS();
-    pres.layout='LAYOUT_WIDE';
+    const pres=new PptxGenJS();pres.layout='LAYOUT_WIDE';
     const C={navy:'0A1628',navyL:'0F1E35',steel:'1E3A5F',amber:'E8A217',red:'E84040',green:'22C55E',teal:'0EA5E9',white:'FFFFFF',text:'E2E8F0',dim:'94A3B8',muted:'64748B'};
-    const sh=()=>({type:'outer',color:'000000',blur:8,offset:3,angle:135,opacity:0.2});
-    const eq=meta.equipment||'Equipment';
+    const sh=()=>({type:'outer',color:'000000',blur:8,offset:3,angle:135,opacity:.2});
+    const eqName=eq?.name||'Equipment',tag=eq?.tag_no||'';
     const fails=events.filter(e=>e.type==='failure');
     const totDown=events.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
 
-    // SLIDE 1 COVER
     const s1=pres.addSlide();s1.background={color:C.navy};
     s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.amber},line:{color:C.amber,width:0}});
     s1.addText('HISTORY RECORD SPESIFIK EQUIPMENT',{x:.4,y:.22,w:9,h:.28,fontSize:8,fontFace:'Calibri',bold:true,color:C.amber,charSpacing:2,margin:0});
-    s1.addText(eq,{x:.4,y:.65,w:10,h:1.1,fontSize:40,fontFace:'Calibri',color:C.text,bold:false,margin:0});
-    s1.addText('Failure History Report',{x:.4,y:1.7,w:9,h:.5,fontSize:20,fontFace:'Calibri',color:C.amber,bold:true,margin:0});
-    s1.addShape(pres.shapes.RECTANGLE,{x:.4,y:2.28,w:5.5,h:.04,fill:{color:C.steel},line:{color:C.steel,width:0}});
-    const infos=[['Unit',meta.unit||'—'],['Doc No',meta.docno||'—'],['Prepared By',meta.prepby||'—'],['Total Events',events.length+' event tercatat']];
-    infos.forEach(([k,v],i)=>{
-      s1.addText(k.toUpperCase(),{x:.4,y:2.42+i*.4,w:2,h:.28,fontSize:8,fontFace:'Calibri',color:C.dim,charSpacing:1,margin:0});
-      s1.addShape(pres.shapes.RECTANGLE,{x:2.42,y:2.45+i*.4,w:.04,h:.2,fill:{color:C.amber},line:{color:C.amber,width:0}});
-      s1.addText(v,{x:2.52,y:2.42+i*.4,w:5,h:.28,fontSize:12,fontFace:'Calibri',color:C.text,bold:true,margin:0});
-    });
+    s1.addText(eqName,{x:.4,y:.65,w:10,h:1.0,fontSize:38,fontFace:'Calibri',color:C.text,bold:false,margin:0});
+    s1.addText('Tag No: '+tag,{x:.4,y:1.65,w:6,h:.4,fontSize:14,fontFace:'Calibri',color:C.amber,bold:true,margin:0});
+    s1.addShape(pres.shapes.RECTANGLE,{x:.4,y:2.12,w:5,h:.04,fill:{color:C.steel},line:{color:C.steel,width:0}});
+    const info=[['Unit',eq?.unit||'—'],['Criticality',critLabel(eq?.criticality||'')],['Status',statusLabel(eq?.status||'')],['Total Events',events.length+' event recorded']];
+    info.forEach(([k,v],i)=>{s1.addText(k.toUpperCase(),{x:.4,y:2.26+i*.38,w:2,h:.26,fontSize:8,fontFace:'Calibri',color:C.dim,charSpacing:1,margin:0});s1.addShape(pres.shapes.RECTANGLE,{x:2.42,y:2.29+i*.38,w:.04,h:.18,fill:{color:C.amber},line:{color:C.amber,width:0}});s1.addText(v,{x:2.52,y:2.26+i*.38,w:5,h:.26,fontSize:12,fontFace:'Calibri',color:C.text,bold:true,margin:0});});
     const kpis=[{v:fails.length+'×',l:'Total Failure',c:C.red},{v:totDown+' Jam',l:'Downtime Kumulatif',c:C.amber},{v:events.filter(e=>['OPEN','OVERDUE'].includes(e.status)).length,l:'Status Open',c:C.red},{v:events.filter(e=>e.outstanding&&e.outstanding.trim()).length,l:'Outstanding',c:C.amber}];
-    kpis.forEach((k,i)=>{
-      const bx=.4+i*2.0;
-      s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:4.55,w:1.85,h:1.0,fill:{color:C.navyL},line:{color:C.steel,width:1},shadow:sh()});
-      s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:4.55,w:1.85,h:.06,fill:{color:k.c},line:{color:k.c,width:0}});
-      s1.addText(String(k.v),{x:bx,y:4.67,w:1.85,h:.5,fontSize:20,fontFace:'Calibri',color:k.c,bold:true,align:'center',margin:0});
-      s1.addText(k.l,{x:bx,y:5.17,w:1.85,h:.28,fontSize:8,fontFace:'Calibri',color:C.dim,align:'center',margin:0});
-    });
+    kpis.forEach((k,i)=>{const bx=.4+i*2.0;s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:4.5,w:1.85,h:1.0,fill:{color:C.navyL},line:{color:C.steel,width:1},shadow:sh()});s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:4.5,w:1.85,h:.06,fill:{color:k.c},line:{color:k.c,width:0}});s1.addText(String(k.v),{x:bx,y:4.62,w:1.85,h:.5,fontSize:20,fontFace:'Calibri',color:k.c,bold:true,align:'center',margin:0});s1.addText(k.l,{x:bx,y:5.12,w:1.85,h:.28,fontSize:8,fontFace:'Calibri',color:C.dim,align:'center',margin:0});});
     s1.addText('Developed by Technical Support  |  PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
 
-    // SLIDE 2 TABLE
     const s2=pres.addSlide();s2.background={color:C.navy};
     s2.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.amber},line:{color:C.amber,width:0}});
-    s2.addText('RINGKASAN KRONOLOGIS',{x:.4,y:.22,w:8,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:2,bold:true,margin:0});
-    s2.addText(eq+' — Tabel Failure Events',{x:.4,y:.5,w:12,h:.45,fontSize:17,fontFace:'Calibri',color:C.text,bold:true,margin:0});
+    s2.addText('RINGKASAN TABEL KRONOLOGIS',{x:.4,y:.22,w:8,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:2,bold:true,margin:0});
+    s2.addText(eqName+' ('+tag+')',{x:.4,y:.5,w:12,h:.45,fontSize:17,fontFace:'Calibri',color:C.text,bold:true,margin:0});
     s2.addShape(pres.shapes.RECTANGLE,{x:.4,y:.98,w:12.5,h:.03,fill:{color:C.steel},line:{color:C.steel,width:0}});
     const hdr=[[{text:'#',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'Tanggal',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Tipe',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Judul',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Mode',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Root Cause',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Down',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'PIC',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Status',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}}]];
-    const rows=events.map((ev,i)=>{
-      const df=fmtD(ev.date);
-      const tc=ev.type==='failure'?C.red:ev.type==='action'?C.teal:ev.type==='repair'?C.amber:C.green;
-      const sc=ev.status==='CLOSED'?C.green:ev.status==='OPEN'||ev.status==='OVERDUE'?C.red:C.amber;
-      return[{text:String(i+1),options:{align:'center',bold:true}},{text:df.full,options:{}},{text:typeLbl(ev.type),options:{bold:true,color:tc}},{text:(ev.title||'').substring(0,55),options:{}},{text:ev.mode||'—',options:{color:ev.mode?C.red:''}},{text:ev.cause||'—',options:{}},{text:ev.downtime?ev.downtime+'j':'—',options:{align:'center',color:ev.downtime?C.amber:''}},{text:ev.pic||'—',options:{color:C.teal}},{text:ev.status||'—',options:{align:'center',bold:true,color:sc}}];
-    });
+    const rows=events.map((ev,i)=>{const df=fmtD(ev.date);const tc=ev.type==='failure'?C.red:ev.type==='action'?C.teal:ev.type==='repair'?C.amber:C.green;const sc=ev.status==='CLOSED'?C.green:ev.status==='OPEN'||ev.status==='OVERDUE'?C.red:C.amber;return[{text:String(i+1),options:{align:'center',bold:true}},{text:df.full,options:{}},{text:typeLbl(ev.type),options:{bold:true,color:tc}},{text:(ev.title||'').substring(0,55),options:{}},{text:ev.mode||'—',options:{color:ev.mode?C.red:''}},{text:ev.cause||'—',options:{}},{text:ev.downtime?ev.downtime+'j':'—',options:{align:'center',color:ev.downtime?C.amber:''}},{text:ev.pic||'—',options:{color:C.teal}},{text:ev.status||'—',options:{align:'center',bold:true,color:sc}}];});
     s2.addTable([...hdr,...rows],{x:.4,y:1.1,w:12.5,fontSize:9,fontFace:'Calibri',color:C.text,border:{pt:.5,color:C.steel},fill:{color:C.navyL},rowH:.42,colW:[.4,1.6,1.2,2.8,1.7,2.0,.8,1.5,1.2]});
     s2.addText('Developed by Technical Support  |  PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
 
-    // DETAIL SLIDES
     for(let i=0;i<events.length;i+=2){
       const sl=pres.addSlide();sl.background={color:C.navy};
       sl.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.red},line:{color:C.red,width:0}});
-      sl.addText('DETAIL KRONOLOGIS',{x:.4,y:.22,w:8,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:2,bold:true,margin:0});
+      sl.addText('DETAIL KRONOLOGIS — '+eqName.toUpperCase()+' ('+tag+')',{x:.4,y:.22,w:12,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:1.5,bold:true,margin:0});
       const pair=[events[i],events[i+1]].filter(Boolean);
       const colW=pair.length===2?6.2:12.5;
       pair.forEach((ev,ci)=>{
         const bx=.4+ci*(colW+.1);
         const tc=ev.type==='failure'?C.red:ev.type==='action'?C.teal:ev.type==='repair'?C.amber:C.green;
-        const df=fmtD(ev.date);
-        const sc2=ev.status==='CLOSED'?C.green:ev.status==='OPEN'||ev.status==='OVERDUE'?C.red:C.amber;
+        const df=fmtD(ev.date);const sc2=ev.status==='CLOSED'?C.green:ev.status==='OPEN'||ev.status==='OVERDUE'?C.red:C.amber;
         sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:.58,w:colW,h:.44,fill:{color:'1A0808'},line:{color:tc,width:1}});
         sl.addText(`${typeLbl(ev.type)}${ev.fail_no?' #'+ev.fail_no:''} | ${(ev.title||'').substring(0,60)}`,{x:bx+.08,y:.58,w:colW-.16,h:.44,fontSize:10,fontFace:'Calibri',bold:true,color:tc,valign:'middle',margin:0});
-        if(ev.type==='failure'){
-          const info=[['Tgl/Waktu',`${df.full}${ev.time?' '+ev.time+' WIB':''}`],['Failure Mode',ev.mode||'—'],['Root Cause',ev.cause||'—'],['Downtime',ev.downtime?ev.downtime+' Jam':'—']];
-          info.forEach(([k,v],gi)=>{const gx=bx+(gi%2)*(colW/2);const gy=1.08+Math.floor(gi/2)*.48;const gw=colW/2-.05;sl.addShape(pres.shapes.RECTANGLE,{x:gx,y:gy,w:gw,h:.43,fill:{color:C.navyL},line:{color:C.steel,width:.5}});sl.addText(k.toUpperCase(),{x:gx+.07,y:gy+.04,w:gw-.12,h:.14,fontSize:6.5,fontFace:'Calibri',color:C.dim,charSpacing:1,margin:0});sl.addText(v,{x:gx+.07,y:gy+.18,w:gw-.12,h:.22,fontSize:9,fontFace:'Calibri',color:C.text,bold:true,margin:0});});
-        }
-        let cy=ev.type==='failure'?2.1:1.1;
-        if(ev.impact){sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy,w:colW,h:.52,fill:{color:'180808'},line:{color:C.red,width:.5}});sl.addText('DAMPAK',{x:bx+.07,y:cy+.04,w:colW-.14,h:.14,fontSize:6.5,fontFace:'Calibri',color:C.red,charSpacing:1,margin:0});sl.addText((ev.impact||'').substring(0,120),{x:bx+.07,y:cy+.18,w:colW-.14,h:.3,fontSize:8.5,fontFace:'Calibri',color:'F8C4C4',margin:0});cy+=.58;}
-        if(ev.actions){sl.addText('ACTION DILAKUKAN',{x:bx,y:cy,w:colW,h:.2,fontSize:6.5,fontFace:'Calibri',color:C.amber,charSpacing:1,bold:true,margin:0});cy+=.2;ev.actions.split('\n').filter(a=>a.trim()).slice(0,4).forEach(a=>{sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy+.04,w:.04,h:.22,fill:{color:C.amber},line:{color:C.amber,width:0}});sl.addText(a.trim().substring(0,80),{x:bx+.1,y:cy,w:colW-.1,h:.32,fontSize:8.5,fontFace:'Calibri',color:C.text,margin:0});cy+=.34;});}
+        if(ev.type==='failure'){const info2=[['Tgl/Waktu',`${df.full}${ev.time?' '+ev.time+' WIB':''}`],['Failure Mode',ev.mode||'—'],['Root Cause',ev.cause||'—'],['Downtime',ev.downtime?ev.downtime+' Jam':'—']];info2.forEach(([k,v],gi)=>{const gx=bx+(gi%2)*(colW/2);const gy=1.08+Math.floor(gi/2)*.46;const gw=colW/2-.05;sl.addShape(pres.shapes.RECTANGLE,{x:gx,y:gy,w:gw,h:.42,fill:{color:C.navyL},line:{color:C.steel,width:.5}});sl.addText(k.toUpperCase(),{x:gx+.07,y:gy+.04,w:gw-.12,h:.14,fontSize:6.5,fontFace:'Calibri',color:C.dim,charSpacing:1,margin:0});sl.addText(v,{x:gx+.07,y:gy+.18,w:gw-.12,h:.22,fontSize:9,fontFace:'Calibri',color:C.text,bold:true,margin:0});});}
+        let cy=ev.type==='failure'?2.08:1.1;
+        if(ev.impact){sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy,w:colW,h:.5,fill:{color:'180808'},line:{color:C.red,width:.5}});sl.addText('DAMPAK',{x:bx+.07,y:cy+.04,w:colW-.14,h:.14,fontSize:6.5,fontFace:'Calibri',color:C.red,charSpacing:1,margin:0});sl.addText((ev.impact||'').substring(0,120),{x:bx+.07,y:cy+.18,w:colW-.14,h:.28,fontSize:8.5,fontFace:'Calibri',color:'F8C4C4',margin:0});cy+=.56;}
+        if(ev.actions){sl.addText('ACTION',{x:bx,y:cy,w:colW,h:.2,fontSize:6.5,fontFace:'Calibri',color:C.amber,charSpacing:1,bold:true,margin:0});cy+=.2;ev.actions.split('\n').filter(a=>a.trim()).slice(0,4).forEach(a=>{sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy+.04,w:.04,h:.2,fill:{color:C.amber},line:{color:C.amber,width:0}});sl.addText(a.trim().substring(0,80),{x:bx+.1,y:cy,w:colW-.1,h:.3,fontSize:8.5,fontFace:'Calibri',color:C.text,margin:0});cy+=.32;});}
         if(ev.outstanding){sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy,w:colW,h:.2,fill:{color:'180808'},line:{color:C.red,width:0}});sl.addText('⚠ OUTSTANDING',{x:bx+.07,y:cy+.04,w:colW-.14,h:.16,fontSize:6.5,fontFace:'Calibri',color:C.red,charSpacing:1,bold:true,margin:0});cy+=.2;ev.outstanding.split('\n').filter(a=>a.trim()).slice(0,3).forEach(a=>{sl.addText('! '+a.trim().substring(0,80),{x:bx+.1,y:cy,w:colW-.1,h:.28,fontSize:8,fontFace:'Calibri',color:'F8C4C4',margin:0});cy+=.3;});}
-        sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:6.22,w:colW,h:.72,fill:{color:C.navyL},line:{color:C.steel,width:.5}});
-        sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:6.22,w:colW,h:.05,fill:{color:sc2},line:{color:sc2,width:0}});
+        sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:6.2,w:colW,h:.72,fill:{color:C.navyL},line:{color:C.steel,width:.5}});
+        sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:6.2,w:colW,h:.05,fill:{color:sc2},line:{color:sc2,width:0}});
         const metas=[['PIC',ev.pic||'—'],['Target',ev.target_date?fmtD(ev.target_date).full:'—'],['WO#',ev.wo||'—'],['Status',ev.status||'—']];
-        metas.forEach(([mk,mv],mi)=>{const mx=bx+.08+mi*(colW/4);sl.addText(mk,{x:mx,y:6.28,w:colW/4-.1,h:.18,fontSize:6.5,fontFace:'Calibri',color:C.dim,charSpacing:1,margin:0});sl.addText(mv,{x:mx,y:6.46,w:colW/4-.1,h:.28,fontSize:8.5,fontFace:'Calibri',color:mi===3?sc2:C.text,bold:mi===3,margin:0});});
+        metas.forEach(([mk,mv],mi)=>{const mx=bx+.08+mi*(colW/4);sl.addText(mk,{x:mx,y:6.26,w:colW/4-.1,h:.18,fontSize:6.5,fontFace:'Calibri',color:C.dim,charSpacing:1,margin:0});sl.addText(mv,{x:mx,y:6.44,w:colW/4-.1,h:.28,fontSize:8.5,fontFace:'Calibri',color:mi===3?sc2:C.text,bold:mi===3,margin:0});});
       });
       sl.addText('Developed by Technical Support  |  PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
     }
-    const fname=`History_Record_${eq.replace(/\s+/g,'_')}_${Date.now()}.pptx`;
-    await pres.writeFile({fileName:fname});
+    await pres.writeFile({fileName:`History_${tag||eqName}_${Date.now()}.pptx`});
     toast('PowerPoint berhasil diexport! ✓');
   }catch(err){console.error(err);toast('Error PPT: '+err.message,'error');}
   hideX();
@@ -1470,10 +1604,9 @@ async function exportPPT(){
 // INIT
 // ══════════════════════════════════════
 initTheme();
-// Check existing session
 (async()=>{
   const{data:{session}}=await sb.auth.getSession();
-  if(session?.user) await initApp(session.user);
+  if(session?.user)await initApp(session.user);
   else g('login-screen').style.display='flex';
 })();
 </script>
