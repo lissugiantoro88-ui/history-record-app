@@ -149,6 +149,35 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .login-err{font-size:12px;color:var(--red);min-height:18px;margin-bottom:10px;text-align:center;}
 .login-foot{text-align:center;margin-top:18px;font-size:10px;color:var(--muted);line-height:1.8;}
 
+
+/* ══ SIGNUP / REQUEST ACCESS ══ */
+.login-tabs{display:flex;gap:0;margin-bottom:22px;border-radius:6px;overflow:hidden;border:1px solid var(--border);}
+.login-tab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;background:var(--panel);color:var(--muted);transition:all .2s;}
+.login-tab.active{background:var(--amber);color:#fff;}
+.signup-panel{display:none;}
+.signup-panel.active{display:block;}
+.signin-panel{display:block;}
+.signin-panel.hidden{display:none;}
+.signup-success{background:var(--green);color:#fff;border-radius:6px;padding:14px 16px;text-align:center;font-size:13px;line-height:1.6;display:none;margin-bottom:12px;}
+.signup-success.show{display:block;}
+/* Request badge pada topbar */
+.req-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;}
+/* Request panel dalam modal UM */
+.req-section{margin-bottom:18px;}
+.req-section-title{font-size:12px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.req-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;background:var(--panel);}
+.req-avatar{width:34px;height:34px;border-radius:50%;background:var(--amber);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+.req-info{flex:1;min-width:0;}
+.req-name{font-size:13px;font-weight:600;color:var(--text);}
+.req-email{font-size:11px;color:var(--muted);margin-top:1px;}
+.req-time{font-size:10px;color:var(--muted);white-space:nowrap;}
+.req-actions{display:flex;gap:6px;flex-shrink:0;}
+.btn-approve{background:var(--green);color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-approve:hover{opacity:.85;}
+.btn-reject{background:none;color:var(--red);border:1px solid var(--red);border-radius:5px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;}
+.btn-reject:hover{background:var(--red);color:#fff;}
+.req-empty{text-align:center;padding:16px;color:var(--muted);font-size:13px;}
+
 /* ══ TOPBAR ══ */
 .topbar{background:var(--panel);border-bottom:2px solid var(--tborder);padding:0 22px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px var(--shadow);transition:background .25s;}
 .brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
@@ -549,11 +578,37 @@ canvas{width:100%;max-height:260px;}
         <p>TECHNICAL SUPPORT — PT KPB</p>
       </div>
     </div>
-    <div class="login-sub">Sign In to Continue</div>
-    <div class="lf"><label>Email</label><input type="email" id="l-email" placeholder="nama@pertamina.com" autocomplete="email"></div>
-    <div class="lf"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="login-err" id="l-err"></div>
-    <button class="btn btn-amber" style="width:100%;justify-content:center;padding:11px;" onclick="doLogin()" id="l-btn">Sign In</button>
+    <!-- TABS -->
+    <div class="login-tabs">
+      <div class="login-tab active" id="tab-signin" onclick="switchLoginTab('signin')">Sign In</div>
+      <div class="login-tab" id="tab-signup" onclick="switchLoginTab('signup')">Request Access</div>
+    </div>
+
+    <!-- SIGN IN PANEL -->
+    <div class="signin-panel" id="signin-panel">
+      <div class="lf"><label>Email</label><input type="email" id="l-email" placeholder="nama@email.com" autocomplete="email"></div>
+      <div class="lf"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="login-err" id="l-err"></div>
+      <button class="btn btn-amber" style="width:100%;justify-content:center;padding:11px;" onclick="doLogin()" id="l-btn">Sign In</button>
+    </div>
+
+    <!-- SIGN UP / REQUEST ACCESS PANEL -->
+    <div class="signup-panel" id="signup-panel">
+      <div class="signup-success" id="su-success">
+        ✓ Permintaan akses terkirim!<br>
+        <small>Admin akan mereview dan mengaktifkan akun Anda.<br>Anda akan bisa login setelah diapprove.</small>
+      </div>
+      <div id="su-form-wrap">
+        <div class="lf"><label>Nama Lengkap *</label><input type="text" id="su-name" placeholder="Nama sesuai ID pekerja"></div>
+        <div class="lf"><label>Email *</label><input type="email" id="su-email" placeholder="nama@email.com"></div>
+        <div class="lf"><label>Password *</label><input type="password" id="su-pass" placeholder="Min. 8 karakter"></div>
+        <div class="lf"><label>Konfirmasi Password *</label><input type="password" id="su-pass2" placeholder="Ulangi password" onkeydown="if(event.key==='Enter')doSignUp()"></div>
+        <div class="login-err" id="su-err"></div>
+        <button class="btn btn-amber" style="width:100%;justify-content:center;padding:11px;" onclick="doSignUp()" id="su-btn">Kirim Permintaan Akses</button>
+        <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:10px;">Akun akan aktif setelah diapprove oleh Admin</p>
+      </div>
+    </div>
+
     <div class="login-foot">
       Developed by <strong>Technical Support Team</strong><br>
       PT Kilang Pertamina Balikpapan
@@ -587,7 +642,7 @@ canvas{width:100%;max-height:260px;}
     <div class="theme-tog" onclick="toggleTheme()"><div class="tog-thumb"><span id="tog-icon">🌙</span></div></div>
     <button class="btn btn-teal btn-sm" onclick="exportPDF()" id="btn-pdf" style="display:none">📄 PDF</button>
     <button class="btn btn-amber btn-sm" onclick="exportPPT()" id="btn-ppt" style="display:none">📊 PPT</button>
-    <button class="btn btn-ghost btn-sm" id="btn-um" onclick="openUserManagement()" style="display:none;" title="User Management">👥 Users</button>
+    <button class="btn btn-ghost btn-sm" id="btn-um" onclick="openUserManagement()" style="display:none;" title="User Management">👥 Users<span class="req-badge" id="req-badge" style="display:none">0</span></button>
     <button class="btn btn-outline btn-sm" onclick="doLogout()">Sign Out</button>
   </div>
 </div>
@@ -1022,11 +1077,14 @@ canvas{width:100%;max-height:260px;}
       <button class="mclose" onclick="closeModal('modal-um')">×</button>
     </div>
     <div class="mb" style="padding:18px 20px;">
-      <div class="um-notice">
-        ℹ️ <strong>Cara tambah user baru:</strong> Buka 
-        <a href="https://supabase.com/dashboard" target="_blank">Supabase Dashboard</a> → 
-        Authentication → Users → Invite User. Setelah user login pertama kali, 
-        mereka akan muncul di sini dan bisa diatur role-nya.
+      <!-- REQUEST ACCESS SECTION -->
+      <div class="req-section" id="req-section" style="display:none">
+        <div class="req-section-title">🔔 Permintaan Akses Masuk <span id="req-count-label"></span></div>
+        <div id="req-list"><div class="req-empty">Memuat...</div></div>
+      </div>
+      <div class="um-notice" id="um-notice-add">
+        ℹ️ User baru dapat mendaftar sendiri melalui tombol <strong>"Request Access"</strong> di halaman login.
+        Permintaan akan muncul di sini untuk di-approve.
       </div>
       <div class="um-header">
         <span class="um-header-title">Daftar User Terdaftar</span>
@@ -1230,38 +1288,65 @@ async function doLogout(){
   // Reset login form
   g('l-email').value='';g('l-pass').value='';g('l-err').textContent='';
   g('l-btn').textContent='Sign In';g('l-btn').disabled=false;
+  // Reset ke tab signin
+  switchLoginTab('signin');
+  resetSignupForm();
 }
 async function initApp(user){
-  currentUser=user;
-  // Fetch profile - jika gagal langsung fallback ke viewer (jangan delay)
-  const{data:prof}=await sb.from('profiles').select('role,name,is_active').eq('id',user.id).single();
-  // Jika user tidak aktif, tolak login
-  if(prof && prof.is_active===false){
-    currentUser=null; currentRole=null;
-    g('topbar').style.display='none';
-    g('login-screen').style.display='flex';
-    setTimeout(()=>toast('Akun Anda dinonaktifkan. Hubungi admin.','error'),100);
-    sb.auth.signOut(); // signout tanpa await - jangan tunggu
-    return;
+  currentUser = user;
+  try {
+    // Fetch profile
+    const { data: prof, error: profErr } = await sb
+      .from('profiles')
+      .select('role,name,is_active')
+      .eq('id', user.id)
+      .single();
+
+    // Jika user tidak aktif, tolak login
+    if(prof && prof.is_active === false){
+      currentUser = null; currentRole = null;
+      g('topbar').style.display = 'none';
+      g('login-screen').style.display = 'flex';
+      g('l-btn').textContent = 'Sign In'; g('l-btn').disabled = false;
+      setTimeout(()=>toast('Akun Anda belum diaktifkan. Hubungi admin.','error'),100);
+      await sb.auth.signOut();
+      return;
+    }
+
+    currentRole = prof?.role || 'viewer';
+
+    // Tampilkan UI
+    g('login-screen').style.display = 'none';
+    g('topbar').style.display = 'flex';
+    const rMap = {admin:'ua-a rb-a', editor:'ua-e rb-e', viewer:'ua-v rb-v'};
+    const cls = rMap[currentRole] || 'ua-v rb-v';
+    const [avCls, rbCls] = cls.split(' ');
+    g('user-av').textContent = user.email.substring(0,2).toUpperCase();
+    g('user-av').className = 'user-av ' + avCls;
+    g('user-em').textContent = user.email;
+    g('role-badge').textContent = currentRole.toUpperCase();
+    g('role-badge').className = 'rbadge ' + rbCls;
+    window._canEdit  = currentRole === 'admin' || currentRole === 'editor';
+    window._canDelete = currentRole === 'admin';
+    g('btn-add-eq').style.display = window._canEdit ? '' : 'none';
+    g('btn-um').style.display = currentRole === 'admin' ? '' : 'none';
+
+    showView('dashboard');
+    await loadEquipments();
+    subscribeRealtime();
+    setConn('ok');
+    if(currentRole === 'admin') loadPendingRequests();
+
+  } catch(err) {
+    // Jika initApp crash karena apapun, jangan stuck — tampilkan login lagi
+    console.error('initApp error:', err);
+    currentUser = null; currentRole = null;
+    g('topbar').style.display = 'none';
+    g('login-screen').style.display = 'flex';
+    g('l-btn').textContent = 'Sign In'; g('l-btn').disabled = false;
+    toast('Gagal memuat aplikasi: ' + (err.message||err), 'error');
+    try { await sb.auth.signOut(); } catch(e){}
   }
-  currentRole=prof?.role||'viewer';
-  g('login-screen').style.display='none';
-  g('topbar').style.display='flex';
-  const rMap={admin:'ua-a rb-a',editor:'ua-e rb-e',viewer:'ua-v rb-v'};
-  const cls=rMap[currentRole]||'ua-v rb-v';const [avCls,rbCls]=cls.split(' ');
-  g('user-av').textContent=user.email.substring(0,2).toUpperCase();
-  g('user-av').className='user-av '+avCls;
-  g('user-em').textContent=user.email;
-  g('role-badge').textContent=currentRole.toUpperCase();
-  g('role-badge').className='rbadge '+rbCls;
-  window._canEdit=currentRole==='admin'||currentRole==='editor';
-  window._canDelete=currentRole==='admin';
-  g('btn-add-eq').style.display=window._canEdit?'':'none';
-  g('btn-um').style.display=currentRole==='admin'?'':'none';
-  showView('dashboard');
-  await loadEquipments();
-  subscribeRealtime();
-  setConn('ok');
 }
 
 // ══════════════════════════════════════
@@ -1292,7 +1377,7 @@ function goHome(){
 // ══════════════════════════════════════
 async function loadEquipments(){
   const{data,error}=await sb.from('equipments').select('*').order('created_at',{ascending:true});
-  g('dash-loading').style.display='none';
+  const _dl=g('dash-loading');if(_dl)_dl.style.display='none';
   if(error){toast('Gagal memuat equipment: '+error.message,'error');setConn('err');return;}
   equipments=data||[];
 
@@ -1716,6 +1801,13 @@ async function openEquipment(eqId){
 // ══════════════════════════════════════
 function subscribeRealtime(){
   realtimeCh=sb.channel('rt-all')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'registration_requests'},payload=>{
+      // Badge admin update realtime saat ada request masuk baru
+      if(currentRole==='admin'){
+        loadPendingRequests();
+        toast('🔔 Permintaan akses baru masuk!','warn');
+      }
+    })
     .on('postgres_changes',{event:'*',schema:'public',table:'events'},payload=>{
       if(payload.new?.equipment_id!==currentEqId&&payload.old?.equipment_id!==currentEqId)return;
       setConn('sync');
@@ -2921,9 +3013,223 @@ async function generateReportPPT(evData, from, to, fromStr, toStr){
 const ROLE_COLORS = {admin:'ua-a',editor:'ua-e',viewer:'ua-v'};
 const ROLE_LABELS = {admin:'Admin',editor:'Editor',viewer:'Viewer'};
 
-async function openUserManagement(){
+// ══════════════════════════════════════════════════
+// LOGIN TAB SWITCHER
+// ══════════════════════════════════════════════════
+function switchLoginTab(tab){
+  const isSignin = tab === 'signin';
+  g('tab-signin').classList.toggle('active', isSignin);
+  g('tab-signup').classList.toggle('active', !isSignin);
+  g('signin-panel').classList.toggle('hidden', !isSignin);
+  g('signup-panel').classList.toggle('active', !isSignin);
+  g('l-err').textContent='';
+  if(isSignin) resetSignupForm();
+}
+
+// ══════════════════════════════════════════════════
+// SIGN UP / REQUEST ACCESS
+// ══════════════════════════════════════════════════
+async function doSignUp(){
+  const name  = g('su-name').value.trim();
+  const email = g('su-email').value.trim();
+  const pass  = g('su-pass').value;
+  const pass2 = g('su-pass2').value;
+  const errEl = g('su-err');
+  errEl.textContent = '';
+
+  if(!name||!email||!pass||!pass2){ errEl.textContent='Semua field wajib diisi.'; return; }
+  if(!email.includes('@')){ errEl.textContent='Format email tidak valid.'; return; }
+  if(pass.length < 8){ errEl.textContent='Password minimal 8 karakter.'; return; }
+  if(pass !== pass2){ errEl.textContent='Konfirmasi password tidak cocok.'; return; }
+
+  const btn = g('su-btn');
+  btn.textContent = 'Mengirim...'; btn.disabled = true;
+
+  try {
+    // 1. Buat akun di Supabase Auth
+    const { data, error } = await sb.auth.signUp({
+      email, password: pass,
+      options: { data: { name } }
+    });
+    if(error) throw error;
+
+    const uid = data.user?.id || null;
+
+    // 2. Set profile is_active=false (disabled sampai admin approve)
+    if(uid){
+      await sb.from('profiles').upsert({
+        id: uid, email, name, role: 'viewer', is_active: false
+      });
+    }
+
+    // 3. Simpan request tanpa FK — user_id disimpan sebagai teks biasa
+    const { error: reqErr } = await sb.from('registration_requests').insert({
+      email, name, status: 'pending',
+      user_id_text: uid,
+      created_at: new Date().toISOString()
+    });
+    // Abaikan error FK — data utama sudah tersimpan di profiles
+    // Admin akan approve berdasarkan email
+
+    // 4. Paksa sign out agar sesi baru tidak aktif di browser ini
+    await sb.auth.signOut();
+
+    // 5. Tampilkan sukses
+    g('su-form-wrap').style.display = 'none';
+    g('su-success').classList.add('show');
+
+  } catch(err){
+    let msg = err.message || 'Terjadi kesalahan.';
+    if(msg.includes('already registered')||msg.includes('already been registered'))
+      msg = 'Email ini sudah terdaftar.';
+    errEl.textContent = msg;
+    btn.textContent = 'Kirim Permintaan Akses'; btn.disabled = false;
+    // Pastikan sign out kalau ada error setelah signUp berhasil
+    try{ await sb.auth.signOut(); }catch(e){}
+  }
+}
+
+// Reset signup form saat kembali ke signin
+function resetSignupForm(){
+  ['su-name','su-email','su-pass','su-pass2'].forEach(id=>{ if(g(id)) g(id).value=''; });
+  g('su-err').textContent='';
+  g('su-form-wrap').style.display='';
+  g('su-success').classList.remove('show');
+  if(g('su-btn')){ g('su-btn').textContent='Kirim Permintaan Akses'; g('su-btn').disabled=false; }
+}
+
+// ══════════════════════════════════════════════════
+// LOAD & DISPLAY PENDING REQUESTS
+// ══════════════════════════════════════════════════
+async function loadPendingRequests(){
+  if(currentRole !== 'admin') return;
+
+  const { data, error } = await sb
+    .from('registration_requests')
+    .select('*')
+    .eq('status','pending')
+    .order('created_at', { ascending: true });
+
+  const count = data?.length || 0;
+
+  // Update badge di topbar
+  const badge = g('req-badge');
+  if(badge){
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'inline-flex' : 'none';
+  }
+
+  // Update section dalam modal UM
+  const section = g('req-section');
+  const list    = g('req-list');
+  const label   = g('req-count-label');
+
+  if(!section) return;
+  section.style.display = count > 0 ? 'block' : 'none';
+  if(label) label.textContent = count > 0 ? `(${count})` : '';
+
+  if(!list) return;
+  if(error){ list.innerHTML='<div class="req-empty" style="color:var(--red)">Gagal memuat request.</div>'; return; }
+  if(count === 0){ list.innerHTML=''; return; }
+
+  list.innerHTML = data.map(req => {
+    const initials = (req.name||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const timeAgo  = fmtTimeAgo(req.created_at);
+    return `
+    <div class="req-row" id="req-row-${req.id}">
+      <div class="req-avatar">${initials}</div>
+      <div class="req-info">
+        <div class="req-name">${req.name}</div>
+        <div class="req-email">${req.email}</div>
+      </div>
+      <div class="req-time">${timeAgo}</div>
+      <div class="req-actions">
+        <button class="btn-approve" onclick="approveRequest('${req.id}','${req.user_id}','${req.email}','${req.name}')">✓ Approve</button>
+        <button class="btn-reject"  onclick="rejectRequest('${req.id}','${req.user_id}')">✗</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fmtTimeAgo(iso){
+  if(!iso) return '';
+  const diff = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if(diff < 60)   return 'Baru saja';
+  if(diff < 3600) return Math.floor(diff/60)+'m lalu';
+  if(diff < 86400)return Math.floor(diff/3600)+'j lalu';
+  return Math.floor(diff/86400)+'h lalu';
+}
+
+// ══════════════════════════════════════════════════
+// APPROVE REQUEST
+// ══════════════════════════════════════════════════
+async function approveRequest(reqId, userId, email, name){
+  const btn = document.querySelector(`#req-row-${reqId} .btn-approve`);
+  if(btn){ btn.textContent='...'; btn.disabled=true; }
+
+  try {
+    // 1. Aktifkan profile (by email)
+    const { error: profErr } = await sb.from('profiles')
+      .update({ is_active: true, role: 'viewer' })
+      .eq('email', email);
+    if(profErr) throw profErr;
+
+    // 1b. Confirm email agar user bisa login (bypass email verification)
+    await sb.rpc('confirm_user_email', { user_email: email });
+
+    // 2. Update status request
+    const { error: reqErr } = await sb.from('registration_requests')
+      .update({ status:'approved', reviewed_at: new Date().toISOString() })
+      .eq('id', reqId);
+    if(reqErr) throw reqErr;
+
+    // 3. Hapus row dari UI dengan animasi
+    const row = g('req-row-'+reqId);
+    if(row){ row.style.opacity='0'; row.style.transition='opacity .3s'; setTimeout(()=>row.remove(),300); }
+
+    toast(`✓ ${name} diapprove. User sudah bisa login.`, 'ok');
+
+    // 4. Reload untuk update badge
+    setTimeout(loadPendingRequests, 400);
+
+  } catch(err){
+    toast('Gagal approve: '+err.message, 'error');
+    if(btn){ btn.textContent='✓ Approve'; btn.disabled=false; }
+  }
+}
+
+// ══════════════════════════════════════════════════
+// REJECT REQUEST
+// ══════════════════════════════════════════════════
+async function rejectRequest(reqId, userId){
+  if(!confirm('Tolak permintaan akses ini? Akun akan dihapus.')) return;
+
+  try {
+    // 1. Update status request
+    await sb.from('registration_requests')
+      .update({ status:'rejected', reviewed_at: new Date().toISOString() })
+      .eq('id', reqId);
+
+    // 2. Nonaktifkan profile (jika ada)
+    if(userId && userId !== 'null'){
+      await sb.from('profiles').update({ is_active: false }).eq('id', userId);
+    }
+
+    // 3. Hapus row
+    const row = g('req-row-'+reqId);
+    if(row){ row.style.opacity='0'; row.style.transition='opacity .3s'; setTimeout(()=>row.remove(),300); }
+
+    toast('Permintaan ditolak.', 'warn');
+    setTimeout(loadPendingRequests, 400);
+
+  } catch(err){
+    toast('Gagal reject: '+err.message, 'error');
+  }
+}
+function openUserManagement(){
   g('modal-um').classList.add('open');
-  await loadUsers();
+  loadUsers();
+  loadPendingRequests();
 }
 
 async function loadUsers(){
@@ -2958,7 +3264,7 @@ async function loadUsers(){
 
     const roleColor = u.role==='admin'?'var(--red)':u.role==='editor'?'var(--amber)':'var(--teal)';
 
-    return `<tr class="${!isActive&&!isSelf?'suspended':''}">
+    return `<tr class="${!isActive&&!isSelf?'suspended':''}" data-uid="${u.id}">
       <td><div class="um-avatar ${avCls}">${initials}</div></td>
       <td>
         <div class="um-name">${esc(displayName)}</div>
@@ -2971,8 +3277,11 @@ async function loadUsers(){
       </td>
       <td>${statusBadge}</td>
       <td>
-        ${isSelf ? '<span style="font-size:10px;color:var(--muted);">—</span>' : `
-          <button class="btn btn-ghost btn-xs" onclick="openEditUser('${u.id}')" title="Edit user">✎ Edit</button>
+        ${isSelf ? '<span style="font-size:10px;color:var(--muted);">Anda</span>' : `
+          <div style="display:flex;gap:4px;">
+            <button class="btn btn-ghost btn-xs" onclick="openEditUser('${u.id}')" title="Edit user">✎ Edit</button>
+            <button class="btn btn-xs" style="background:none;border:1px solid var(--red);color:var(--red);border-radius:4px;padding:2px 8px;font-size:11px;cursor:pointer;" onclick="deleteUser('${u.id}','${esc(u.email||'')}','${esc(u.name||u.email||'')}')" title="Hapus user">🗑</button>
+          </div>
         `}
       </td>
     </tr>`;
@@ -3048,9 +3357,36 @@ window.addEventListener('resize',()=>{
       g('view-dashboard').classList.remove('active');
       g('view-detail').classList.remove('active');
       g('login-screen').style.display='flex';
-      g('l-btn').textContent='Sign In'; g('l-btn').disabled=false;
+      const _lb=g('l-btn');if(_lb){_lb.textContent='Sign In';_lb.disabled=false;}
     }
   });
+
+
+async function deleteUser(userId, email, name){
+  if(userId === currentUser?.id){
+    toast('Tidak bisa menghapus akun sendiri!','error'); return;
+  }
+  if(!confirm(`Hapus user "${name}" (${email}) secara permanen?\n\nSemua data akun akan terhapus dan tidak bisa dikembalikan.`)) return;
+
+  try {
+    // 1. Hapus dari profiles
+    const {error: profErr} = await sb.from('profiles').delete().eq('id', userId);
+    if(profErr) throw profErr;
+
+    // 2. Hapus registration_requests terkait
+    await sb.from('registration_requests').delete().eq('user_id_text', userId);
+
+    // 3. Hapus row dari tabel UI langsung
+    const row = document.querySelector(`tr[data-uid="${userId}"]`);
+    if(row){ row.style.opacity='0'; row.style.transition='opacity .3s'; setTimeout(()=>row.remove(),300); }
+
+    toast(`✓ User ${email} berhasil dihapus.`, 'ok');
+    setTimeout(loadUsers, 400);
+
+  } catch(err){
+    toast('Gagal hapus user: '+err.message, 'error');
+  }
+}
 
   // Page reload: cek session yang sudah ada
   const{data:{session}}=await sb.auth.getSession();
