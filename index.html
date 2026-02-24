@@ -929,7 +929,51 @@ canvas{width:100%;max-height:260px;}
         <div class="fg" style="margin:0"><label>Nama Equipment *</label><input id="eq-name" placeholder="cth: Air Compressor K1C"></div>
         <div class="fg" style="margin:0"><label>Tag No *</label><input id="eq-tag" placeholder="cth: K1C / MAB-01 / GT-01"></div>
       </div>
-      <div class="fg"><label>Unit / Area / Lokasi *</label><input id="eq-unit" placeholder="cth: RFCC — Utilities Section"></div>
+      <div class="fg" style="position:relative"><label>Unit / Area / Lokasi *</label>
+          <select id="eq-unit-select" onchange="onUnitSelectChange(this.value)" style="width:100%">
+            <option value="">— Pilih Unit —</option>
+            <optgroup label="OSBL">
+              <option value="OSBL-315 Fuel Oil &amp; Gas System">OSBL-315 — Fuel Oil &amp; Gas System</option>
+              <option value="OSBL-325 Spent Caustic &amp; Chemical">OSBL-325 — Spent Caustic &amp; Chemical</option>
+              <option value="OSBL-331 Steam &amp; Power Generation">OSBL-331 — Steam &amp; Power Generation</option>
+              <option value="OSBL-332 Cooling Water System">OSBL-332 — Cooling Water System</option>
+              <option value="OSBL-334 Waste Water Treatment Plant">OSBL-334 — Waste Water Treatment Plant</option>
+              <option value="OSBL-335 Air System">OSBL-335 — Air System</option>
+              <option value="OSBL-337 Sea Water Intake System">OSBL-337 — Sea Water Intake System</option>
+              <option value="OSBL-320 Plant Feed and Product Tankage">OSBL-320 — Plant Feed and Product Tankage</option>
+              <option value="OSBL-323 New Product Jetty - Loading Arm and Metering">OSBL-323 — New Product Jetty - Loading Arm and Metering</option>
+            </optgroup>
+            <optgroup label="ISBL">
+              <option value="ISBL-052 RFCC Residued Fluidized Catalytic Converter">ISBL-052 — RFCC Residued Fluidized Catalytic Converter</option>
+              <option value="ISBL-053 RFCC Naphtha Hydrotreating Unit">ISBL-053 — RFCC Naphtha Hydrotreating Unit</option>
+              <option value="ISBL-054 DHT - Diesel Hydrotreating Unit">ISBL-054 — DHT - Diesel Hydrotreating Unit</option>
+              <option value="ISBL-059 CCR Platforming">ISBL-059 — CCR Platforming</option>
+              <option value="ISBL-060 Saturated Gas Concentration Unit (SGCU)">ISBL-060 — Saturated Gas Concentration Unit (SGCU)</option>
+              <option value="ISBL-062 RFCC LPG Treating Unit">ISBL-062 — RFCC LPG Treating Unit</option>
+              <option value="ISBL-063 Propylane Recovery Unit">ISBL-063 — Propylane Recovery Unit</option>
+              <option value="ISBL-064 Saturated LPG Treating Unit">ISBL-064 — Saturated LPG Treating Unit</option>
+              <option value="ISBL-065 Alkylation">ISBL-065 — Alkylation</option>
+              <option value="ISBL-066 Wet Gas Sulfuric Acid">ISBL-066 — Wet Gas Sulfuric Acid</option>
+              <option value="ISBL-067 Non-RFCC Sour Water Stripping (SWS)">ISBL-067 — Non-RFCC Sour Water Stripping (SWS)</option>
+              <option value="ISBL-068 Hydrogen Manufacturing Unit (HMU)">ISBL-068 — Hydrogen Manufacturing Unit (HMU)</option>
+              <option value="ISBL-069 Amine Regeneration Unit">ISBL-069 — Amine Regeneration Unit</option>
+              <option value="ISBL-079 Amine Regeneration Unit (ARU II)">ISBL-079 — Amine Regeneration Unit (ARU II)</option>
+              <option value="ISBL-082 Isomerization Unit">ISBL-082 — Isomerization Unit</option>
+              <option value="ISBL-083 Diesel Hydrotreating Unit II">ISBL-083 — Diesel Hydrotreating Unit II</option>
+              <option value="ISBL-084 Naphtha Hydrotreating Unit II">ISBL-084 — Naphtha Hydrotreating Unit II</option>
+              <option value="ISBL-085 Common DHT H2 Compressor">ISBL-085 — Common DHT H2 Compressor</option>
+              <option value="ISBL-160 Common Facilities - NLP">ISBL-160 — Common Facilities - NLP</option>
+              <option value="ISBL-167 RFCC Sour Water Stripping">ISBL-167 — RFCC Sour Water Stripping</option>
+              <option value="ISBL-169 Sulfur Plant Unit">ISBL-169 — Sulfur Plant Unit</option>
+              <option value="ISBL-319 Flare System (Including Acid Flare)">ISBL-319 — Flare System (Including Acid Flare)</option>
+            </optgroup>
+            <optgroup label="─────────────────">
+              <option value="__custom__">✏️ Ketik unit lain (Custom)...</option>
+            </optgroup>
+          </select>
+          <input id="eq-unit" style="display:none;margin-top:6px" placeholder="Ketik nama unit / area..." />
+          <button type="button" id="unit-back-btn" onclick="onUnitBackBtn()" style="display:none;margin-top:4px;background:none;border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:11px;color:var(--muted)">← Kembali ke daftar</button>
+        </div>
       <div class="frow">
         <div class="fg"><label>Status Equipment</label>
           <select id="eq-status">
@@ -1453,12 +1497,41 @@ function setEqFilter(f,el){
 // ══════════════════════════════════════
 // ADD / EDIT EQUIPMENT MODAL
 // ══════════════════════════════════════
+
+function onUnitSelectChange(val){
+  const sel = g('eq-unit-select');
+  const inp = g('eq-unit');
+  const btn = g('unit-back-btn');
+  if(val === '__custom__'){
+    sel.style.display = 'none';
+    inp.style.display = '';
+    btn.style.display = '';
+    inp.value = '';
+    inp.focus();
+  } else {
+    inp.value = val;
+  }
+}
+function onUnitBackBtn(){
+  const sel = g('eq-unit-select');
+  const inp = g('eq-unit');
+  const btn = g('unit-back-btn');
+  sel.style.display = '';
+  inp.style.display = 'none';
+  btn.style.display = 'none';
+  sel.value = '';
+  inp.value = '';
+}
 function openAddEquipment(){
   if(!window._canEdit){toast('Tidak memiliki akses.','error');return;}
   editEqId=null;
   g('modal-eq-title').textContent='Tambah Equipment Baru';
   g('btn-save-eq').textContent='Simpan Equipment';
   ['eq-name','eq-tag','eq-unit','eq-desc'].forEach(id=>g(id).value='');
+  const _usel=g('eq-unit-select'),_uinp=g('eq-unit'),_ubtn=g('unit-back-btn');
+  if(_usel){_usel.value='';_usel.style.display='';}
+  if(_uinp)_uinp.style.display='none';
+  if(_ubtn)_ubtn.style.display='none';
   g('eq-status').value='active';g('eq-crit').value='critical';
   g('modal-eq').classList.add('open');
 }
@@ -1468,7 +1541,24 @@ function openEditEquipment(id){
   g('modal-eq-title').textContent='Edit Equipment';
   g('btn-save-eq').textContent='Update Equipment';
   g('eq-name').value=eq.name||'';g('eq-tag').value=eq.tag_no||'';
-  g('eq-unit').value=eq.unit||'';g('eq-status').value=eq.status||'active';
+  // Sync unit dropdown
+  const _eu=eq.unit||'';
+  const _usel2=g('eq-unit-select'),_uinp2=g('eq-unit'),_ubtn2=g('unit-back-btn');
+  const _knownVals=Array.from(_usel2?_usel2.options:[]).map(o=>o.value);
+  if(_usel2 && _knownVals.includes(_eu)){
+    _usel2.value=_eu;_usel2.style.display='';
+    _uinp2.value=_eu;_uinp2.style.display='none';
+    if(_ubtn2)_ubtn2.style.display='none';
+  } else if(_eu){
+    if(_usel2){_usel2.style.display='none';}
+    _uinp2.value=_eu;_uinp2.style.display='';
+    if(_ubtn2)_ubtn2.style.display='';
+  } else {
+    if(_usel2){_usel2.value='';_usel2.style.display='';}
+    _uinp2.value='';_uinp2.style.display='none';
+    if(_ubtn2)_ubtn2.style.display='none';
+  }
+  g('eq-status').value=eq.status||'active';
   g('eq-crit').value=eq.criticality||'critical';g('eq-desc').value=eq.description||'';
   g('modal-eq').classList.add('open');
 }
