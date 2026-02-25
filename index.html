@@ -342,7 +342,7 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 
 /* Timeline */
 .timeline{position:relative;}
-.timeline::before{content:'';position:absolute;left:128px;top:0;bottom:0;width:2px;background:var(--tline);}
+..tl-entry{position:relative;}
 .tl-entry{display:flex;margin-bottom:18px;animation:fadeUp .3s ease both;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .tl-date{width:112px;flex-shrink:0;padding-right:16px;text-align:right;padding-top:11px;}
@@ -832,11 +832,19 @@ canvas{width:100%;max-height:260px;}
         </div>
         <div class="fg"><label>Tipe Event *</label>
           <select id="f-type" onchange="onTypeChange()">
-            <option value="failure">🔴 Failure / Trip</option>
-            <option value="action">🔵 Action / Investigasi</option>
-            <option value="repair">🟡 Repair / Perbaikan</option>
-            <option value="resolved">🟢 Resolved / Selesai</option>
+            <option value="failure">🔴 Failure / Trip — Kejadian Utama</option>
+            <option value="action">🔵 Action / Investigasi — Tindak Lanjut</option>
+            <option value="repair">🟡 Repair / Perbaikan — Tindak Lanjut</option>
+            <option value="resolved">🟢 Resolved / Selesai — Penutupan</option>
           </select>
+        </div>
+        <!-- Parent Failure selector - muncul untuk action/repair/resolved -->
+        <div class="fg" id="f-parent-wrap" style="display:none">
+          <label>🔗 Terkait Failure *</label>
+          <select id="f-parent-id">
+            <option value="">— Pilih Failure yang ditangani —</option>
+          </select>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">Pilih event FAILURE yang menjadi akar dari tindakan ini</div>
         </div>
         <div class="fg"><label>Judul / Deskripsi *</label><input id="f-title" placeholder="cth: Sudden Trip — Vibration HH"></div>
         <!-- FAILURE BLOCK -->
@@ -947,17 +955,15 @@ canvas{width:100%;max-height:260px;}
       </div>
       <div class="toolbar">
         <div class="legend">
-          <div class="lg-item"><div class="lg-dot ld-f"></div>Failure</div>
-          <div class="lg-item"><div class="lg-dot ld-a"></div>Action</div>
-          <div class="lg-item"><div class="lg-dot ld-r"></div>Repair</div>
-          <div class="lg-item"><div class="lg-dot ld-s"></div>Resolved</div>
+          <div class="lg-item"><span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span> Failure</div>
+          <div class="lg-item"><span style="width:10px;height:10px;border-radius:50%;background:var(--amber);display:inline-block"></span> On Progress</div>
+          <div class="lg-item"><span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span> Resolved</div>
         </div>
         <div class="tsep"></div>
         <button class="fchip active" onclick="doFilter('all',this)">Semua</button>
-        <button class="fchip" onclick="doFilter('failure',this)">Failure</button>
-        <button class="fchip" onclick="doFilter('action',this)">Action</button>
-        <button class="fchip" onclick="doFilter('repair',this)">Repair</button>
-        <button class="fchip" onclick="doFilter('resolved',this)">Resolved</button>
+        <button class="fchip" onclick="doFilter('open',this)">🔴 Open</button>
+        <button class="fchip" onclick="doFilter('onprogress',this)">🟡 On Progress</button>
+        <button class="fchip" onclick="doFilter('resolved',this)">🟢 Resolved</button>
         <div class="tsep"></div>
         <span style="font-size:10px;color:var(--textDim);" id="fc-lbl"></span>
       </div>
@@ -1383,18 +1389,20 @@ async function loadEquipments(){
 
   // Load event summaries + MTBF/MTTR
   if(equipments.length>0){
-    const{data:evData}=await sb.from('events').select('equipment_id,type,status,downtime,date,outstanding');
+    const{data:evData}=await sb.from('events').select('id,equipment_id,type,status,downtime,date,outstanding,parent_failure_id,title');
     if(evData){
       allEventsCache=evData;
       equipments.forEach(eq=>{
         const evs=evData.filter(e=>e.equipment_id===eq.id);
-        eq._failures=evs.filter(e=>e.type==='failure').length;
-        eq._downtime=evs.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
-        eq._open=evs.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
+        const fails=evs.filter(e=>e.type==='failure');
+        const children=evs.filter(e=>e.type!=='failure');
+        eq._failures=fails.length;
+        eq._downtime=calcDowntimeFromEvents(evs);
+        eq._open=calcOpenFailures(evs);
         eq._total=evs.length;
-        eq._mtbf=calcMTBF(eq.id, evData);
-        eq._mttr=calcMTTR(eq.id, evData);
-        eq._isBadActor=isBadActor(eq, evData);
+        eq._mtbf=calcMTBF(fails);
+        eq._mttr=calcMTTR(fails,children);
+        eq._isBadActor=isBadActor(eq, fails);
       });
       // Populate trend chart equipment select
       const sel=g('trend-eq-select');
@@ -1475,7 +1483,7 @@ function renderDashboard(){
 
   // Recalculate bad actor FIRST before any filtering
   if(allEventsCache.length>0){
-    equipments.forEach(eq=>{ eq._isBadActor=isBadActor(eq, allEventsCache); });
+    equipments.forEach(eq=>{ const _fails=allEventsCache.filter(e=>e.equipment_id===eq.id&&e.type==='failure'); eq._isBadActor=isBadActor(eq, _fails); });
   }
 
   let filtered=equipments;
@@ -1682,13 +1690,14 @@ async function doDeleteEquipment(){
 function updateMtbfStrip(eq, evData){
   const failEvs = evData.filter(e=>e.type==='failure');
   const repairEvs = evData.filter(e=>e.type==='repair');
-  const mtbf = calcMTBF(eq.id, evData);
-  const mttr = calcMTTR(eq.id, evData);
+  const childEvs = evData.filter(e=>e.type!=='failure');
+  const mtbf = calcMTBF(failEvs);
+  const mttr = calcMTTR(failEvs, childEvs);
   const avail = calcAvailability(mtbf, mttr);
   const {minFail,months,minDown}=getBaThreshold();
   const cutoff=new Date();cutoff.setMonth(cutoff.getMonth()-months);
-  const recentFails=evData.filter(e=>e.type==='failure'&&new Date(e.date)>=cutoff).length;
-  const totDown=failEvs.reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0);
+  const recentFails=failEvs.filter(e=>new Date(e.date)>=cutoff).length;
+  const totDown=calcDowntimeFromEvents(evData);
   const ba=eq._isBadActor||(recentFails>=minFail||totDown>=minDown);
 
   // ── MTBF ──
@@ -1715,8 +1724,7 @@ function updateMtbfStrip(eq, evData){
     } else {
       mttrEl.textContent=fmtHours(mttr);
       mttrEl.style.color=mttr<24?'var(--green)':mttr<72?'var(--amber)':'var(--red)';
-      const repD=repairEvs.reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0);
-      if(mttrSub)mttrSub.textContent=`avg dari ${failEvs.length} failure${repD?` · repair: ${repD}j`:''}`;
+      if(mttrSub)mttrSub.textContent=`avg dari ${failEvs.length} failure (Failure→Resolved)`;
     }
   }
 
@@ -1824,12 +1832,17 @@ function subscribeRealtime(){
 // ══════════════════════════════════════
 function onTypeChange(){
   const t=g('f-type').value;
-  // Show/hide sections based on type
+  const isChild = t!=='failure';
+  // Show/hide blocks
   g('f-fail-block').style.display=t==='failure'?'block':'none';
   g('f-action-block').style.display=t==='action'?'block':'none';
   g('f-repair-block').style.display=t==='repair'?'block':'none';
   g('f-resolved-block').style.display=t==='resolved'?'block':'none';
-  // Update placeholder for title
+  // Show parent selector for child events
+  const pw=g('f-parent-wrap');
+  if(pw) pw.style.display=isChild?'block':'none';
+  if(isChild) populateParentSelector();
+  // Placeholder
   const titleEl=g('f-title');
   const ph={
     failure:'cth: Sudden Trip — Vibration HH / High Temperature Alarm',
@@ -1838,18 +1851,35 @@ function onTypeChange(){
     resolved:'cth: Unit kembali normal — Trial Run 72 jam OK'
   };
   if(titleEl) titleEl.placeholder=ph[t]||'';
-  // Auto-set status default per type
+  // Auto status
   const statusEl=g('f-status');
   if(statusEl){
     const def={failure:'OPEN',action:'ON PROGRESS',repair:'ON PROGRESS',resolved:'CLOSED'};
-    if(statusEl.value==='' || ['OPEN','ON PROGRESS','CLOSED'].includes(statusEl.value)) statusEl.value=def[t];
+    if(statusEl.value===''||['OPEN','ON PROGRESS','CLOSED'].includes(statusEl.value)) statusEl.value=def[t];
   }
 }
+
+function populateParentSelector(){
+  const sel=g('f-parent-id'); if(!sel) return;
+  const failures=events.filter(e=>e.type==='failure').sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const curVal=sel.value;
+  sel.innerHTML='<option value="">— Pilih Failure yang ditangani —</option>';
+  failures.forEach(f=>{
+    const opt=document.createElement('option');
+    opt.value=f.id;
+    const dt=fmtD(f.date);
+    opt.textContent=`[${dt.full}] ${f.title||'Failure'}`;
+    sel.appendChild(opt);
+  });
+  if(curVal) sel.value=curVal;
+}
+
 onTypeChange();
 function resetForm(){
   editEvId=null;g('form-lbl').textContent='Tambah event baru';
   g('fs-icon').textContent='＋';g('fs-lbl').textContent='Tambah Event';
   ['f-date','f-time','f-title','f-pic','f-tgt','f-wo','f-ref'].forEach(id=>{const el=g(id);if(el)el.value='';});
+  const _ps=g('f-parent-id');if(_ps)_ps.value='';const _pw=g('f-parent-wrap');if(_pw)_pw.style.display='none';
   // Reset all per-type fields (there may be multiple els with same id in different blocks)
   document.querySelectorAll('#f-mode,#f-cause,#f-act,#f-out,#f-impact').forEach(el=>el.value='');
   document.querySelectorAll('#f-down,#f-fno').forEach(el=>el.value='');
@@ -1864,9 +1894,16 @@ async function submitForm(){
   const blockId={'failure':'f-fail-block','action':'f-action-block','repair':'f-repair-block','resolved':'f-resolved-block'}[typeVal]||'f-fail-block';
   const activeBlock=g(blockId);
   const gv=(id)=>{if(activeBlock){const el=activeBlock.querySelector('#'+id);if(el)return el.value;}const el=g(id);return el?el.value:'';};
+  // Validasi parent untuk child events
+  const typeVal2=g('f-type').value;
+  const parentId=g('f-parent-id')?.value||null;
+  if(typeVal2!=='failure' && !parentId){
+    toast('Pilih Failure yang ditangani terlebih dahulu!','error'); return;
+  }
   const ev={
     equipment_id:currentEqId,date,time:g('f-time').value||null,
     type:typeVal,title,
+    parent_failure_id: typeVal!=='failure'?parentId:null,
     mode:gv('f-mode').trim()||null,cause:gv('f-cause').trim()||null,
     downtime:gv('f-down')?parseInt(gv('f-down')):null,
     fail_no:gv('f-fno')?parseInt(gv('f-fno')):null,
@@ -1894,16 +1931,27 @@ async function submitForm(){
   render();
 }
 async function refreshEqSummary(eqId){
-  const{data}=await sb.from('events').select('type,status,downtime,date').eq('equipment_id',eqId);
+  const{data}=await sb.from('events').select('type,status,downtime,date,parent_failure_id,id').eq('equipment_id',eqId);
   const eq=equipments.find(e=>e.id===eqId);if(!eq||!data)return;
-  eq._failures=data.filter(e=>e.type==='failure').length;
-  eq._downtime=data.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
-  eq._open=data.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
+  const fails=data.filter(e=>e.type==='failure');
+  const children=data.filter(e=>e.type!=='failure');
+  eq._failures=fails.length;
+  // Downtime: FAILURE→RESOLVED (parent-child)
+  let totDown=0;
+  fails.forEach(f=>{
+    const myRes=children.filter(c=>c.parent_failure_id===f.id&&c.type==='resolved');
+    if(myRes.length){
+      const dh=Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600));
+      if(dh>0) totDown+=dh;
+    } else if(f.downtime){ totDown+=parseInt(f.downtime)||0; }
+  });
+  eq._downtime=totDown;
+  // Open = failures without resolved child
+  eq._open=fails.filter(f=>!children.some(c=>c.parent_failure_id===f.id&&c.type==='resolved')).length;
   eq._total=data.length;
-  eq._mtbf=calcMTBF(eqId,data);
-  eq._mttr=calcMTTR(eqId,data);
-  eq._isBadActor=isBadActor(eq,data);
-  // Update allEventsCache for this equipment
+  eq._mtbf=calcMTBF(fails);
+  eq._mttr=calcMTTR(fails,children);
+  eq._isBadActor=isBadActor(eq,fails);
   allEventsCache=allEventsCache.filter(e=>e.equipment_id!==eqId).concat(data);
 }
 
@@ -1916,6 +1964,12 @@ function editEv(id){
   g('f-type').value=ev.type||'failure';g('f-title').value=ev.title||'';
   g('f-pic').value=ev.pic||'';g('f-tgt').value=ev.target_date||'';g('f-wo').value=ev.wo||'';
   onTypeChange();
+  // Populate & set parent selector for child events
+  if(ev.type!=='failure'){
+    populateParentSelector();
+    const ps=g('f-parent-id');
+    if(ps && ev.parent_failure_id) ps.value=ev.parent_failure_id;
+  }
   const blkId={'failure':'f-fail-block','action':'f-action-block','repair':'f-repair-block','resolved':'f-resolved-block'}[ev.type||'failure']||'f-fail-block';
   const blk=g(blkId);
   const sv=(id,val)=>{if(blk){const el=blk.querySelector('#'+id);if(el){el.value=val;return;}}const el2=g(id);if(el2)el2.value=val;};
@@ -1951,101 +2005,282 @@ function doFilter(f,el){
   curFilter=f;document.querySelectorAll('.toolbar .fchip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');render();
 }
+
 function render(){
   const wrap=g('tl-wrap');
-  // Safety: pastikan hanya events milik equipment yang sedang dibuka
   if(currentEqId) events=events.filter(e=>e.equipment_id===currentEqId||!e.equipment_id);
-  const fails=events.filter(e=>e.type==='failure');
-  const actions=events.filter(e=>e.type==='action');
-  const repairs=events.filter(e=>e.type==='repair');
-  const resolved=events.filter(e=>e.type==='resolved');
-  const totDown=fails.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
-  const openN=events.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
+
+  const failures=events.filter(e=>e.type==='failure');
+  const children=events.filter(e=>e.type!=='failure');
+
+  // ── CLIENT-SIDE AUTO-ASSIGN orphan children to nearest preceding failure ──
+  // This handles data before SQL migration runs
+  const sortedFails=[...failures].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  children.forEach(c=>{
+    if(c.parent_failure_id && failures.find(f=>f.id===c.parent_failure_id)) return; // already linked
+    // Find nearest failure BEFORE or ON this child's date
+    const cDate=new Date(c.date);
+    let best=null;
+    sortedFails.forEach(f=>{
+      if(new Date(f.date)<=cDate) best=f;
+    });
+    if(best) c._autoParent=best.id;
+    else if(sortedFails.length>0) c._autoParent=sortedFails[0].id; // assign to first failure if no preceding
+  });
+
+  // ── STATS (only from failures) ──
+  let totDown=0;
+  failures.forEach(f=>{
+    const myRes=children.filter(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved');
+    if(myRes.length){
+      const dh=Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600));
+      if(dh>0) totDown+=dh;
+    } else if(f.downtime){ totDown+=parseInt(f.downtime)||0; }
+  });
+  const openFailures=failures.filter(f=>!children.some(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved'));
   const outN=events.filter(e=>e.outstanding&&e.outstanding.trim()).length;
-  const closedN=events.filter(e=>e.status==='CLOSED').length;
-  g('st-f').textContent=fails.length+'×';
+
+  g('st-f').textContent=failures.length+'×';
   g('st-d').textContent=totDown>0?totDown+' Jam':'—';
-  g('st-o').textContent=openN;
+  g('st-o').textContent=openFailures.length;
   g('st-ot').textContent=outN;
   g('st-t').textContent=events.length;
-  // Sub-labels - contextual info per metric
-  const fSub=g('st-f-sub');if(fSub)fSub.textContent=fails.length?`terakhir: ${fmtD(fails[fails.length-1].date).full}`:'Tidak ada failure';
-  const dSub=g('st-d-sub');if(dSub)dSub.textContent=fails.length&&totDown?`avg ${Math.round(totDown/fails.length)} jam/failure`:'dari event failure';
-  const oSub=g('st-o-sub');if(oSub)oSub.textContent=openN?`${closedN} closed, ${repairs.length} repair`:'Semua closed/resolved';
+  const fSub=g('st-f-sub');if(fSub)fSub.textContent=failures.length?`terakhir: ${fmtD(sortedFails[sortedFails.length-1]?.date||'').full}`:'Tidak ada failure';
+  const dSub=g('st-d-sub');if(dSub)dSub.textContent=failures.length&&totDown?`avg ${Math.round(totDown/failures.length)} jam/failure`:'dari failure s/d resolved';
+  const oSub=g('st-o-sub');if(oSub)oSub.textContent=openFailures.length?`${failures.length-openFailures.length} resolved`:'Semua failure resolved';
   const otSub=g('st-ot-sub');if(otSub)otSub.textContent=outN?'item belum diselesaikan':'Tidak ada outstanding';
-  const tSub=g('st-t-sub');if(tSub)tSub.textContent=`${fails.length}F · ${actions.length}A · ${repairs.length}R · ${resolved.length}✓`;
+  const tSub=g('st-t-sub');if(tSub)tSub.textContent=`${failures.length}F · ${children.filter(c=>c.type==='action').length}A · ${children.filter(c=>c.type==='repair').length}R · ${children.filter(c=>c.type==='resolved').length}✓`;
 
-  const filtered=curFilter==='all'?events:events.filter(e=>e.type===curFilter);
-  g('fc-lbl').textContent=filtered.length+' event';
-  wrap.querySelectorAll('.tl-entry,.no-res').forEach(el=>el.remove());
+  // ── FILTER ──
+  let filteredFailures;
+  if(curFilter==='all') filteredFailures=failures;
+  else if(curFilter==='open') filteredFailures=failures.filter(f=>!children.some(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved')&&!children.some(c=>c.parent_failure_id===f.id||c._autoParent===f.id));
+  else if(curFilter==='onprogress') filteredFailures=failures.filter(f=>children.some(c=>c.parent_failure_id===f.id||c._autoParent===f.id)&&!children.some(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved'));
+  else if(curFilter==='resolved') filteredFailures=failures.filter(f=>children.some(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved'));
+  else filteredFailures=failures;
+  g('fc-lbl').textContent=filteredFailures.length+' failure';
+
+  wrap.querySelectorAll('.tl-entry,.tl-failure-group,.tl-connector,.no-res').forEach(el=>el.remove());
   g('tl-empty').style.display=events.length===0?'block':'none';
-  if(events.length===0)return;
-  if(filtered.length===0){const nr=document.createElement('div');nr.className='no-res';nr.textContent='Tidak ada event untuk filter ini.';wrap.appendChild(nr);return;}
+  if(events.length===0) return;
 
-  filtered.forEach((ev,idx)=>{
-    const df=fmtD(ev.date),tc=ev.type;
-    const dotCls={failure:'dot-f',action:'dot-a',repair:'dot-r',resolved:'dot-s'}[tc]||'dot-f';
-    const cardCls={failure:'cc-f',action:'cc-a',repair:'cc-r',resolved:'cc-s'}[tc]||'cc-f';
-    const tbCls={failure:'tb-f',action:'tb-a',repair:'tb-r',resolved:'tb-s'}[tc]||'tb-f';
-    const pill=ev.fail_no?`<div class="f-pill">FAILURE #${ev.fail_no}</div>`:'';
-    const sc=scColor(ev.status);
-    // Build per-type body content
-    const linesHtml=(text,cls='act-item')=>text?text.split('\n').filter(a=>a.trim()).map(a=>`<div class="${cls}">${esc(a.trim())}</div>`).join(''):'';
-    const ciRow=(k,v,vc='')=>v?`<div><div class="ci-k">${k}</div><div class="ci-v ${vc}">${esc(String(v))}</div></div>`:'';
-    let typeBody='';
-    if(tc==='failure'){
-      typeBody=`
-        ${(ev.mode||ev.cause||ev.downtime)?`<div class="ci-grid">${ciRow('Failure Mode',ev.mode,'vr')}${ciRow('Root Cause',ev.cause,'va')}${ciRow('Downtime',ev.downtime?(ev.downtime+' Jam'):'','vr')}</div>`:''}
-        ${ev.impact?`<div class="cdiv"></div><div class="clbl">Dampak Operasional</div><div class="ctext">${esc(ev.impact)}</div>`:''}
-        ${ev.actions?`<div class="cdiv"></div><div class="clbl">Immediate Action</div>${linesHtml(ev.actions)}`:''}
-        ${ev.outstanding?`<div class="c-out"><div class="co-k">⚠ Outstanding / Follow-up</div>${linesHtml(ev.outstanding,'co-item')}</div>`:''}`;
-    } else if(tc==='action'){
-      typeBody=`
-        ${ev.mode?`<div class="ci-grid"><div><div class="ci-k">Scope Investigasi</div><div class="ci-v" style="color:var(--teal)">${esc(ev.mode)}</div></div></div>`:''}
-        ${ev.cause?`<div class="cdiv"></div><div class="clbl">Temuan (Finding)</div><div class="ctext">${esc(ev.cause)}</div>`:''}
-        ${ev.actions?`<div class="cdiv"></div><div class="clbl">Rekomendasi</div>${linesHtml(ev.actions)}`:''}
-        ${ev.outstanding?`<div class="c-out"><div class="co-k">⚠ Open Point</div>${linesHtml(ev.outstanding,'co-item')}</div>`:''}`;
-    } else if(tc==='repair'){
-      typeBody=`
-        ${ev.mode?`<div class="ci-grid"><div><div class="ci-k">Scope Pekerjaan</div><div class="ci-v" style="color:var(--amber)">${esc(ev.mode)}</div></div>${ev.downtime?`<div><div class="ci-k">Durasi Repair</div><div class="ci-v" style="color:var(--amber)">${ev.downtime} Jam</div></div>`:''}</div>`:''}
-        ${ev.cause?`<div class="cdiv"></div><div class="clbl">Material / Parts</div><div class="ctext">${esc(ev.cause)}</div>`:''}
-        ${ev.actions?`<div class="cdiv"></div><div class="clbl">Pelaksana</div>${linesHtml(ev.actions)}`:''}
-        ${ev.outstanding?`<div class="c-out"><div class="co-k">⚠ Pekerjaan Belum Selesai</div>${linesHtml(ev.outstanding,'co-item')}</div>`:''}`;
-    } else if(tc==='resolved'){
-      typeBody=`
-        ${ev.mode?`<div class="ci-grid"><div><div class="ci-k">Konfirmasi</div><div class="ci-v" style="color:var(--green)">${esc(ev.mode)}</div></div></div>`:''}
-        ${ev.cause?`<div class="cdiv"></div><div class="clbl">Verifikasi & Hasil Test</div><div class="ctext">${esc(ev.cause)}</div>`:''}
-        ${ev.actions?`<div class="cdiv"></div><div class="clbl">Lesson Learned</div>${linesHtml(ev.actions)}`:''}
-        ${ev.outstanding?`<div class="cdiv"></div><div class="clbl">Rekomendasi PM</div>${linesHtml(ev.outstanding,'act-item')}</div>`:''}`;
-    }
+  // Sort oldest first
+  const displayFailures=[...filteredFailures].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  // True orphans = children that couldn't be auto-assigned (no failures exist at all)
+  const trueOrphans=failures.length===0?children:[];
+
+  const linesHtml=(text,cls='act-item')=>text?text.split('\n').filter(a=>a.trim()).map(a=>`<div class="${cls}">${esc(a.trim())}</div>`).join(''):'';
+  const ciRow=(k,v,vc='')=>v?`<div><div class="ci-k">${k}</div><div class="ci-v ${vc}">${esc(String(v))}</div></div>`:'';
+
+  displayFailures.forEach((f,fi)=>{
+    const myChildren=children
+      .filter(c=>c.parent_failure_id===f.id || (!c.parent_failure_id && c._autoParent===f.id))
+      .sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const myResolved=myChildren.filter(c=>c.type==='resolved');
+    const isResolved=myResolved.length>0;
+    const isOnProgress=myChildren.length>0&&!isResolved;
+    const groupStatus=isResolved?'RESOLVED':isOnProgress?'ON PROGRESS':'OPEN';
+    const statusColor={RESOLVED:'var(--green)','ON PROGRESS':'var(--amber)',OPEN:'var(--red)'}[groupStatus];
+    const hasAutoLinked=myChildren.some(c=>!c.parent_failure_id&&c._autoParent===f.id);
+
+    let fDowntime='—';
+    if(isResolved){
+      const dh=Math.round((new Date(myResolved[myResolved.length-1].date)-new Date(f.date))/(1000*3600));
+      fDowntime=dh>0?dh+' Jam':'<1 Jam';
+    } else if(f.downtime){ fDowntime=f.downtime+' Jam (manual)'; }
+
+    const df=fmtD(f.date);
+    const sc=scColor(f.status);
+    const isLast=fi===displayFailures.length-1&&trueOrphans.length===0;
+
     const entry=document.createElement('div');
-    entry.className='tl-entry';entry.style.animationDelay=(idx*.04)+'s';
+    entry.className='tl-entry';
+    entry.style.cssText='display:flex;gap:0;margin-bottom:0;animation:fadeUp .3s ease both;';
+    entry.style.animationDelay=(fi*.05)+'s';
+
     entry.innerHTML=`
-      <div class="tl-date"><div class="tl-day">${df.day}</div><div class="tl-mon">${df.mon} ${df.yr}</div>${ev.time?`<div class="tl-time">${ev.time} WIB</div>`:''}</div>
-      <div class="tl-node"><div class="tl-dot ${dotCls}">${tc==='failure'?'F':tc==='action'?'A':tc==='repair'?'R':'✓'}</div></div>
-      <div class="tl-card ${cardCls}" style="position:relative">
-        ${pill}
-        <div class="ct">
-          <div class="ct-title">${esc(ev.title)}</div>
-          <div class="ct-right">
-            <span class="tbadge ${tbCls}">${typeLbl(tc)}</span>
-            ${window._canEdit?`<button class="btn btn-ghost btn-sm" onclick="editEv('${ev.id}')" title="Edit">✎</button>`:''}
-            ${window._canDelete?`<button class="btn btn-red btn-sm" onclick="delEv('${ev.id}')" title="Hapus">✕</button>`:''}
+      <div class="tl-date" style="width:110px;min-width:110px;text-align:right;padding-right:16px;padding-top:14px;flex-shrink:0">
+        <div style="font-size:28px;font-weight:800;color:var(--text);line-height:1">${df.day}</div>
+        <div style="font-size:11px;color:var(--muted)">${df.mon} ${df.yr}</div>
+        ${f.time?`<div style="font-size:10px;color:var(--amber);font-weight:600;margin-top:2px">${f.time} WIB</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:32px">
+        <div style="width:2px;height:14px;background:${fi===0?'transparent':'rgba(232,64,64,.4)'}"></div>
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--red);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1">
+          <span style="color:#fff;font-size:9px;font-weight:800">F</span>
+        </div>
+        <div style="width:2px;flex:1;min-height:${isLast?'8':'20'}px;background:${isLast?'transparent':'rgba(232,64,64,.3)'}"></div>
+      </div>
+      <div style="flex:1;padding:0 0 0 14px;min-width:0">
+        <div class="tl-card cc-f" style="margin-bottom:0;border-left:3px solid var(--red)">
+          ${hasAutoLinked?`<div style="font-size:10px;color:var(--amber);margin-bottom:6px;padding:3px 8px;background:rgba(245,158,11,.08);border-radius:4px">⚠ Tindak lanjut di-link otomatis — jalankan SQL migration untuk menyimpan permanen</div>`:''}
+          <div class="ct">
+            <div class="ct-title" style="font-size:15px;font-weight:700">${esc(f.title)}</div>
+            <div class="ct-right" style="flex-wrap:wrap;gap:4px">
+              <span style="background:${statusColor};color:#fff;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700">${groupStatus}</span>
+              <span class="tbadge tb-f">FAILURE</span>
+              ${window._canEdit?`<button class="btn btn-ghost btn-sm" onclick="editEv('${f.id}')" title="Edit">✎</button>`:''}
+              ${window._canDelete?`<button class="btn btn-red btn-sm" onclick="delEv('${f.id}')" title="Hapus">✕</button>`:''}
+              ${window._canEdit?`<button class="btn btn-sm" style="background:#2563eb;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;white-space:nowrap" onclick="addChildEvent('${f.id}')">+ Tindak Lanjut</button>`:''}
+            </div>
           </div>
+          ${(f.mode||f.cause||f.downtime)?`<div class="ci-grid">${ciRow('Failure Mode',f.mode,'vr')}${ciRow('Root Cause',f.cause,'va')}<div><div class="ci-k">Downtime</div><div class="ci-v" style="color:${isResolved?'var(--green)':'var(--red)'};font-weight:700">${fDowntime}</div></div></div>`:''}
+          ${f.impact?`<div class="cdiv"></div><div class="clbl">Dampak Operasional</div><div class="ctext">${esc(f.impact)}</div>`:''}
+          ${f.actions?`<div class="cdiv"></div><div class="clbl">Immediate Action</div>${linesHtml(f.actions)}`:''}
+          ${f.outstanding?`<div class="c-out"><div class="co-k">⚠ Outstanding / Follow-up</div>${linesHtml(f.outstanding,'co-item')}</div>`:''}
+          <div class="c-foot">
+            ${f.pic?`<div><div class="cf-k">PIC</div><div class="cf-v cf-t">${esc(f.pic)}</div></div>`:''}
+            ${f.target_date?`<div><div class="cf-k">Target</div><div class="cf-v">${fmtD(f.target_date).full}</div></div>`:''}
+            ${f.wo?`<div><div class="cf-k">Work Order</div><div class="cf-v cf-t">${esc(f.wo)}</div></div>`:''}
+            ${f.ref?`<div><div class="cf-k">Referensi</div><div class="cf-v cf-t">${esc(f.ref)}</div></div>`:''}
+            ${f.status?`<div><div class="cf-k">Status</div><div class="cf-v" style="color:${sc};font-weight:700">${f.status}</div></div>`:''}
+          </div>
+          ${f.modified_by?`<div class="c-modified">Last modified: ${esc(f.modified_by)}</div>`:''}
         </div>
-        ${typeBody}
-        <div class="c-foot">
-          ${ev.pic?`<div><div class="cf-k">PIC</div><div class="cf-v cf-t">${esc(ev.pic)}</div></div>`:''}
-          ${ev.target_date?`<div><div class="cf-k">Target</div><div class="cf-v">${fmtD(ev.target_date).full}</div></div>`:''}
-          ${ev.wo?`<div><div class="cf-k">Work Order</div><div class="cf-v cf-t">${esc(ev.wo)}</div></div>`:''}
-          ${ev.ref?`<div><div class="cf-k">Referensi</div><div class="cf-v cf-t">${esc(ev.ref)}</div></div>`:''}
-          ${ev.status?`<div><div class="cf-k">Status</div><div class="cf-v" style="color:${sc};font-weight:700">${ev.status}</div></div>`:''}
-        </div>
-        ${ev.modified_by?`<div class="c-modified">Last modified: ${esc(ev.modified_by)}</div>`:''}
+
+        ${myChildren.map((ev,ci)=>{
+          const ccolor={action:'#2563eb',repair:'#d97706',resolved:'#16a34a'}[ev.type]||'#64748b';
+          const cbg={action:'rgba(37,99,235,.04)',repair:'rgba(217,119,6,.04)',resolved:'rgba(22,163,74,.05)'}[ev.type]||'transparent';
+          const clabel={action:'ACTION',repair:'REPAIR',resolved:'RESOLVED'}[ev.type]||ev.type.toUpperCase();
+          const cdf=fmtD(ev.date);
+          const cIsLast=ci===myChildren.length-1&&isLast;
+          const csc=scColor(ev.status);
+          return `
+          <div style="display:flex;gap:0;margin-top:4px">
+            <div style="width:110px;min-width:110px;text-align:right;padding-right:16px;padding-top:10px;flex-shrink:0">
+              <div style="font-size:13px;font-weight:700;color:var(--muted)">${cdf.day}</div>
+              <div style="font-size:10px;color:var(--muted)">${cdf.mon} ${cdf.yr}</div>
+              ${ev.time?`<div style="font-size:9px;color:${ccolor};font-weight:600">${ev.time} WIB</div>`:''}
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:32px">
+              <div style="width:2px;height:0;background:rgba(232,64,64,.3)"></div>
+              <div style="width:14px;height:14px;border-radius:50%;background:${ccolor};border:2px solid var(--bg);box-shadow:0 0 0 1.5px ${ccolor};flex-shrink:0;z-index:1;margin-top:10px"></div>
+              <div style="width:2px;flex:1;min-height:8px;background:${cIsLast?'transparent':'rgba(232,64,64,.3)'}"></div>
+            </div>
+            <div style="flex:1;padding-left:14px;padding-top:6px;padding-bottom:2px;min-width:0">
+              <div style="background:${cbg};border-left:2px solid ${ccolor};border-radius:0 8px 8px 0;padding:10px 12px">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+                  <span style="font-size:9px;font-weight:700;color:${ccolor};background:rgba(0,0,0,.06);padding:2px 8px;border-radius:3px;white-space:nowrap">${clabel}</span>
+                  <span style="font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:0">${esc(ev.title)}</span>
+                  ${window._canEdit?`<button class="btn btn-ghost btn-sm" onclick="editEv('${ev.id}')" title="Edit">✎</button>`:''}
+                  ${window._canDelete?`<button class="btn btn-red btn-sm" onclick="delEv('${ev.id}')" title="Hapus">✕</button>`:''}
+                </div>
+                ${ev.mode?`<div style="font-size:11px;color:${ccolor};margin-bottom:3px;font-weight:500">${esc(ev.mode)}</div>`:''}
+                ${ev.cause?`<div style="font-size:11px;color:var(--text);margin-bottom:3px">${esc(ev.cause)}</div>`:''}
+                ${ev.actions?`<div style="font-size:11px;color:var(--muted);margin-top:3px">${esc(ev.actions)}</div>`:''}
+                ${ev.outstanding?`<div class="c-out" style="margin-top:6px"><div class="co-k">⚠ ${ev.type==='resolved'?'Rekomendasi PM':'Open Point'}</div>${linesHtml(ev.outstanding,'co-item')}</div>`:''}
+                <div style="display:flex;gap:10px;margin-top:5px;flex-wrap:wrap;align-items:center">
+                  ${ev.pic?`<span style="font-size:10px;color:var(--muted)">👤 ${esc(ev.pic)}</span>`:''}
+                  ${ev.wo?`<span style="font-size:10px;color:var(--muted)">📋 ${esc(ev.wo)}</span>`:''}
+                  ${ev.target_date?`<span style="font-size:10px;color:var(--muted)">🎯 ${fmtD(ev.target_date).full}</span>`:''}
+                  ${ev.downtime?`<span style="font-size:10px;color:var(--amber);font-weight:600">⏱ ${ev.downtime} Jam</span>`:''}
+                  ${ev.status&&ev.type!=='resolved'?`<span style="font-size:10px;font-weight:700;color:${csc}">${ev.status}</span>`:''}
+                </div>
+                ${ev.modified_by?`<div class="c-modified">Last modified: ${esc(ev.modified_by)}</div>`:''}
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+        <div style="height:${isLast?'8':'28'}px"></div>
       </div>`;
+
     wrap.appendChild(entry);
   });
+
+  // True orphans = when NO failures exist but children do
+  if(trueOrphans.length>0){
+    const ow=document.createElement('div');
+    ow.style.cssText='display:flex;gap:0';
+    ow.innerHTML=`
+      <div style="width:110px;min-width:110px;flex-shrink:0"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;width:32px;flex-shrink:0">
+        <div style="width:18px;height:18px;border-radius:50%;background:var(--muted);display:flex;align-items:center;justify-content:center;margin-top:4px">
+          <span style="color:#fff;font-size:9px">?</span>
+        </div>
+      </div>
+      <div style="flex:1;padding-left:14px;padding-bottom:16px">
+        <div style="border:1px dashed var(--border);border-radius:8px;padding:10px 14px">
+          <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px">📋 ${trueOrphans.length} event (belum ada failure tercatat)</div>
+          ${trueOrphans.map(ev=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--border)">
+              <span>${{action:'🔵',repair:'🟡',resolved:'🟢'}[ev.type]||'⚪'}</span>
+              <span style="font-size:11px;flex:1;font-weight:600">${esc(ev.title)}</span>
+              <span style="font-size:10px;color:var(--muted)">${fmtD(ev.date).full}</span>
+              ${window._canEdit?`<button class="btn btn-ghost btn-sm" onclick="editEv('${ev.id}')" title="Edit">✎</button>`:''}
+              ${window._canDelete?`<button class="btn btn-red btn-sm" onclick="delEv('${ev.id}')" title="Hapus">✕</button>`:''}
+            </div>`).join('')}
+        </div>
+      </div>`;
+    wrap.appendChild(ow);
+  }
+
+  if(displayFailures.length===0&&trueOrphans.length===0){
+    const nr=document.createElement('div');nr.className='no-res';
+    nr.textContent=curFilter==='all'?'Belum ada failure tercatat.':'Tidak ada failure untuk filter ini.';
+    wrap.appendChild(nr);
+  }
+
+  renderMiniTrend();
 }
+
+
+// Helper: MTBF dari failures
+function calcMTBF(failures){
+  if(failures.length<2) return null;
+  const dates=failures.map(f=>new Date(f.date)).sort((a,b)=>a-b);
+  let totalGap=0;
+  for(let i=1;i<dates.length;i++) totalGap+=(dates[i]-dates[i-1])/(1000*3600);
+  return Math.round(totalGap/(dates.length-1));
+}
+
+// Helper: MTTR dari failure s/d resolved
+function calcMTTR(failures,children){
+  const resolved_pairs=failures.map(f=>{
+    const myRes=children.filter(c=>c.parent_failure_id===f.id&&c.type==='resolved');
+    if(!myRes.length) return null;
+    const dh=Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600));
+    return dh>0?dh:null;
+  }).filter(Boolean);
+  if(!resolved_pairs.length) return null;
+  return Math.round(resolved_pairs.reduce((s,v)=>s+v,0)/resolved_pairs.length);
+}
+
+// ── Downtime helper: hitung dari FAILURE→RESOLVED (parent-child) ──
+function calcDowntimeFromEvents(evArray){
+  const fails=evArray.filter(e=>e.type==='failure');
+  const children=evArray.filter(e=>e.type!=='failure');
+  let total=0;
+  fails.forEach(f=>{
+    const myRes=children.filter(c=>(c.parent_failure_id===f.id)&&c.type==='resolved');
+    if(myRes.length){
+      const dh=Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600));
+      if(dh>0) total+=dh;
+    } else if(f.downtime){ total+=parseInt(f.downtime)||0; }
+  });
+  return total;
+}
+function calcOpenFailures(evArray){
+  const fails=evArray.filter(e=>e.type==='failure');
+  const children=evArray.filter(e=>e.type!=='failure');
+  return fails.filter(f=>!children.some(c=>c.parent_failure_id===f.id&&c.type==='resolved')).length;
+}
+
+
+// Quick-add child event dari tombol "+ Tindak Lanjut"
+function addChildEvent(parentFailureId){
+  resetForm();
+  g('f-type').value='action';
+  onTypeChange();
+  populateParentSelector();
+  const ps=g('f-parent-id');
+  if(ps) ps.value=parentFailureId;
+  document.querySelector('.sb-form').scrollTop=0;
+  // Highlight parent failure sebentar
+  const pw=g('f-parent-wrap');
+  if(pw){pw.style.border='2px solid var(--amber)';setTimeout(()=>pw.style.border='',1500);}
+}
+
+
 
 // ══════════════════════════════════════
 // EXPORT PDF
@@ -2073,7 +2308,10 @@ async function exportPDF(){
     doc.setFontSize(13);doc.setTextColor(232,162,23);doc.text(tag?'Tag No: '+tag:'',12,50);
     doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(71,85,105);
     doc.text(`Total ${events.length} event recorded | ${events.filter(e=>e.type==='failure').length} failure kejadian`,12,60);
-    const stats=[{v:events.filter(e=>e.type==='failure').length+'×',l:'Total Failure',c:[232,64,64]},{v:events.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0)+' Jam',l:'Downtime Kumulatif',c:[232,162,23]},{v:events.filter(e=>['OPEN','OVERDUE'].includes(e.status)).length,l:'Status Open',c:[232,64,64]},{v:events.filter(e=>e.outstanding&&e.outstanding.trim()).length,l:'Outstanding',c:[232,162,23]}];
+    const _pFails=events.filter(e=>e.type==='failure');
+    const _pDown=calcDowntimeFromEvents(events);
+    const _pOpen=calcOpenFailures(events);
+    const stats=[{v:_pFails.length+'×',l:'Total Failure',c:[232,64,64]},{v:_pDown+' Jam',l:'Downtime Kumulatif (F→R)',c:[232,162,23]},{v:_pOpen,l:'Failure Belum Resolved',c:[232,64,64]},{v:events.filter(e=>e.outstanding&&e.outstanding.trim()).length,l:'Outstanding',c:[232,162,23]}];
     stats.forEach((s,i)=>{const bx=12+i*60;doc.setFillColor(15,30,53);doc.rect(bx,72,55,18,'F');doc.setFillColor(...s.c);doc.rect(bx,72,55,1.5,'F');doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...s.c);doc.text(String(s.v),bx+27.5,82,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(148,163,184);doc.text(s.l,bx+27.5,88,{align:'center'});});
     doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text('Developed by Technical Support — PT Kilang Pertamina Balikpapan',W/2,H-4,{align:'center'});
 
@@ -2084,19 +2322,45 @@ async function exportPDF(){
     const cw=[10,24,18,62,30,34,18,26,18];
     let cx=10,ry=22;doc.setFillColor(30,58,95);doc.rect(10,ry-5,W-20,8,'F');
     cols.forEach((c,i)=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(255,255,255);doc.text(c,cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=6;
-    events.forEach((ev,idx)=>{
+    // Render grouped by FAILURE (parent-child)
+    const _pdfFails=events.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const _pdfChildren=events.filter(e=>e.type!=='failure');
+    let rowNum=0;
+    _pdfFails.forEach(f=>{
+      // FAILURE row (dark header row)
       if(ry>H-12){doc.addPage();pg();ry=22;}
-      doc.setFillColor(idx%2===0?255:241,idx%2===0?255:245,idx%2===0?255:251);doc.rect(10,ry-4,W-20,8,'F');
-      const df=fmtD(ev.date);
-      // Per-type detail columns
-      let d1='—',d2='—',d3=ev.downtime||'—';
-      if(ev.type==='failure'){d1=ev.mode||'—';d2=ev.cause||'—';d3=ev.downtime?ev.downtime+' Jam':'—';}
-      else if(ev.type==='action'){d1=ev.mode||'—';d2=ev.cause||'—';d3='—';}
-      else if(ev.type==='repair'){d1=ev.mode||'—';d2=ev.cause||'—';d3=ev.downtime?ev.downtime+' Jam':'—';}
-      else if(ev.type==='resolved'){d1=ev.mode||'—';d2=ev.cause?ev.cause.substring(0,40):'—';d3='OK';}
-      const row=[String(idx+1),df.full,typeLbl(ev.type),ev.title||'',d1,d2,d3,ev.pic||'—',ev.status||'—'];
-      cx=10;row.forEach((cell,i)=>{const tc2=i===2?(ev.type==='failure'?[180,0,0]:ev.type==='action'?[0,100,180]:ev.type==='repair'?[150,100,0]:[0,130,50]):[30,41,59];doc.setFont('helvetica',i===2?'bold':'normal');doc.setFontSize(6.5);doc.setTextColor(...tc2);doc.text(String(cell),cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=9;
+      rowNum++;
+      const myRes=_pdfChildren.filter(c=>c.parent_failure_id===f.id&&c.type==='resolved');
+      const fDown=myRes.length?Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600))+'Jam':(f.downtime?f.downtime+' Jam':'—');
+      doc.setFillColor(30,41,59);doc.rect(10,ry-4,W-20,8,'F');
+      const fRow=[String(rowNum),fmtD(f.date).full,'FAILURE',f.title||'',f.mode||'—',f.cause||'—',fDown,f.pic||'—',myRes.length?'RESOLVED':'OPEN'];
+      cx=10;fRow.forEach((cell,i)=>{doc.setFont('helvetica',i===2?'bold':'normal');doc.setFontSize(6.5);doc.setTextColor(i===2?232:i===8?(myRes.length?34:232):200,i===2?64:i===8?(myRes.length?197:64):200,i===2?64:i===8?(myRes.length?94:64):200);doc.text(String(cell),cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=9;
+      // Child rows (indented)
+      const myChildren=_pdfChildren.filter(c=>c.parent_failure_id===f.id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+      myChildren.forEach(ev=>{
+        if(ry>H-12){doc.addPage();pg();ry=22;}
+        doc.setFillColor(245,248,252);doc.rect(10,ry-4,W-20,7,'F');
+        doc.setFillColor(200,210,225);doc.rect(12,ry-4,1.5,7,'F'); // indent indicator
+        const cLabel={action:'↳ ACTION',repair:'↳ REPAIR',resolved:'↳ RESOLVED'}[ev.type]||'↳ '+ev.type.toUpperCase();
+        const cColor={action:[0,100,180],repair:[150,100,0],resolved:[0,130,50]}[ev.type]||[100,100,100];
+        const cRow=['',fmtD(ev.date).full,cLabel,ev.title||'',ev.mode||'—',ev.cause?ev.cause.substring(0,35):'—',ev.downtime?ev.downtime+' Jam':'—',ev.pic||'—',ev.status||'—'];
+        cx=10;cRow.forEach((cell,i)=>{doc.setFont('helvetica',i===2?'bold':'normal');doc.setFontSize(6);doc.setTextColor(i===2?cColor[0]:50,i===2?cColor[1]:65,i===2?cColor[2]:85);doc.text(String(cell),cx+(i===3?3:1),ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=8;
+      });
     });
+    // Orphan children
+    const orphanEvs=_pdfChildren.filter(c=>!c.parent_failure_id||!_pdfFails.find(f=>f.id===c.parent_failure_id));
+    if(orphanEvs.length){
+      if(ry>H-12){doc.addPage();pg();ry=22;}
+      doc.setFillColor(240,240,240);doc.rect(10,ry-4,W-20,6,'F');
+      doc.setFont('helvetica','italic');doc.setFontSize(6);doc.setTextColor(120,120,120);
+      doc.text('Data lama ('+orphanEvs.length+' event tanpa parent failure)',12,ry);ry+=8;
+      orphanEvs.forEach(ev=>{
+        if(ry>H-12){doc.addPage();pg();ry=22;}
+        doc.setFillColor(248,248,248);doc.rect(10,ry-4,W-20,7,'F');
+        const oRow=['',fmtD(ev.date).full,typeLbl(ev.type),ev.title||'','—','—','—',ev.pic||'—',ev.status||'—'];
+        cx=10;oRow.forEach((cell,i)=>{doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(100,100,100);doc.text(String(cell),cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=8;
+      });
+    }
     doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text('Developed by Technical Support — PT Kilang Pertamina Balikpapan',W/2,H-4,{align:'center'});
     doc.save(`History_${tag||eqName}_${Date.now()}.pdf`);
     toast(`PDF diexport — ${doc.getNumberOfPages()} halaman`);
@@ -2117,7 +2381,8 @@ async function exportPPT(){
     const sh=()=>({type:'outer',color:'000000',blur:8,offset:3,angle:135,opacity:.2});
     const eqName=eq?.name||'Equipment',tag=eq?.tag_no||'';
     const fails=events.filter(e=>e.type==='failure');
-    const totDown=events.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
+    const totDown=calcDowntimeFromEvents(events);
+    const openFails=calcOpenFailures(events);
 
     const s1=pres.addSlide();s1.background={color:'F8FAFC'};
     s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.amber},line:{color:C.amber,width:0}});
@@ -2148,43 +2413,67 @@ async function exportPPT(){
     s2.addTable([...hdr,...rows],{x:.4,y:1.1,w:12.5,fontSize:9,fontFace:'Calibri',color:C.text,border:{pt:.5,color:C.steel},fill:{color:C.navyL},rowH:.42,colW:[.4,1.6,1.2,2.8,1.7,2.0,.8,1.5,1.2]});
     s2.addText('Developed by Technical Support  |  PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
 
-    for(let i=0;i<events.length;i+=2){
+    // SLIDE PER FAILURE GROUP (parent-child)
+    const _pptFails=events.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const _pptChildren=events.filter(e=>e.type!=='failure');
+
+    _pptFails.forEach((f,fi)=>{
+      const myChildren=_pptChildren.filter(c=>c.parent_failure_id===f.id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+      const myResolved=myChildren.filter(c=>c.type==='resolved');
+      const isResolved=myResolved.length>0;
+      const fDowntime=isResolved?Math.round((new Date(myResolved[myResolved.length-1].date)-new Date(f.date))/(1000*3600))+' Jam':(f.downtime?f.downtime+' Jam':'Belum Resolved');
+      const groupStatus=isResolved?'RESOLVED':myChildren.length?'ON PROGRESS':'OPEN';
+      const statusColor=isResolved?C.green:myChildren.length?C.amber:C.red;
+
       const sl=pres.addSlide();sl.background={color:'F8FAFC'};
+      // Header bar - RED for failure
       sl.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.red},line:{color:C.red,width:0}});
-      sl.addText('DETAIL KRONOLOGIS — '+eqName.toUpperCase()+' ('+tag+')',{x:.4,y:.22,w:12,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:1.5,bold:true,margin:0});
-      const pair=[events[i],events[i+1]].filter(Boolean);
-      const colW=pair.length===2?6.2:12.5;
-      pair.forEach((ev,ci)=>{
-        const bx=.4+ci*(colW+.1);
-        const tc=ev.type==='failure'?C.red:ev.type==='action'?C.teal:ev.type==='repair'?C.amber:C.green;
-        const df=fmtD(ev.date);const sc2=ev.status==='CLOSED'?C.green:ev.status==='OPEN'||ev.status==='OVERDUE'?C.red:C.amber;
-        // Card header - type-colored accent bar + title
-        const headerFill=ev.type==='failure'?'FEF2F2':ev.type==='action'?'EFF6FF':ev.type==='repair'?'FFFBEB':'F0FDF4';
-        sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:.58,w:colW,h:.44,fill:{color:headerFill},line:{color:tc,width:1.5}});
-        sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:.58,w:.06,h:.44,fill:{color:tc},line:{color:tc,width:0}});
-        sl.addText(`${typeLbl(ev.type)}${ev.fail_no?' #'+ev.fail_no:''} | ${(ev.title||'').substring(0,60)}`,{x:bx+.12,y:.58,w:colW-.2,h:.44,fontSize:10,fontFace:'Calibri',bold:true,color:'1E293B',valign:'middle',margin:0});
-        // Per-type detail grid
-        let infoRows=[];
-        if(ev.type==='failure'){infoRows=[['Tgl/Waktu',`${df.full}${ev.time?' '+ev.time+' WIB':''}`],['Failure Mode',ev.mode||'—'],['Root Cause',ev.cause||'—'],['Downtime',ev.downtime?ev.downtime+' Jam':'—']];}
-        else if(ev.type==='action'){infoRows=[['Tanggal',df.full],['Scope Investigasi',ev.mode||'—'],['Temuan',ev.cause?ev.cause.substring(0,60):'—'],['Open Point',ev.outstanding?ev.outstanding.split('\n')[0].substring(0,40):'—']];}
-        else if(ev.type==='repair'){infoRows=[['Tgl/Waktu',`${df.full}${ev.time?' '+ev.time+' WIB':''}`],['Scope Pekerjaan',ev.mode||'—'],['Material/Parts',ev.cause?ev.cause.substring(0,60):'—'],['Durasi Repair',ev.downtime?ev.downtime+' Jam':'—']];}
-        else{infoRows=[['Tanggal',df.full],['Konfirmasi',ev.mode||'—'],['Verifikasi & Hasil Test',ev.cause?ev.cause.substring(0,60):'—'],['Lesson Learned',ev.actions?ev.actions.split('\n')[0].substring(0,50):'—']];}
-        infoRows.forEach(([k,v],gi)=>{const gx=bx+(gi%2)*(colW/2);const gy=1.08+Math.floor(gi/2)*.46;const gw=colW/2-.05;sl.addShape(pres.shapes.RECTANGLE,{x:gx,y:gy,w:gw,h:.42,fill:{color:'F8FAFC'},line:{color:'CBD5E1',width:.5}});sl.addText(k.toUpperCase(),{x:gx+.07,y:gy+.04,w:gw-.12,h:.14,fontSize:6.5,fontFace:'Calibri',color:'64748B',charSpacing:1,margin:0});sl.addText(String(v),{x:gx+.07,y:gy+.18,w:gw-.12,h:.22,fontSize:9,fontFace:'Calibri',color:'1E293B',bold:true,margin:0});});
-        let cy=2.08;
-        // Contextual middle section per type
-        if(ev.type==='failure'&&ev.impact){sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy,w:colW,h:.48,fill:{color:'FEF2F2'},line:{color:C.red,width:.5}});sl.addText('DAMPAK OPERASIONAL',{x:bx+.07,y:cy+.04,w:colW-.14,h:.14,fontSize:6.5,fontFace:'Calibri',color:C.red,charSpacing:1,margin:0});sl.addText(ev.impact.substring(0,120),{x:bx+.07,y:cy+.18,w:colW-.14,h:.26,fontSize:8.5,fontFace:'Calibri',color:'7F1D1D',margin:0});cy+=.54;}
-        if(ev.type==='failure'&&ev.actions){sl.addText('IMMEDIATE ACTION',{x:bx,y:cy,w:colW,h:.2,fontSize:6.5,fontFace:'Calibri',color:C.amber,charSpacing:1,bold:true,margin:0});cy+=.2;ev.actions.split('\n').filter(a=>a.trim()).slice(0,3).forEach(a=>{sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy+.05,w:.04,h:.18,fill:{color:C.amber},line:{color:C.amber,width:0}});sl.addText(a.trim().substring(0,80),{x:bx+.1,y:cy,w:colW-.1,h:.28,fontSize:8.5,fontFace:'Calibri',color:'1E293B',margin:0});cy+=.3;});}
-        if(ev.type==='action'&&ev.actions){sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy,w:colW,h:.48,fill:{color:'EFF6FF'},line:{color:C.teal,width:.5}});sl.addText('REKOMENDASI',{x:bx+.07,y:cy+.04,w:colW-.14,h:.14,fontSize:6.5,fontFace:'Calibri',color:C.teal,charSpacing:1,margin:0});sl.addText(ev.actions.substring(0,120),{x:bx+.07,y:cy+.18,w:colW-.14,h:.26,fontSize:8.5,fontFace:'Calibri',color:'1E3A5F',margin:0});cy+=.54;}
-        if(ev.type==='repair'&&ev.actions){sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy,w:colW,h:.48,fill:{color:'FFFBEB'},line:{color:C.amber,width:.5}});sl.addText('PELAKSANA',{x:bx+.07,y:cy+.04,w:colW-.14,h:.14,fontSize:6.5,fontFace:'Calibri',color:C.amber,charSpacing:1,margin:0});sl.addText(ev.actions.substring(0,120),{x:bx+.07,y:cy+.18,w:colW-.14,h:.26,fontSize:8.5,fontFace:'Calibri',color:'451A03',margin:0});cy+=.54;}
-        if(ev.type==='resolved'&&ev.outstanding){sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy,w:colW,h:.48,fill:{color:'F0FDF4'},line:{color:C.green,width:.5}});sl.addText('REKOMENDASI PREVENTIVE',{x:bx+.07,y:cy+.04,w:colW-.14,h:.14,fontSize:6.5,fontFace:'Calibri',color:C.green,charSpacing:1,margin:0});sl.addText(ev.outstanding.substring(0,120),{x:bx+.07,y:cy+.18,w:colW-.14,h:.26,fontSize:8.5,fontFace:'Calibri',color:'14532D',margin:0});cy+=.54;}
-        if(ev.type==='failure'&&ev.outstanding){sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:cy,w:colW,h:.2,fill:{color:'FEF2F2'},line:{color:C.red,width:0}});sl.addText('⚠ OUTSTANDING',{x:bx+.07,y:cy+.04,w:colW-.14,h:.16,fontSize:6.5,fontFace:'Calibri',color:C.red,charSpacing:1,bold:true,margin:0});cy+=.2;ev.outstanding.split('\n').filter(a=>a.trim()).slice(0,2).forEach(a=>{sl.addText('! '+a.trim().substring(0,80),{x:bx+.1,y:cy,w:colW-.1,h:.28,fontSize:8,fontFace:'Calibri',color:C.red,margin:0});cy+=.3;});}
-        sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:6.2,w:colW,h:.72,fill:{color:C.navyL},line:{color:C.steel,width:.5}});
-        sl.addShape(pres.shapes.RECTANGLE,{x:bx,y:6.2,w:colW,h:.05,fill:{color:sc2},line:{color:sc2,width:0}});
-        const metas=[['PIC',ev.pic||'—'],['Target',ev.target_date?fmtD(ev.target_date).full:'—'],['WO#',ev.wo||'—'],['Status',ev.status||'—']];
-        metas.forEach(([mk,mv],mi)=>{const mx=bx+.08+mi*(colW/4);sl.addText(mk,{x:mx,y:6.26,w:colW/4-.1,h:.18,fontSize:6.5,fontFace:'Calibri',color:C.dim,charSpacing:1,margin:0});sl.addText(mv,{x:mx,y:6.44,w:colW/4-.1,h:.28,fontSize:8.5,fontFace:'Calibri',color:mi===3?sc2:C.text,bold:mi===3,margin:0});});
+      sl.addText('FAILURE #'+(fi+1)+' — '+eqName.toUpperCase()+' ('+tag+')',{x:.4,y:.22,w:10,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:1.5,bold:true,margin:0});
+      sl.addText(groupStatus,{x:10.5,y:.18,w:2.4,h:.36,fontSize:10,fontFace:'Calibri',bold:true,color:statusColor,align:'right',margin:0});
+
+      // FAILURE card (full width)
+      const df=fmtD(f.date);
+      sl.addShape(pres.shapes.RECTANGLE,{x:.4,y:.65,w:12.5,h:.5,fill:{color:'FEF2F2'},line:{color:C.red,width:1.5}});
+      sl.addShape(pres.shapes.RECTANGLE,{x:.4,y:.65,w:.08,h:.5,fill:{color:C.red},line:{color:C.red,width:0}});
+      sl.addText('🔴 FAILURE  |  '+(f.title||'').substring(0,80),{x:.55,y:.65,w:12.2,h:.5,fontSize:11,fontFace:'Calibri',bold:true,color:'1E293B',valign:'middle',margin:0});
+
+      // Failure detail grid
+      const fInfo=[['Tanggal / Waktu',`${df.full}${f.time?' '+f.time+' WIB':''}`],['Failure Mode',f.mode||'—'],['Root Cause',f.cause||'—'],['Total Downtime',fDowntime]];
+      fInfo.forEach(([k,v],gi)=>{
+        const gx=.4+(gi%2)*6.3;const gy=1.3+Math.floor(gi/2)*.46;
+        sl.addShape(pres.shapes.RECTANGLE,{x:gx,y:gy,w:6.1,h:.4,fill:{color:C.navyL},line:{color:C.steel,width:.5}});
+        sl.addText(k,{x:gx+.1,y:gy+.02,w:2,h:.18,fontSize:7,fontFace:'Calibri',color:C.amber,bold:true,margin:0});
+        sl.addText(v.substring(0,55),{x:gx+.1,y:gy+.2,w:5.9,h:.18,fontSize:8,fontFace:'Calibri',color:C.text,margin:0});
       });
-      sl.addText('Developed by Technical Support  |  PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
-    }
+      if(f.impact) sl.addText('Dampak: '+f.impact.substring(0,130),{x:.4,y:2.28,w:12.5,h:.3,fontSize:8,fontFace:'Calibri',color:'DC2626',margin:0});
+
+      // Children timeline (ACTION/REPAIR/RESOLVED)
+      let cy=2.7;
+      if(myChildren.length===0){
+        sl.addText('Belum ada tindak lanjut tercatat',{x:.4,y:cy,w:12.5,h:.4,fontSize:9,fontFace:'Calibri',color:C.dim,italic:true,margin:0});
+      } else {
+        myChildren.forEach((ev,ci)=>{
+          if(cy>6.8) return; // overflow protection
+          const tc=ev.type==='action'?C.teal:ev.type==='repair'?C.amber:C.green;
+          const bg=ev.type==='action'?'EFF6FF':ev.type==='repair'?'FFFBEB':'F0FDF4';
+          const lbl={action:'🔵 ACTION',repair:'🟡 REPAIR',resolved:'🟢 RESOLVED'}[ev.type]||ev.type.toUpperCase();
+          const cdf=fmtD(ev.date);
+          // Connector line
+          if(ci>0) sl.addShape(pres.shapes.RECTANGLE,{x:.7,y:cy-.1,w:.02,h:.15,fill:{color:C.steel},line:{color:C.steel,width:0}});
+          sl.addShape(pres.shapes.RECTANGLE,{x:.4,y:cy,w:12.5,h:.48,fill:{color:bg},line:{color:tc,width:1}});
+          sl.addShape(pres.shapes.RECTANGLE,{x:.4,y:cy,w:.06,h:.48,fill:{color:tc},line:{color:tc,width:0}});
+          sl.addText(lbl,{x:.55,y:cy+.02,w:2,h:.2,fontSize:8,fontFace:'Calibri',bold:true,color:tc,margin:0});
+          sl.addText(cdf.full,{x:2.6,y:cy+.02,w:2,h:.2,fontSize:8,fontFace:'Calibri',color:C.dim,margin:0});
+          sl.addText((ev.title||'').substring(0,80),{x:.55,y:cy+.24,w:9,h:.2,fontSize:8,fontFace:'Calibri',color:C.text,margin:0});
+          if(ev.pic) sl.addText('👤 '+ev.pic,{x:9.8,y:cy+.04,w:3,h:.18,fontSize:7,fontFace:'Calibri',color:C.dim,align:'right',margin:0});
+          if(ev.wo) sl.addText('📋 '+ev.wo,{x:9.8,y:cy+.26,w:3,h:.18,fontSize:7,fontFace:'Calibri',color:C.dim,align:'right',margin:0});
+          cy+=.56;
+        });
+      }
+
+      // Footer
+      sl.addText('PT Kilang Pertamina Balikpapan — Technical Support — Bad Actor History Record',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
+    });
     await pres.writeFile({fileName:`History_${tag||eqName}_${Date.now()}.pptx`});
     toast('PowerPoint berhasil diexport! ✓');
   }catch(err){console.error(err);toast('Error PPT: '+err.message,'error');}
@@ -2203,34 +2492,20 @@ function getBaThreshold(){
   };
 }
 
-function isBadActor(eq, allEvents){
+function isBadActor(eq, failsOrAllEvents){
   const {minFail, months, minDown} = getBaThreshold();
   const cutoff = new Date();
   cutoff.setMonth(cutoff.getMonth() - months);
-  const evs = allEvents.filter(e => e.equipment_id === eq.id && e.type === 'failure');
-  const recentFails = evs.filter(e => new Date(e.date) >= cutoff).length;
-  const totalDown = evs.reduce((s,e) => s + (parseInt(e.downtime||0)||0), 0);
+  // Support both: pure failures array OR full allEvents array (legacy)
+  const evs = Array.isArray(failsOrAllEvents) && failsOrAllEvents.length > 0 && failsOrAllEvents[0].equipment_id !== undefined
+    ? failsOrAllEvents.filter(e => e.equipment_id === eq.id && e.type === 'failure')
+    : failsOrAllEvents;
+  const recentFails = (evs||[]).filter(e => new Date(e.date) >= cutoff).length;
+  const totalDown = (evs||[]).reduce((s,e) => s + (parseInt(e.downtime||0)||0), 0);
   return recentFails >= minFail || totalDown >= minDown;
 }
 
-function calcMTBF(eqId, allEvents){
-  const fails = allEvents
-    .filter(e => e.equipment_id === eqId && e.type === 'failure' && e.date)
-    .sort((a,b) => new Date(a.date) - new Date(b.date));
-  if(fails.length < 2) return null;
-  let totalGap = 0;
-  for(let i=1;i<fails.length;i++){
-    totalGap += (new Date(fails[i].date) - new Date(fails[i-1].date)) / (1000*3600);
-  }
-  return Math.round(totalGap / (fails.length - 1));
-}
 
-function calcMTTR(eqId, allEvents){
-  const fails = allEvents.filter(e => e.equipment_id === eqId && e.type === 'failure' && e.downtime);
-  if(!fails.length) return null;
-  const total = fails.reduce((s,e) => s + (parseInt(e.downtime)||0), 0);
-  return Math.round(total / fails.length);
-}
 
 function calcAvailability(mtbf, mttr){
   if(!mtbf || !mttr) return null;
@@ -2759,6 +3034,11 @@ function renderTrendChart(){
 // ══════════════════════════════════════
 // MINI TREND CHART (detail view per equipment)
 // ══════════════════════════════════════
+function renderMiniTrend(){
+  if(currentEqId) renderMiniTrendChart(currentEqId, events);
+}
+
+
 function renderMiniTrendChart(eqId, evData){
   const wrap = g('mini-trend-chart-wrap');
   if(!wrap) return;
@@ -2861,7 +3141,8 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
     doc.text(`Periode: ${fromStr} — ${toStr}`,12,60);
     doc.setFontSize(11);doc.setTextColor(148,163,184);
     const totalFail=evData.filter(e=>e.type==='failure').length;
-    const totDown=evData.reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0);
+    const totDown=calcDowntimeFromEvents(evData);
+    const openFails=calcOpenFailures(evData);
     const badActorEqs=equipments.filter(eq=>eq._isBadActor);
     doc.text(`${equipments.length} Equipment  |  ${totalFail} Failure  |  ${totDown} Jam Downtime  |  ${badActorEqs.length} Bad Actor`,12,70);
 
@@ -2870,8 +3151,8 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
       {v:equipments.length,l:'Total Equipment',c:[14,165,233]},
       {v:badActorEqs.length,l:'Bad Actor',c:[232,64,64]},
       {v:totalFail+'×',l:'Total Failure',c:[232,64,64]},
-      {v:totDown+' Jam',l:'Kumulatif Downtime',c:[232,162,23]},
-      {v:evData.filter(e=>['OPEN','OVERDUE'].includes(e.status)).length,l:'Open Issues',c:[232,64,64]}
+      {v:totDown+' Jam',l:'Downtime (F→Resolved)',c:[232,162,23]},
+      {v:openFails,l:'Failure Belum Resolved',c:[232,64,64]}
     ];
     kpis.forEach((k,i)=>{
       const bx=12+i*55;
@@ -2936,25 +3217,77 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
         doc.setFontSize(7);doc.setTextColor(148,163,184);
         doc.text(`Unit: ${eq.unit||'—'} | ${critLabel(eq.criticality)} | ${statusLabel(eq.status)}`,W-12,9,{align:'right'});
 
+        // Group by FAILURE (parent-child)
+        const _rFails=eqEvs.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const _rChildren=eqEvs.filter(e=>e.type!=='failure');
         let ry=20;
-        toShow.forEach((ev)=>{
+
+        _rFails.forEach((f,fi)=>{
           if(ry>H-26){doc.addPage();pg();ry=20;addPgNum();}
-          const df=fmtD(ev.date);
-          const tc2=ev.type==='failure'?[232,64,64]:ev.type==='action'?[14,165,233]:ev.type==='repair'?[232,162,23]:[34,197,94];
-          doc.setFillColor(241,245,249);doc.rect(10,ry-4,W-20,8,'F');
-          doc.setFillColor(...tc2);doc.rect(10,ry-4,2,8,'F');
-          doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...tc2);
-          doc.text(typeLbl(ev.type),12,ry);
-          doc.setTextColor(30,41,59);
-          doc.text(df.full,30,ry);
-          doc.setFont('helvetica','normal');
-          doc.text((ev.title||'').substring(0,100),68,ry);
-          doc.setTextColor(148,163,184);
-          if(ev.status) doc.text(ev.status,W-12,ry,{align:'right'});
-          ry+=9;
-          if(ev.cause){doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(252,165,165);doc.text('Root Cause: '+ev.cause.substring(0,120),14,ry);ry+=7;}
-          if(ev.outstanding){doc.setTextColor(232,162,23);doc.text('\u26A0 Outstanding: '+(ev.outstanding||'').replace(/[\r\n]+/g,' ').substring(0,120),14,ry);ry+=7;}
+          const myRes=_rChildren.filter(c=>c.parent_failure_id===f.id&&c.type==='resolved');
+          const isResolved=myRes.length>0;
+          const fDown=isResolved?Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600))+' Jam':(f.downtime?f.downtime+' Jam':'—');
+          const groupStatus=isResolved?'RESOLVED':_rChildren.some(c=>c.parent_failure_id===f.id)?'ON PROGRESS':'OPEN';
+
+          // FAILURE header row (dark background)
+          doc.setFillColor(30,41,59);doc.rect(10,ry-4,W-20,9,'F');
+          doc.setFillColor(232,64,64);doc.rect(10,ry-4,2.5,9,'F');
+          doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(232,64,64);
+          doc.text('FAILURE #'+(fi+1),13,ry);
+          doc.setTextColor(255,255,255);
+          doc.text(fmtD(f.date).full,28,ry);
+          doc.text((f.title||'').substring(0,80),56,ry);
+          const sc2=isResolved?[34,197,94]:groupStatus==='ON PROGRESS'?[232,162,23]:[232,64,64];
+          doc.setTextColor(...sc2);
+          doc.text(groupStatus,W-12,ry,{align:'right'});
+          ry+=7;
+          if(f.mode||f.cause||fDown!=='—'){
+            doc.setFont('helvetica','normal');doc.setFontSize(6.5);
+            if(f.mode){doc.setTextColor(252,165,165);doc.text('Mode: '+f.mode.substring(0,60),14,ry);ry+=6;}
+            if(f.cause){doc.setTextColor(252,165,165);doc.text('Root Cause: '+f.cause.substring(0,80),14,ry);ry+=6;}
+            if(fDown!=='—'){doc.setTextColor(232,162,23);doc.text('Downtime: '+fDown,14,ry);ry+=6;}
+          }
+
+          // Children (indented)
+          const myChildren=_rChildren.filter(c=>c.parent_failure_id===f.id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+          myChildren.forEach(ev=>{
+            if(ry>H-26){doc.addPage();pg();ry=20;addPgNum();}
+            const tc2=ev.type==='action'?[14,165,233]:ev.type==='repair'?[232,162,23]:[34,197,94];
+            doc.setFillColor(245,248,252);doc.rect(10,ry-4,W-20,8,'F');
+            doc.setFillColor(200,210,225);doc.rect(12,ry-4,1.5,8,'F'); // indent bar
+            doc.setFillColor(...tc2);doc.rect(13.5,ry-4,1.5,8,'F');   // color bar
+            const cLabel={action:'↳ ACTION',repair:'↳ REPAIR',resolved:'↳ RESOLVED'}[ev.type]||'↳ '+ev.type.toUpperCase();
+            doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...tc2);
+            doc.text(cLabel,16,ry);
+            doc.setTextColor(30,41,59);
+            doc.text(fmtD(ev.date).full,34,ry);
+            doc.setFont('helvetica','normal');
+            doc.text((ev.title||'').substring(0,90),56,ry);
+            ry+=8;
+            if(ev.mode){doc.setFontSize(6.5);doc.setTextColor(100,116,139);doc.text('   '+ev.mode.substring(0,100),16,ry);ry+=6;}
+          });
+          ry+=3; // gap between failure groups
         });
+
+        // Orphan children (no parent)
+        const orphans=_rChildren.filter(c=>!c.parent_failure_id||!_rFails.find(f=>f.id===c.parent_failure_id));
+        if(orphans.length>0){
+          if(ry>H-26){doc.addPage();pg();ry=20;addPgNum();}
+          doc.setFont('helvetica','italic');doc.setFontSize(7);doc.setTextColor(148,163,184);
+          doc.text('— Event lama (tanpa parent failure): '+orphans.length+' item —',W/2,ry,{align:'center'});
+          ry+=8;
+          orphans.forEach(ev=>{
+            if(ry>H-20){doc.addPage();pg();ry=20;}
+            const tc2=ev.type==='action'?[14,165,233]:ev.type==='repair'?[232,162,23]:[34,197,94];
+            doc.setFillColor(248,250,252);doc.rect(10,ry-4,W-20,7,'F');
+            doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...tc2);
+            doc.text(typeLbl(ev.type),12,ry);
+            doc.setTextColor(100,116,139);
+            doc.text(fmtD(ev.date).full,30,ry);
+            doc.text((ev.title||'').substring(0,100),56,ry);
+            ry+=8;
+          });
+        }
         addPgNum();
       });
     }
@@ -2975,7 +3308,8 @@ async function generateReportPPT(evData, from, to, fromStr, toStr){
     const pres=new PptxGenJS();pres.layout='LAYOUT_WIDE';
     const C={navy:'1E3A5F',navyL:'EFF6FF',steel:'DBEAFE',amber:'D97706',red:'DC2626',green:'16A34A',teal:'0284C7',white:'FFFFFF',text:'1E293B',dim:'475569',muted:'94A3B8'};
     const totalFail=evData.filter(e=>e.type==='failure').length;
-    const totDown=evData.reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0);
+    const totDown=calcDowntimeFromEvents(evData);
+    const openFails=calcOpenFailures(evData);
     const badActorEqs=equipments.filter(eq=>eq._isBadActor);
 
     // Cover
@@ -2985,7 +3319,7 @@ async function generateReportPPT(evData, from, to, fromStr, toStr){
     s1.addText('Monthly Report',{x:.4,y:.65,w:10,h:.9,fontSize:36,fontFace:'Calibri',color:C.text,bold:false,margin:0});
     s1.addText(`Periode: ${fromStr} — ${toStr}`,{x:.4,y:1.6,w:10,h:.4,fontSize:14,fontFace:'Calibri',color:C.amber,bold:true,margin:0});
     s1.addText('PT Kilang Pertamina Balikpapan | Technical Support',{x:.4,y:2.1,w:10,h:.3,fontSize:11,fontFace:'Calibri',color:C.dim,margin:0});
-    const kpis=[{v:equipments.length,l:'Total Equipment',c:C.teal},{v:badActorEqs.length,l:'Bad Actor',c:C.red},{v:totalFail+'×',l:'Total Failure',c:C.red},{v:totDown+' Jam',l:'Kumulatif Downtime',c:C.amber},{v:evData.filter(e=>['OPEN','OVERDUE'].includes(e.status)).length,l:'Open Issues',c:C.red}];
+    const kpis=[{v:equipments.length,l:'Total Equipment',c:C.teal},{v:badActorEqs.length,l:'Bad Actor',c:C.red},{v:totalFail+'×',l:'Total Failure',c:C.red},{v:totDown+' Jam',l:'Kumulatif Downtime',c:C.amber},{v:openFails,l:'Failure Belum Resolved',c:C.red}];
     kpis.forEach((k,i)=>{const bx=.4+i*2.5;s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:2.8,w:2.3,h:1.1,fill:{color:C.navyL},line:{color:C.steel,width:1}});s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:2.8,w:2.3,h:.07,fill:{color:k.c},line:{color:k.c,width:0}});s1.addText(String(k.v),{x:bx,y:2.92,w:2.3,h:.55,fontSize:22,fontFace:'Calibri',color:k.c,bold:true,align:'center',margin:0});s1.addText(k.l,{x:bx,y:3.47,w:2.3,h:.28,fontSize:9,fontFace:'Calibri',color:C.dim,align:'center',margin:0});});
     s1.addText('Developed by Technical Support | PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
 
@@ -3366,17 +3700,17 @@ async function deleteUser(userId, email, name){
   if(userId === currentUser?.id){
     toast('Tidak bisa menghapus akun sendiri!','error'); return;
   }
-  if(!confirm(`Hapus user "${name}" (${email}) secara permanen?\n\nSemua data akun akan terhapus dan tidak bisa dikembalikan.`)) return;
+  if(!confirm(`Hapus user "${name}" (${email}) secara permanen?\n\nAkun akan terhapus dari sistem dan tidak bisa dikembalikan.`)) return;
 
   try {
-    // 1. Hapus dari profiles
-    const {error: profErr} = await sb.from('profiles').delete().eq('id', userId);
-    if(profErr) throw profErr;
+    // Hapus via SQL function (hapus dari auth.users + profiles sekaligus)
+    const {error} = await sb.rpc('delete_user_by_id', { target_id: userId });
+    if(error) throw error;
 
-    // 2. Hapus registration_requests terkait
+    // Hapus registration_requests terkait
     await sb.from('registration_requests').delete().eq('user_id_text', userId);
 
-    // 3. Hapus row dari tabel UI langsung
+    // Hapus row dari tabel UI
     const row = document.querySelector(`tr[data-uid="${userId}"]`);
     if(row){ row.style.opacity='0'; row.style.transition='opacity .3s'; setTimeout(()=>row.remove(),300); }
 
