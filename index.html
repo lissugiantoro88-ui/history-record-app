@@ -2565,10 +2565,13 @@ function renderRanking(){
   const allDown   = equipments.reduce((s,e)=>s+(e._downtime||0),0);
   const baCount   = equipments.filter(e=>e._isBadActor).length;
   const openCount = equipments.reduce((s,e)=>s+(e._open||0),0);
-  const outCount  = allEventsCache.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
-  const totalEvs  = allEventsCache.length;
-  const actionEvs = allEventsCache.filter(e=>e.type==='action').length;
-  const repairEvs = allEventsCache.filter(e=>e.type==='repair').length;
+  const allFailIds=new Set(allEventsCache.filter(e=>e.type==='failure').map(e=>e.id));
+  const outCount  = allEventsCache.filter(e=>(e.type==='failure'||(e.parent_failure_id&&allFailIds.has(e.parent_failure_id)))&&e.outstanding&&String(e.outstanding).trim()).length;
+  const failureIds = new Set(allEventsCache.filter(e=>e.type==='failure').map(e=>e.id));
+  const validChildren = allEventsCache.filter(e=>e.type!=='failure'&&e.parent_failure_id&&failureIds.has(e.parent_failure_id));
+  const totalEvs  = allEventsCache.filter(e=>e.type==='failure').length + validChildren.length;
+  const actionEvs = validChildren.filter(e=>e.type==='action').length;
+  const repairEvs = validChildren.filter(e=>e.type==='repair').length;
 
   if(kpiRow){
     kpiRow.innerHTML=`
@@ -2622,11 +2625,14 @@ function renderRanking(){
 
     // Event breakdown from allEventsCache
     const eqEvs = allEventsCache.filter(e=>e.equipment_id===eq.id);
-    const fC  = eqEvs.filter(e=>e.type==='failure').length;
-    const aC  = eqEvs.filter(e=>e.type==='action').length;
-    const rC  = eqEvs.filter(e=>e.type==='repair').length;
-    const sC  = eqEvs.filter(e=>e.type==='resolved').length;
-    const osC = eqEvs.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
+    const eqFails = eqEvs.filter(e=>e.type==='failure');
+    const eqFailIds = new Set(eqFails.map(f=>f.id));
+    const eqValidChildren = eqEvs.filter(e=>e.type!=='failure'&&e.parent_failure_id&&eqFailIds.has(e.parent_failure_id));
+    const fC  = eqFails.length;
+    const aC  = eqValidChildren.filter(e=>e.type==='action').length;
+    const rC  = eqValidChildren.filter(e=>e.type==='repair').length;
+    const sC  = eqValidChildren.filter(e=>e.type==='resolved').length;
+    const osC = [...eqFails,...eqValidChildren].filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
 
     // Risk tier berdasarkan score pct DAN bad actor flag
     let tierCls, tierLbl;
@@ -2892,15 +2898,21 @@ function renderTrendChart(){
   wrap.innerHTML = '<div style="height:240px;display:flex;align-items:center;justify-content:center;color:var(--textDim);font-size:11px;gap:10px;"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin 0.8s linear infinite;"></span>Memuat data...</div>';
 
   sb.from('events')
-    .select('equipment_id,type,date,downtime,status,outstanding,title')
+    .select('equipment_id,type,date,downtime,status,outstanding,title,parent_failure_id')
     .then(({data:evData, error:fetchErr})=>{
       if(fetchErr){
         console.error('[renderTrendChart]', fetchErr);
         wrap.innerHTML='<div style="height:240px;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:12px;">Gagal memuat: '+fetchErr.message+'</div>';
         return;
       }
-      const filtered = !evData||!evData.length ? [] :
+      const allForEq = !evData||!evData.length ? [] :
         (selEqId==='all' ? evData : evData.filter(e=>e.equipment_id===selEqId));
+      // Only include failures + children that have valid parent failure
+      const validFailIds = new Set(allForEq.filter(e=>e.type==='failure').map(e=>e.id));
+      const filtered = allForEq.filter(e=>
+        e.type==='failure' ||
+        (e.parent_failure_id && validFailIds.has(e.parent_failure_id))
+      );
 
       if(!filtered.length){
         wrap.innerHTML='<div style="height:240px;display:flex;align-items:center;justify-content:center;color:var(--textDim);font-size:12px;">Belum ada event untuk ditampilkan.</div>';
@@ -2920,7 +2932,10 @@ function renderTrendChart(){
       const tFail=mFail.reduce((a,b)=>a+b,0), tAction=mAction.reduce((a,b)=>a+b,0);
       const tRepair=mRepair.reduce((a,b)=>a+b,0), tResolved=mResolved.reduce((a,b)=>a+b,0);
       const tDowntime=mDowntime.reduce((a,b)=>a+b,0);
-      const tOpen=filtered.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
+      // tOpen = failures without a resolved child (per parent-child logic)
+      const filtFails=filtered.filter(e=>e.type==='failure');
+      const filtChildren=filtered.filter(e=>e.type!=='failure');
+      const tOpen=filtFails.filter(f=>!filtChildren.some(c=>(c.parent_failure_id===f.id||(!c.parent_failure_id&&new Date(c.date)>=new Date(f.date)))&&c.type==='resolved')).length;
       const peakIdx=mFail.indexOf(Math.max(...mFail)), peakVal=Math.max(...mFail);
       const half=Math.floor(monthsN/2);
       const earlyF=mFail.slice(0,half).reduce((a,b)=>a+b,0), lateF=mFail.slice(-half).reduce((a,b)=>a+b,0);
