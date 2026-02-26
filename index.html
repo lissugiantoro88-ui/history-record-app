@@ -1822,7 +1822,10 @@ function subscribeRealtime(){
     .on('postgres_changes',{event:'*',schema:'public',table:'events'},payload=>{
       if(payload.new?.equipment_id!==currentEqId&&payload.old?.equipment_id!==currentEqId)return;
       setConn('sync');
-      if(payload.eventType==='INSERT'){events.push(payload.new);events.sort((a,b)=>new Date(a.date)-new Date(b.date));}
+      if(payload.eventType==='INSERT'){events.push(payload.new);
+        const rtFails=events.filter(e=>e.type==='failure');
+        const rtChildren=sortChildEvents(events.filter(e=>e.type!=='failure'));
+        events=[...rtFails.sort((a,b)=>new Date(a.date)-new Date(b.date)),...rtChildren];}
       else if(payload.eventType==='UPDATE'){const i=events.findIndex(e=>e.id===payload.new.id);if(i>-1)events[i]=payload.new;}
       else if(payload.eventType==='DELETE'){events=events.filter(e=>e.id!==payload.old.id);}
       render();setTimeout(()=>setConn('ok'),800);
@@ -2101,9 +2104,8 @@ function render(){
   const ciRow=(k,v,vc='')=>v?`<div><div class="ci-k">${k}</div><div class="ci-v ${vc}">${esc(String(v))}</div></div>`:'';
 
   displayFailures.forEach((f,fi)=>{
-    const myChildren=children
-      .filter(c=>c.parent_failure_id===f.id || (!c.parent_failure_id && c._autoParent===f.id))
-      .sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const myChildren=sortChildEvents(children
+      .filter(c=>c.parent_failure_id===f.id || (!c.parent_failure_id && c._autoParent===f.id)));
     const myResolved=myChildren.filter(c=>c.type==='resolved');
     const isResolved=myResolved.length>0||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
     const isOnProgress=myChildren.length>0&&!isResolved;
@@ -2318,6 +2320,18 @@ function calcOpenFailures(evArray){
 }
 
 
+
+// Smart child event sort: date ASC → type order → created_at ASC
+function sortChildEvents(arr){
+  const typeOrder={action:1,repair:2,resolved:3};
+  return [...arr].sort((a,b)=>{
+    const dA=new Date(a.date), dB=new Date(b.date);
+    if(dA-dB!==0) return dA-dB;
+    const tA=typeOrder[a.type]||99, tB=typeOrder[b.type]||99;
+    if(tA-tB!==0) return tA-tB;
+    return new Date(a.created_at||0)-new Date(b.created_at||0);
+  });
+}
 // Quick-add child event dari tombol "+ Tindak Lanjut"
 function addChildEvent(parentFailureId){
   resetForm();
@@ -2388,7 +2402,7 @@ async function exportPDF(){
       const fRow=[String(rowNum),fmtD(f.date).full,'FAILURE',f.title||'',f.mode||'—',f.cause||'—',fDown,f.pic||'—',myRes.length?'RESOLVED':'OPEN'];
       cx=10;fRow.forEach((cell,i)=>{doc.setFont('helvetica',i===2?'bold':'normal');doc.setFontSize(6.5);doc.setTextColor(i===2?232:i===8?(myRes.length?34:232):200,i===2?64:i===8?(myRes.length?197:64):200,i===2?64:i===8?(myRes.length?94:64):200);doc.text(String(cell),cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=9;
       // Child rows (indented)
-      const myChildren=_pdfChildren.filter(c=>c.parent_failure_id===f.id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+      const myChildren=sortChildEvents(_pdfChildren.filter(c=>c.parent_failure_id===f.id));
       myChildren.forEach(ev=>{
         if(ry>H-12){doc.addPage();pg();ry=22;}
         doc.setFillColor(245,248,252);doc.rect(10,ry-4,W-20,7,'F');
@@ -2470,7 +2484,7 @@ async function exportPPT(){
     const _pptChildren=events.filter(e=>e.type!=='failure');
 
     _pptFails.forEach((f,fi)=>{
-      const myChildren=_pptChildren.filter(c=>c.parent_failure_id===f.id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+      const myChildren=sortChildEvents(_pptChildren.filter(c=>c.parent_failure_id===f.id));
       const myResolved=myChildren.filter(c=>c.type==='resolved');
       const isResolved=myResolved.length>0;
       const fDowntime=isResolved?Math.round((new Date(myResolved[myResolved.length-1].date)-new Date(f.date))/(1000*3600))+' Jam':(f.downtime?f.downtime+' Jam':'Belum Resolved');
@@ -3361,7 +3375,7 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
           }
 
           // Children (indented)
-          const myChildren=_rChildren.filter(c=>c.parent_failure_id===f.id).sort((a,b)=>new Date(a.date)-new Date(b.date));
+          const myChildren=sortChildEvents(_rChildren.filter(c=>c.parent_failure_id===f.id));
           myChildren.forEach(ev=>{
             if(ry>H-26){doc.addPage();pg();ry=20;addPgNum();}
             const tc2=ev.type==='action'?[14,165,233]:ev.type==='repair'?[232,162,23]:[34,197,94];
