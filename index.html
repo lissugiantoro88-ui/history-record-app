@@ -2053,7 +2053,11 @@ function render(){
       if(dh>0) totDown+=dh;
     } else if(f.downtime){ totDown+=parseInt(f.downtime)||0; }
   });
-  const openFailures=failures.filter(f=>!children.some(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved'));
+  const openFailures=failures.filter(f=>{
+    const hasResolvedChild=children.some(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved');
+    const statusClosed=['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
+    return !hasResolvedChild && !statusClosed;
+  });
   const outN=events.filter(e=>e.outstanding&&e.outstanding.trim()).length;
 
   g('st-f').textContent=failures.length+'×';
@@ -2068,11 +2072,19 @@ function render(){
   const tSub=g('st-t-sub');if(tSub)tSub.textContent=`${failures.length}F · ${children.filter(c=>c.type==='action').length}A · ${children.filter(c=>c.type==='repair').length}R · ${children.filter(c=>c.type==='resolved').length}✓`;
 
   // ── FILTER ──
+  // Helper: is failure effectively closed?
+  const isFailureClosed=f=>{
+    const hasResolvedChild=children.some(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved');
+    const statusClosed=['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
+    return hasResolvedChild||statusClosed;
+  };
+  const isFailureOnProgress=f=>children.some(c=>c.parent_failure_id===f.id||c._autoParent===f.id)&&!isFailureClosed(f);
+
   let filteredFailures;
   if(curFilter==='all') filteredFailures=failures;
-  else if(curFilter==='open') filteredFailures=failures.filter(f=>!children.some(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved')&&!children.some(c=>c.parent_failure_id===f.id||c._autoParent===f.id));
-  else if(curFilter==='onprogress') filteredFailures=failures.filter(f=>children.some(c=>c.parent_failure_id===f.id||c._autoParent===f.id)&&!children.some(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved'));
-  else if(curFilter==='resolved') filteredFailures=failures.filter(f=>children.some(c=>(c.parent_failure_id===f.id||c._autoParent===f.id)&&c.type==='resolved'));
+  else if(curFilter==='open') filteredFailures=failures.filter(f=>!isFailureClosed(f)&&!isFailureOnProgress(f));
+  else if(curFilter==='onprogress') filteredFailures=failures.filter(f=>isFailureOnProgress(f));
+  else if(curFilter==='resolved') filteredFailures=failures.filter(f=>isFailureClosed(f));
   else filteredFailures=failures;
   g('fc-lbl').textContent=filteredFailures.length+' failure';
 
@@ -2093,17 +2105,17 @@ function render(){
       .filter(c=>c.parent_failure_id===f.id || (!c.parent_failure_id && c._autoParent===f.id))
       .sort((a,b)=>new Date(a.date)-new Date(b.date));
     const myResolved=myChildren.filter(c=>c.type==='resolved');
-    const isResolved=myResolved.length>0;
+    const isResolved=myResolved.length>0||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
     const isOnProgress=myChildren.length>0&&!isResolved;
-    const groupStatus=isResolved?'RESOLVED':isOnProgress?'ON PROGRESS':'OPEN';
+    const groupStatus=isResolved||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase())?'RESOLVED':isOnProgress?'ON PROGRESS':'OPEN';
     const statusColor={RESOLVED:'var(--green)','ON PROGRESS':'var(--amber)',OPEN:'var(--red)'}[groupStatus];
     const hasAutoLinked=myChildren.some(c=>!c.parent_failure_id&&c._autoParent===f.id);
 
     let fDowntime='—';
-    if(isResolved){
+    if(myResolved.length>0){
       const dh=Math.round((new Date(myResolved[myResolved.length-1].date)-new Date(f.date))/(1000*3600));
       fDowntime=dh>0?dh+' Jam':'<1 Jam';
-    } else if(f.downtime){ fDowntime=f.downtime+' Jam (manual)'; }
+    } else if(f.downtime){ fDowntime=f.downtime+' Jam'; }
 
     const df=fmtD(f.date);
     const sc=scColor(f.status);
@@ -2263,11 +2275,21 @@ function calcMTTR(failures,children){
 
 // ── Downtime helper: hitung dari FAILURE→RESOLVED (parent-child) ──
 function calcDowntimeFromEvents(evArray){
-  const fails=evArray.filter(e=>e.type==='failure');
+  const fails=evArray.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
   const children=evArray.filter(e=>e.type!=='failure');
+  // Build auto-assign map
+  const autoParentMap=new Map();
+  children.forEach(c=>{
+    if(c.parent_failure_id) return;
+    const cDate=new Date(c.date);
+    let best=null;
+    fails.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
+    if(!best&&fails.length) best=fails[0];
+    if(best) autoParentMap.set(c.id, best.id);
+  });
   let total=0;
   fails.forEach(f=>{
-    const myRes=children.filter(c=>(c.parent_failure_id===f.id)&&c.type==='resolved');
+    const myRes=children.filter(c=>(c.parent_failure_id===f.id||(autoParentMap.get(c.id)===f.id))&&c.type==='resolved');
     if(myRes.length){
       const dh=Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600));
       if(dh>0) total+=dh;
@@ -2276,9 +2298,23 @@ function calcDowntimeFromEvents(evArray){
   return total;
 }
 function calcOpenFailures(evArray){
-  const fails=evArray.filter(e=>e.type==='failure');
+  const fails=evArray.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
   const children=evArray.filter(e=>e.type!=='failure');
-  return fails.filter(f=>!children.some(c=>c.parent_failure_id===f.id&&c.type==='resolved')).length;
+  // Build auto-assign map: for each child, find nearest preceding failure
+  const autoParentMap=new Map();
+  children.forEach(c=>{
+    if(c.parent_failure_id) return; // already linked
+    const cDate=new Date(c.date);
+    let best=null;
+    fails.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
+    if(!best&&fails.length) best=fails[0];
+    if(best) autoParentMap.set(c.id, best.id);
+  });
+  return fails.filter(f=>{
+    const hasResolvedChild=children.some(c=>(c.parent_failure_id===f.id||(autoParentMap.get(c.id)===f.id))&&c.type==='resolved');
+    const statusClosed=['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
+    return !hasResolvedChild && !statusClosed;
+  }).length;
 }
 
 
@@ -2923,19 +2959,64 @@ function renderTrendChart(){
 
       const monthKeys = buildMonthKeys(monthsN);
       const labels    = getMonthLabels(monthsN);
-      const mFail     = monthKeys.map(mk=>filtered.filter(e=>e.type==='failure'  &&getMonthKey(e.date)===mk).length);
-      const mAction   = monthKeys.map(mk=>filtered.filter(e=>e.type==='action'   &&getMonthKey(e.date)===mk).length);
-      const mRepair   = monthKeys.map(mk=>filtered.filter(e=>e.type==='repair'   &&getMonthKey(e.date)===mk).length);
-      const mResolved = monthKeys.map(mk=>filtered.filter(e=>e.type==='resolved' &&getMonthKey(e.date)===mk).length);
-      const mDowntime = monthKeys.map(mk=>filtered.filter(e=>e.type==='failure'&&getMonthKey(e.date)===mk).reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0));
 
-      const tFail=mFail.reduce((a,b)=>a+b,0), tAction=mAction.reduce((a,b)=>a+b,0);
-      const tRepair=mRepair.reduce((a,b)=>a+b,0), tResolved=mResolved.reduce((a,b)=>a+b,0);
-      const tDowntime=mDowntime.reduce((a,b)=>a+b,0);
-      // tOpen = failures without a resolved child (per parent-child logic)
-      const filtFails=filtered.filter(e=>e.type==='failure');
-      const filtChildren=filtered.filter(e=>e.type!=='failure');
-      const tOpen=filtFails.filter(f=>!filtChildren.some(c=>(c.parent_failure_id===f.id||(!c.parent_failure_id&&new Date(c.date)>=new Date(f.date)))&&c.type==='resolved')).length;
+      // Use ALL events for this equipment (not just filtered valid children)
+      // to correctly compute resolved status per failure
+      const allFails = allForEq.filter(e=>e.type==='failure');
+      const allChildren = allForEq.filter(e=>e.type!=='failure');
+
+      // Build auto-assign map: orphan children → nearest preceding failure
+      const sortedFails=[...allFails].sort((a,b)=>new Date(a.date)-new Date(b.date));
+      const autoMap=new Map();
+      allChildren.forEach(c=>{
+        if(c.parent_failure_id) return;
+        const cDate=new Date(c.date);
+        let best=null;
+        sortedFails.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
+        if(!best&&sortedFails.length) best=sortedFails[0];
+        if(best) autoMap.set(c.id, best.id);
+      });
+
+      // Determine effective status per failure
+      const isFailEffectivelyClosed=f=>{
+        const hasResolvedChild=allChildren.some(c=>
+          (c.parent_failure_id===f.id || autoMap.get(c.id)===f.id) && c.type==='resolved'
+        );
+        return hasResolvedChild || ['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
+      };
+
+      // Month-level counts (use failure date for Failure, resolved child date for Resolved)
+      const mFail     = monthKeys.map(mk=>allFails.filter(e=>getMonthKey(e.date)===mk).length);
+      const mAction   = monthKeys.map(mk=>allChildren.filter(e=>e.type==='action'&&(e.parent_failure_id||autoMap.get(e.id))&&getMonthKey(e.date)===mk).length);
+      const mRepair   = monthKeys.map(mk=>allChildren.filter(e=>e.type==='repair'&&(e.parent_failure_id||autoMap.get(e.id))&&getMonthKey(e.date)===mk).length);
+      // Resolved = count resolved children by their date (when the resolution happened)
+      const mResolved = monthKeys.map(mk=>allChildren.filter(e=>e.type==='resolved'&&(e.parent_failure_id||autoMap.get(e.id))&&getMonthKey(e.date)===mk).length);
+      // Also count failures closed by status (no resolved child) - counted in month of failure
+      const mResolvedByStatus = monthKeys.map(mk=>allFails.filter(f=>{
+        const hasResolvedChild=allChildren.some(c=>(c.parent_failure_id===f.id||autoMap.get(c.id)===f.id)&&c.type==='resolved');
+        return !hasResolvedChild && ['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()) && getMonthKey(f.date)===mk;
+      }).length);
+      const mDowntime = monthKeys.map(mk=>{
+        // Downtime = from failure date to resolved child date (or manual downtime field)
+        return allFails.filter(e=>getMonthKey(e.date)===mk).reduce((s,f)=>{
+          const myRes=allChildren.filter(c=>(c.parent_failure_id===f.id||autoMap.get(c.id)===f.id)&&c.type==='resolved')
+            .sort((a,b)=>new Date(a.date)-new Date(b.date));
+          if(myRes.length){
+            const dh=Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600));
+            return s+(dh>0?dh:0);
+          }
+          return s+(parseInt(f.downtime||0)||0);
+        },0);
+      });
+
+      const tFail    = mFail.reduce((a,b)=>a+b,0);
+      const tAction  = mAction.reduce((a,b)=>a+b,0);
+      const tRepair  = mRepair.reduce((a,b)=>a+b,0);
+      // tResolved = all effectively closed failures
+      const tResolved= allFails.filter(f=>isFailEffectivelyClosed(f)).length;
+      const tDowntime= mDowntime.reduce((a,b)=>a+b,0);
+      // tOpen = failures not yet effectively closed
+      const tOpen    = allFails.filter(f=>!isFailEffectivelyClosed(f)).length;
       const peakIdx=mFail.indexOf(Math.max(...mFail)), peakVal=Math.max(...mFail);
       const half=Math.floor(monthsN/2);
       const earlyF=mFail.slice(0,half).reduce((a,b)=>a+b,0), lateF=mFail.slice(-half).reduce((a,b)=>a+b,0);
@@ -2968,12 +3049,12 @@ function renderTrendChart(){
           <div class="trend-kpi-card" style="border-top:3px solid var(--green);">
             <div class="trend-kpi-val" style="color:var(--green);">${tResolved}</div>
             <div class="trend-kpi-lbl">Resolved</div>
-            <div class="trend-kpi-change" style="color:var(--textDim);font-size:10px;">${filtered.length} total events</div>
+            <div class="trend-kpi-change" style="color:var(--textDim);font-size:10px;">${tFail} total failure tercatat</div>
           </div>
           <div class="trend-kpi-card" style="border-top:3px solid ${tOpen?'var(--red)':'var(--green)'};">
             <div class="trend-kpi-val" style="color:${tOpen?'var(--red)':'var(--green)'};">${tOpen}</div>
             <div class="trend-kpi-lbl">Open / Belum Closed</div>
-            <div class="trend-kpi-change" style="color:var(--textDim);font-size:10px;">${peakVal>0?'Peak: '+labels[peakIdx]+' ('+peakVal+'×)':'Tidak ada open issue'}</div>
+            <div class="trend-kpi-change" style="color:var(--textDim);font-size:10px;">${tOpen>0?tOpen+' failure belum selesai':'Semua failure sudah closed'}</div>
           </div>`;
       }
 
@@ -3007,8 +3088,8 @@ function renderTrendChart(){
       if(statsDiv){
         const rows=monthKeys.map((mk,i)=>({
           label:labels[i],fail:mFail[i],action:mAction[i],repair:mRepair[i],
-          resolved:mResolved[i],downtime:mDowntime[i],
-          total:mFail[i]+mAction[i]+mRepair[i]+mResolved[i]
+          resolved:mResolved[i]+mResolvedByStatus[i],downtime:mDowntime[i],
+          total:mFail[i]+mAction[i]+mRepair[i]+mResolved[i]+mResolvedByStatus[i]
         })).filter(r=>r.total>0);
 
         if(!rows.length){statsDiv.innerHTML='';return;}
