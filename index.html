@@ -1069,6 +1069,7 @@ canvas{width:100%;max-height:260px;}
     <div class="mb">
       <p style="font-size:13px;color:var(--textDim);line-height:1.7">Event ini akan dihapus dari database secara permanen.</p>
       <p style="font-size:12px;color:var(--red);margin-top:10px;" id="del-name"></p>
+      <p style="font-size:12px;color:var(--amber);margin-top:8px;padding:8px;background:rgba(245,158,11,.08);border-radius:6px;display:none;" id="del-child-warn"></p>
     </div>
     <div class="mf">
       <button class="btn btn-outline" onclick="closeModal('modal-del')">Batal</button>
@@ -1986,9 +1987,22 @@ function delEv(id){
   if(!window._canDelete){toast('Hanya Admin yang dapat menghapus.','error');return;}
   delEvId=id;const ev=events.find(e=>e.id===id);
   g('del-name').textContent=ev?'"'+ev.title+'"':'';
+  // Warn if deleting a failure that has children
+  const childCount=events.filter(c=>c.parent_failure_id===id||c._autoParent===id).length;
+  const warn=g('del-child-warn');
+  if(warn) warn.style.display=childCount>0&&ev?.type==='failure'?'block':'none';
+  if(warn) warn.textContent=`⚠ Failure ini memiliki ${childCount} tindak lanjut (Action/Repair/Resolved) yang juga akan ikut dihapus.`;
   g('modal-del').classList.add('open');
 }
 async function doDelete(){
+  // If deleting a failure, first delete all its children
+  const evToDel=events.find(e=>e.id===delEvId);
+  if(evToDel?.type==='failure'){
+    const childIds=events.filter(c=>c.parent_failure_id===delEvId).map(c=>c.id);
+    if(childIds.length>0){
+      await sb.from('events').delete().in('id',childIds);
+    }
+  }
   const{error}=await sb.from('events').delete().eq('id',delEvId);
   delEvId=null;closeModal('modal-del');
   if(error){toast('Gagal hapus: '+error.message,'error');return;}
