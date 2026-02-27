@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="id" data-theme="dark">
 <head>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIj4KICA8IS0tIE5hdnkgYmFja2dyb3VuZCBjaXJjbGUgLS0+CiAgPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTUiIGZpbGw9IiMwRjE3MkEiLz4KICA8IS0tIEFtYmVyIHRvcCBhY2NlbnQgYmFyIC0tPgogIDxyZWN0IHg9IjEiIHk9IjEiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzIiByeD0iMiIgZmlsbD0iI0U4QTIxNyIvPgogIDwhLS0gSFIgdGV4dCAtLT4KICA8dGV4dCB4PSIxNiIgeT0iMjIiIAogICAgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIAogICAgZm9udC1zaXplPSIxMyIgCiAgICBmb250LXdlaWdodD0iOTAwIiAKICAgIGZpbGw9IiNFOEEyMTciIAogICAgdGV4dC1hbmNob3I9Im1pZGRsZSIgCiAgICBsZXR0ZXItc3BhY2luZz0iMC41Ij5IUjwvdGV4dD4KPC9zdmc+">
-<link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIj4KICA8IS0tIE5hdnkgYmFja2dyb3VuZCBjaXJjbGUgLS0+CiAgPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTUiIGZpbGw9IiMwRjE3MkEiLz4KICA8IS0tIEFtYmVyIHRvcCBhY2NlbnQgYmFyIC0tPgogIDxyZWN0IHg9IjEiIHk9IjEiIHdpZHRoPSIzMCIgaGVpZ2h0PSIzIiByeD0iMiIgZmlsbD0iI0U4QTIxNyIvPgogIDwhLS0gSFIgdGV4dCAtLT4KICA8dGV4dCB4PSIxNiIgeT0iMjIiIAogICAgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIAogICAgZm9udC1zaXplPSIxMyIgCiAgICBmb250LXdlaWdodD0iOTAwIiAKICAgIGZpbGw9IiNFOEEyMTciIAogICAgdGV4dC1hbmNob3I9Im1pZGRsZSIgCiAgICBsZXR0ZXItc3BhY2luZz0iMC41Ij5IUjwvdGV4dD4KPC9zdmc+">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bad Actor History Record</title>
@@ -344,7 +342,7 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 
 /* Timeline */
 .timeline{position:relative;}
-..tl-entry{position:relative;}
+.timeline::before{content:'';position:absolute;left:128px;top:0;bottom:0;width:2px;background:var(--tline);}
 .tl-entry{display:flex;margin-bottom:18px;animation:fadeUp .3s ease both;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .tl-date{width:112px;flex-shrink:0;padding-right:16px;text-align:right;padding-top:11px;}
@@ -747,6 +745,34 @@ canvas{width:100%;max-height:260px;}
         <span class="rank-formula-sep">|</span>
         <span class="rank-formula-note">Equipment dengan score tertinggi diprioritaskan untuk tindakan korektif</span>
       </div>
+      <!-- Search + Filter + Per-page toolbar -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <div style="position:relative;flex:1;min-width:200px;max-width:320px;">
+          <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;">🔍</span>
+          <input id="rank-search" type="text" placeholder="Cari equipment / tag / unit..."
+            style="width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:12px;outline:none;box-sizing:border-box;"
+            oninput="rankPage=1;renderRanking()">
+        </div>
+        <select id="rank-filter-tier" onchange="rankPage=1;renderRanking()"
+          style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:12px;outline:none;cursor:pointer;">
+          <option value="all">Semua Tier</option>
+          <option value="critical">🔴 Critical</option>
+          <option value="high">🟠 High</option>
+          <option value="medium">🟡 Medium</option>
+          <option value="low">🟢 Low</option>
+        </select>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:11px;color:var(--muted);">Per halaman:</span>
+          <select id="rank-per-page" onchange="rankPage=1;renderRanking()"
+            style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:12px;outline:none;cursor:pointer;">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+            <option value="9999">Semua</option>
+          </select>
+        </div>
+        <span id="rank-result-info" style="font-size:11px;color:var(--muted);"></span>
+      </div>
       <div style="overflow-x:auto;border-radius:6px;border:1px solid var(--border);">
         <table class="rank-table">
           <thead>
@@ -771,6 +797,7 @@ canvas{width:100%;max-height:260px;}
           </tbody>
         </table>
       </div>
+      <div id="rank-pagination" style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px;"></div>
     </div>
 <!-- TAB: Failure Trend -->
     <div class="tab-content" id="tab-trend">
@@ -834,19 +861,11 @@ canvas{width:100%;max-height:260px;}
         </div>
         <div class="fg"><label>Tipe Event *</label>
           <select id="f-type" onchange="onTypeChange()">
-            <option value="failure">🔴 Failure / Trip — Kejadian Utama</option>
-            <option value="action">🔵 Action / Investigasi — Tindak Lanjut</option>
-            <option value="repair">🟡 Repair / Perbaikan — Tindak Lanjut</option>
-            <option value="resolved">🟢 Resolved / Selesai — Penutupan</option>
+            <option value="failure">🔴 Failure / Trip</option>
+            <option value="action">🔵 Action / Investigasi</option>
+            <option value="repair">🟡 Repair / Perbaikan</option>
+            <option value="resolved">🟢 Resolved / Selesai</option>
           </select>
-        </div>
-        <!-- Parent Failure selector - muncul untuk action/repair/resolved -->
-        <div class="fg" id="f-parent-wrap" style="display:none">
-          <label>🔗 Terkait Failure *</label>
-          <select id="f-parent-id">
-            <option value="">— Pilih Failure yang ditangani —</option>
-          </select>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px">Pilih event FAILURE yang menjadi akar dari tindakan ini</div>
         </div>
         <div class="fg"><label>Judul / Deskripsi *</label><input id="f-title" placeholder="cth: Sudden Trip — Vibration HH"></div>
         <!-- FAILURE BLOCK -->
@@ -957,15 +976,17 @@ canvas{width:100%;max-height:260px;}
       </div>
       <div class="toolbar">
         <div class="legend">
-          <div class="lg-item"><span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span> Failure</div>
-          <div class="lg-item"><span style="width:10px;height:10px;border-radius:50%;background:var(--amber);display:inline-block"></span> On Progress</div>
-          <div class="lg-item"><span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span> Resolved</div>
+          <div class="lg-item"><div class="lg-dot ld-f"></div>Failure</div>
+          <div class="lg-item"><div class="lg-dot ld-a"></div>Action</div>
+          <div class="lg-item"><div class="lg-dot ld-r"></div>Repair</div>
+          <div class="lg-item"><div class="lg-dot ld-s"></div>Resolved</div>
         </div>
         <div class="tsep"></div>
         <button class="fchip active" onclick="doFilter('all',this)">Semua</button>
-        <button class="fchip" onclick="doFilter('open',this)">🔴 Open</button>
-        <button class="fchip" onclick="doFilter('onprogress',this)">🟡 On Progress</button>
-        <button class="fchip" onclick="doFilter('resolved',this)">🟢 Resolved</button>
+        <button class="fchip" onclick="doFilter('failure',this)">Failure</button>
+        <button class="fchip" onclick="doFilter('action',this)">Action</button>
+        <button class="fchip" onclick="doFilter('repair',this)">Repair</button>
+        <button class="fchip" onclick="doFilter('resolved',this)">Resolved</button>
         <div class="tsep"></div>
         <span style="font-size:10px;color:var(--textDim);" id="fc-lbl"></span>
       </div>
@@ -1069,7 +1090,6 @@ canvas{width:100%;max-height:260px;}
     <div class="mb">
       <p style="font-size:13px;color:var(--textDim);line-height:1.7">Event ini akan dihapus dari database secara permanen.</p>
       <p style="font-size:12px;color:var(--red);margin-top:10px;" id="del-name"></p>
-      <p style="font-size:12px;color:var(--amber);margin-top:8px;padding:8px;background:rgba(245,158,11,.08);border-radius:6px;display:none;" id="del-child-warn"></p>
     </div>
     <div class="mf">
       <button class="btn btn-outline" onclick="closeModal('modal-del')">Batal</button>
@@ -1221,6 +1241,7 @@ let currentUser=null, currentRole=null;
 let currentEqId=null;
 let editEvId=null, delEvId=null, editEqId=null, delEqId=null;
 let curFilter='all', eqFilter='all';
+let rankPage=1, rankSortCol='score', rankSortDir='desc';
 let realtimeCh=null;
 let trendChartInstance=null, miniChartInstance=null;
 const TK='hr_theme';
@@ -1486,7 +1507,7 @@ function renderDashboard(){
 
   // Recalculate bad actor FIRST before any filtering
   if(allEventsCache.length>0){
-    equipments.forEach(eq=>{ const _fails=allEventsCache.filter(e=>e.equipment_id===eq.id&&e.type==='failure'); eq._isBadActor=isBadActor(eq, _fails); });
+    equipments.forEach(eq=>{ eq._isBadActor=isBadActor(eq, allEventsCache); });
   }
 
   let filtered=equipments;
@@ -1693,14 +1714,13 @@ async function doDeleteEquipment(){
 function updateMtbfStrip(eq, evData){
   const failEvs = evData.filter(e=>e.type==='failure');
   const repairEvs = evData.filter(e=>e.type==='repair');
-  const childEvs = evData.filter(e=>e.type!=='failure');
-  const mtbf = calcMTBF(failEvs);
-  const mttr = calcMTTR(failEvs, childEvs);
+  const mtbf = calcMTBF(evData.filter(e=>e.equipment_id===eq.id&&e.type==='failure'));
+  const mttr = calcMTTR(evData.filter(e=>e.equipment_id===eq.id&&e.type==='failure'),evData.filter(e=>e.equipment_id===eq.id&&e.type!=='failure'));
   const avail = calcAvailability(mtbf, mttr);
   const {minFail,months,minDown}=getBaThreshold();
   const cutoff=new Date();cutoff.setMonth(cutoff.getMonth()-months);
-  const recentFails=failEvs.filter(e=>new Date(e.date)>=cutoff).length;
-  const totDown=calcDowntimeFromEvents(evData);
+  const recentFails=evData.filter(e=>e.type==='failure'&&new Date(e.date)>=cutoff).length;
+  const totDown=failEvs.reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0);
   const ba=eq._isBadActor||(recentFails>=minFail||totDown>=minDown);
 
   // ── MTBF ──
@@ -1727,7 +1747,8 @@ function updateMtbfStrip(eq, evData){
     } else {
       mttrEl.textContent=fmtHours(mttr);
       mttrEl.style.color=mttr<24?'var(--green)':mttr<72?'var(--amber)':'var(--red)';
-      if(mttrSub)mttrSub.textContent=`avg dari ${failEvs.length} failure (Failure→Resolved)`;
+      const repD=repairEvs.reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0);
+      if(mttrSub)mttrSub.textContent=`avg dari ${failEvs.length} failure${repD?` · repair: ${repD}j`:''}`;
     }
   }
 
@@ -1822,10 +1843,7 @@ function subscribeRealtime(){
     .on('postgres_changes',{event:'*',schema:'public',table:'events'},payload=>{
       if(payload.new?.equipment_id!==currentEqId&&payload.old?.equipment_id!==currentEqId)return;
       setConn('sync');
-      if(payload.eventType==='INSERT'){events.push(payload.new);
-        const rtFails=events.filter(e=>e.type==='failure');
-        const rtChildren=sortChildEvents(events.filter(e=>e.type!=='failure'));
-        events=[...rtFails.sort((a,b)=>new Date(a.date)-new Date(b.date)),...rtChildren];}
+      if(payload.eventType==='INSERT'){events.push(payload.new);events.sort((a,b)=>new Date(a.date)-new Date(b.date));}
       else if(payload.eventType==='UPDATE'){const i=events.findIndex(e=>e.id===payload.new.id);if(i>-1)events[i]=payload.new;}
       else if(payload.eventType==='DELETE'){events=events.filter(e=>e.id!==payload.old.id);}
       render();setTimeout(()=>setConn('ok'),800);
@@ -1838,17 +1856,12 @@ function subscribeRealtime(){
 // ══════════════════════════════════════
 function onTypeChange(){
   const t=g('f-type').value;
-  const isChild = t!=='failure';
-  // Show/hide blocks
+  // Show/hide sections based on type
   g('f-fail-block').style.display=t==='failure'?'block':'none';
   g('f-action-block').style.display=t==='action'?'block':'none';
   g('f-repair-block').style.display=t==='repair'?'block':'none';
   g('f-resolved-block').style.display=t==='resolved'?'block':'none';
-  // Show parent selector for child events
-  const pw=g('f-parent-wrap');
-  if(pw) pw.style.display=isChild?'block':'none';
-  if(isChild) populateParentSelector();
-  // Placeholder
+  // Update placeholder for title
   const titleEl=g('f-title');
   const ph={
     failure:'cth: Sudden Trip — Vibration HH / High Temperature Alarm',
@@ -1857,35 +1870,18 @@ function onTypeChange(){
     resolved:'cth: Unit kembali normal — Trial Run 72 jam OK'
   };
   if(titleEl) titleEl.placeholder=ph[t]||'';
-  // Auto status
+  // Auto-set status default per type
   const statusEl=g('f-status');
   if(statusEl){
     const def={failure:'OPEN',action:'ON PROGRESS',repair:'ON PROGRESS',resolved:'CLOSED'};
-    if(statusEl.value===''||['OPEN','ON PROGRESS','CLOSED'].includes(statusEl.value)) statusEl.value=def[t];
+    if(statusEl.value==='' || ['OPEN','ON PROGRESS','CLOSED'].includes(statusEl.value)) statusEl.value=def[t];
   }
 }
-
-function populateParentSelector(){
-  const sel=g('f-parent-id'); if(!sel) return;
-  const failures=events.filter(e=>e.type==='failure').sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const curVal=sel.value;
-  sel.innerHTML='<option value="">— Pilih Failure yang ditangani —</option>';
-  failures.forEach(f=>{
-    const opt=document.createElement('option');
-    opt.value=f.id;
-    const dt=fmtD(f.date);
-    opt.textContent=`[${dt.full}] ${f.title||'Failure'}`;
-    sel.appendChild(opt);
-  });
-  if(curVal) sel.value=curVal;
-}
-
 onTypeChange();
 function resetForm(){
   editEvId=null;g('form-lbl').textContent='Tambah event baru';
   g('fs-icon').textContent='＋';g('fs-lbl').textContent='Tambah Event';
   ['f-date','f-time','f-title','f-pic','f-tgt','f-wo','f-ref'].forEach(id=>{const el=g(id);if(el)el.value='';});
-  const _ps=g('f-parent-id');if(_ps)_ps.value='';const _pw=g('f-parent-wrap');if(_pw)_pw.style.display='none';
   // Reset all per-type fields (there may be multiple els with same id in different blocks)
   document.querySelectorAll('#f-mode,#f-cause,#f-act,#f-out,#f-impact').forEach(el=>el.value='');
   document.querySelectorAll('#f-down,#f-fno').forEach(el=>el.value='');
@@ -1900,16 +1896,9 @@ async function submitForm(){
   const blockId={'failure':'f-fail-block','action':'f-action-block','repair':'f-repair-block','resolved':'f-resolved-block'}[typeVal]||'f-fail-block';
   const activeBlock=g(blockId);
   const gv=(id)=>{if(activeBlock){const el=activeBlock.querySelector('#'+id);if(el)return el.value;}const el=g(id);return el?el.value:'';};
-  // Validasi parent untuk child events
-  const typeVal2=g('f-type').value;
-  const parentId=g('f-parent-id')?.value||null;
-  if(typeVal2!=='failure' && !parentId){
-    toast('Pilih Failure yang ditangani terlebih dahulu!','error'); return;
-  }
   const ev={
     equipment_id:currentEqId,date,time:g('f-time').value||null,
     type:typeVal,title,
-    parent_failure_id: typeVal!=='failure'?parentId:null,
     mode:gv('f-mode').trim()||null,cause:gv('f-cause').trim()||null,
     downtime:gv('f-down')?parseInt(gv('f-down')):null,
     fail_no:gv('f-fno')?parseInt(gv('f-fno')):null,
@@ -1937,27 +1926,16 @@ async function submitForm(){
   render();
 }
 async function refreshEqSummary(eqId){
-  const{data}=await sb.from('events').select('type,status,downtime,date,parent_failure_id,id').eq('equipment_id',eqId);
+  const{data}=await sb.from('events').select('type,status,downtime,date').eq('equipment_id',eqId);
   const eq=equipments.find(e=>e.id===eqId);if(!eq||!data)return;
-  const fails=data.filter(e=>e.type==='failure');
-  const children=data.filter(e=>e.type!=='failure');
-  eq._failures=fails.length;
-  // Downtime: FAILURE→RESOLVED (parent-child)
-  let totDown=0;
-  fails.forEach(f=>{
-    const myRes=children.filter(c=>c.parent_failure_id===f.id&&c.type==='resolved');
-    if(myRes.length){
-      const dh=Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600));
-      if(dh>0) totDown+=dh;
-    } else if(f.downtime){ totDown+=parseInt(f.downtime)||0; }
-  });
-  eq._downtime=totDown;
-  // Open = failures without resolved child
-  eq._open=fails.filter(f=>!children.some(c=>c.parent_failure_id===f.id&&c.type==='resolved')).length;
+  eq._failures=data.filter(e=>e.type==='failure').length;
+  eq._downtime=data.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
+  eq._open=data.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
   eq._total=data.length;
-  eq._mtbf=calcMTBF(fails);
-  eq._mttr=calcMTTR(fails,children);
-  eq._isBadActor=isBadActor(eq,fails);
+  eq._mtbf=calcMTBF(data.filter(e=>e.equipment_id===eqId&&e.type==='failure'));
+  eq._mttr=calcMTTR(data.filter(e=>e.equipment_id===eqId&&e.type==='failure'),data.filter(e=>e.equipment_id===eqId&&e.type!=='failure'));
+  eq._isBadActor=isBadActor(eq,data);
+  // Update allEventsCache for this equipment
   allEventsCache=allEventsCache.filter(e=>e.equipment_id!==eqId).concat(data);
 }
 
@@ -1970,12 +1948,6 @@ function editEv(id){
   g('f-type').value=ev.type||'failure';g('f-title').value=ev.title||'';
   g('f-pic').value=ev.pic||'';g('f-tgt').value=ev.target_date||'';g('f-wo').value=ev.wo||'';
   onTypeChange();
-  // Populate & set parent selector for child events
-  if(ev.type!=='failure'){
-    populateParentSelector();
-    const ps=g('f-parent-id');
-    if(ps && ev.parent_failure_id) ps.value=ev.parent_failure_id;
-  }
   const blkId={'failure':'f-fail-block','action':'f-action-block','repair':'f-repair-block','resolved':'f-resolved-block'}[ev.type||'failure']||'f-fail-block';
   const blk=g(blkId);
   const sv=(id,val)=>{if(blk){const el=blk.querySelector('#'+id);if(el){el.value=val;return;}}const el2=g(id);if(el2)el2.value=val;};
@@ -1990,22 +1962,9 @@ function delEv(id){
   if(!window._canDelete){toast('Hanya Admin yang dapat menghapus.','error');return;}
   delEvId=id;const ev=events.find(e=>e.id===id);
   g('del-name').textContent=ev?'"'+ev.title+'"':'';
-  // Warn if deleting a failure that has children
-  const childCount=events.filter(c=>c.parent_failure_id===id||c._autoParent===id).length;
-  const warn=g('del-child-warn');
-  if(warn) warn.style.display=childCount>0&&ev?.type==='failure'?'block':'none';
-  if(warn) warn.textContent=`⚠ Failure ini memiliki ${childCount} tindak lanjut (Action/Repair/Resolved) yang juga akan ikut dihapus.`;
   g('modal-del').classList.add('open');
 }
 async function doDelete(){
-  // If deleting a failure, first delete all its children
-  const evToDel=events.find(e=>e.id===delEvId);
-  if(evToDel?.type==='failure'){
-    const childIds=events.filter(c=>c.parent_failure_id===delEvId).map(c=>c.id);
-    if(childIds.length>0){
-      await sb.from('events').delete().in('id',childIds);
-    }
-  }
   const{error}=await sb.from('events').delete().eq('id',delEvId);
   delEvId=null;closeModal('modal-del');
   if(error){toast('Gagal hapus: '+error.message,'error');return;}
@@ -2024,7 +1983,6 @@ function doFilter(f,el){
   curFilter=f;document.querySelectorAll('.toolbar .fchip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');render();
 }
-
 function render(){
   const wrap=g('tl-wrap');
   if(currentEqId) events=events.filter(e=>e.equipment_id===currentEqId||!e.equipment_id);
@@ -2250,32 +2208,675 @@ function render(){
     wrap.appendChild(nr);
   }
 
-  renderMiniTrend();
+  renderMiniTrendChart(currentEqId, events);
+}
+
+// ══════════════════════════════════════
+// EXPORT PDF
+// ══════════════════════════════════════
+async function exportPDF(){
+  if(!events.length){toast('Tidak ada event!','warn');return;}
+  const eq=equipments.find(e=>e.id===currentEqId);
+  showX('Membuat PDF...'); await sl(150);
+  try{
+    const jspdfNs=window.jspdf||{};
+    const JsPDFCtor=jspdfNs.jsPDF||window.jsPDF;
+    if(!JsPDFCtor){toast('PDF library tidak termuat','error');hideX();return;}
+    const doc=new JsPDFCtor({orientation:'landscape',unit:'mm',format:'a4'});
+    const W=297,H=210;
+    const eqName=eq?.name||'Equipment', tag=eq?.tag_no||'';
+    const C={
+      navy:[15,30,53], navyMid:[30,58,95], navyLight:[241,245,249],
+      amber:[232,162,23], amberLight:[255,243,205],
+      red:[220,38,38], green:[22,163,74], teal:[2,132,199],
+      white:[255,255,255], text:[15,23,42], dim:[71,85,105],
+      muted:[148,163,184], border:[226,232,240], bg:[248,250,252]
+    };
+
+    // ── Helper: header bar ──
+    const pageHeader=(title,subtitle)=>{
+      doc.setFillColor(...C.bg); doc.rect(0,0,W,H,'F');
+      doc.setFillColor(...C.navy); doc.rect(0,0,W,16,'F');
+      doc.setFillColor(...C.amber); doc.rect(0,0,W,2,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.amber);
+      doc.text('BAD ACTOR HISTORY RECORD — PT KILANG PERTAMINA BALIKPAPAN',12,10);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+      doc.text(subtitle||(`${tag} | ${fmtD(new Date().toISOString()).full}`),W-12,10,{align:'right'});
+      if(title){
+        doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.muted);
+        doc.text(title,12,14.5);
+      }
+    };
+    const addFooter=(pageN,total)=>{
+      doc.setFillColor(...C.border); doc.rect(0,H-8,W,8,'F');
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
+      doc.text('Dokumen ini bersifat konfidensial — Technical Support Team | PT Kilang Pertamina Balikpapan',12,H-3.5);
+      doc.setFont('helvetica','bold');
+      doc.text(`${pageN}${total?' / '+total:''}`,W-12,H-3.5,{align:'right'});
+    };
+    const sectionTitle=(text,y)=>{
+      doc.setFillColor(...C.navyMid); doc.rect(10,y-4,W-20,6,'F');
+      doc.setFillColor(...C.amber); doc.rect(10,y-4,3,6,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...C.white);
+      doc.text(text.toUpperCase(),15,y);
+      return y+6;
+    };
+
+    const _pFails=events.filter(e=>e.type==='failure');
+    const _pDown=calcDowntimeFromEvents(events);
+    const _pOpen=calcOpenFailures(events);
+    const _pOut=events.filter(e=>e.outstanding&&e.outstanding.trim()).length;
+    const _pMTBF=calcMTBF(_pFails);
+    const _pMTTR=calcMTTR(_pFails,events.filter(e=>e.type!=='failure'));
+    const _pAvail=calcAvailability(_pMTBF,_pMTTR);
+    let pageN=1, totalPages=3+Math.ceil(events.length/18);
+
+    // ══════════════════════════════════════
+    // PAGE 1 — COVER
+    // ══════════════════════════════════════
+    doc.setFillColor(...C.navy); doc.rect(0,0,W,H,'F');
+    doc.setFillColor(...C.amber); doc.rect(0,0,W,3,'F');
+    doc.setFillColor(30,58,95); doc.rect(0,H-40,W,40,'F');
+
+    // Title block
+    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.amber);
+    doc.text('BAD ACTOR HISTORY RECORD', 14, 20);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+    doc.text('PT Kilang Pertamina Balikpapan — Technical Support', 14, 26);
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(36); doc.setTextColor(...C.white);
+    const nameLines=doc.splitTextToSize(eqName, 200);
+    nameLines.slice(0,2).forEach((ln,i)=>doc.text(ln,14,55+i*14));
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...C.amber);
+    doc.text(tag||'', 14, 55+(Math.min(nameLines.length,2)*14)+3);
+
+    // Separator
+    doc.setFillColor(...C.amber); doc.rect(14,80,60,0.5,'F');
+
+    // Info rows
+    const infoRows=[
+      ['Unit',eq?.unit||'—'],['Criticality',critLabel(eq?.criticality||'')],
+      ['Status',eq?.status||'Active'],['Report Date',fmtD(new Date().toISOString()).full]
+    ];
+    infoRows.forEach(([k,v],i)=>{
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+      doc.text(k.toUpperCase(), 14, 88+i*8);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...C.white);
+      doc.text(v, 14, 93+i*8);
+    });
+
+    // KPI boxes
+    const kpis=[
+      {v:_pFails.length+'×',l:'Total Failure',c:C.red},
+      {v:_pDown?_pDown+' Jam':'— Jam',l:'Total Downtime',c:C.amber},
+      {v:_pOpen,l:'Failure Open',c:_pOpen>0?C.red:C.green},
+      {v:_pOut||'—',l:'Outstanding',c:_pOut>0?C.amber:C.green},
+      {v:_pMTBF?_pMTBF+' Jam':'N/A',l:'MTBF',c:C.teal},
+      {v:_pAvail?_pAvail+'%':'N/A',l:'Availability',c:_pAvail&&parseFloat(_pAvail)>=95?C.green:C.amber}
+    ];
+    kpis.forEach((k,i)=>{
+      const bx=14+i*47;
+      doc.setFillColor(20,40,70); doc.rect(bx,H-36,44,28,'F');
+      doc.setFillColor(...k.c); doc.rect(bx,H-36,44,1.5,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...k.c);
+      doc.text(String(k.v), bx+22, H-22, {align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...C.muted);
+      doc.text(k.l, bx+22, H-15, {align:'center'});
+    });
+    addFooter(pageN++, totalPages);
+
+    // ══════════════════════════════════════
+    // PAGE 2 — EQUIPMENT PROFILE + ANALYSIS
+    // ══════════════════════════════════════
+    doc.addPage();
+    pageHeader('EQUIPMENT PROFILE & FAILURE ANALYSIS', `${eqName} — ${tag}`);
+    let y=24;
+
+    // Equipment detail box
+    doc.setFillColor(...C.navyLight); doc.rect(10,y,W-20,28,'F');
+    doc.setFillColor(...C.navyMid); doc.rect(10,y,3,28,'F');
+    const detFields=[
+      ['Equipment Name',eqName],['Tag No / ID',tag||'—'],
+      ['Unit / System',eq?.unit||'—'],['Criticality',critLabel(eq?.criticality||'')],
+      ['Commission Date',eq?.commission_date?fmtD(eq.commission_date).full:'—'],
+      ['Description',eq?.description||'—']
+    ];
+    const colW=60;
+    detFields.slice(0,4).forEach(([k,v],i)=>{
+      const cx=14+(i%2)*((W-28)/2), cy=y+5+(Math.floor(i/2)*10);
+      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.muted);
+      doc.text(k.toUpperCase(), cx, cy);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...C.text);
+      doc.text(String(v), cx, cy+5, {maxWidth:(W-28)/2-10});
+    });
+    y+=34;
+
+    // KPI metrics grid
+    y=sectionTitle('KEY PERFORMANCE INDICATORS',y+4)+4;
+    const kpiGrid=[
+      {v:_pFails.length+'×',l:'Total Failure',sub:'kejadian tercatat',c:C.red},
+      {v:_pDown?_pDown+' Jam':'—',l:'Total Downtime',sub:'dari failure s/d resolved',c:C.amber},
+      {v:_pOpen,l:'Failure Open',sub:'belum resolved',c:_pOpen>0?C.red:C.green},
+      {v:_pMTBF?_pMTBF+' Jam':'N/A',l:'MTBF',sub:'mean time between failure',c:C.teal},
+      {v:_pMTTR?_pMTTR+' Jam':'N/A',l:'MTTR',sub:'mean time to repair',c:C.teal},
+      {v:_pAvail?_pAvail+'%':'N/A',l:'Availability',sub:'estimasi ketersediaan',c:_pAvail&&parseFloat(_pAvail)>=95?C.green:C.amber}
+    ];
+    const kBw=45, kGap=3;
+    kpiGrid.forEach((k,i)=>{
+      const bx=10+i*(kBw+kGap);
+      doc.setFillColor(...C.white); doc.rect(bx,y,kBw,22,'F');
+      doc.setDrawColor(...C.border); doc.setLineWidth(0.3); doc.rect(bx,y,kBw,22);
+      doc.setFillColor(...k.c); doc.rect(bx,y,kBw,1.5,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...k.c);
+      doc.text(String(k.v), bx+kBw/2, y+11, {align:'center'});
+      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
+      doc.text(k.l, bx+kBw/2, y+16, {align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(5.5); doc.setTextColor(...C.muted);
+      doc.text(k.sub, bx+kBw/2, y+20, {align:'center'});
+    });
+    y+=28;
+
+    // Failure mode summary table
+    if(_pFails.length){
+      y=sectionTitle('FAILURE MODE SUMMARY',y+4)+4;
+      const modeMap={};
+      _pFails.forEach(f=>{const m=f.mode||'Not Specified';modeMap[m]=(modeMap[m]||0)+1;});
+      const modes=Object.entries(modeMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+      const causeMap={};
+      _pFails.forEach(f=>{const c=f.cause||'Not Specified';causeMap[c]=(causeMap[c]||0)+1;});
+      const causes=Object.entries(causeMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+      const maxM=modes[0]?modes[0][1]:1;
+      const maxC=causes[0]?causes[0][1]:1;
+      const hw=(W-28)/2-4;
+
+      // Mode chart
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.dim);
+      doc.text('Failure Mode', 14, y); doc.text('Root Cause', 14+hw+8, y);
+      y+=3;
+      modes.forEach(([m,cnt],i)=>{
+        const barW=Math.max(4,Math.round((cnt/maxM)*hw*0.7));
+        doc.setFillColor(...C.navyLight); doc.rect(14,y+i*7,hw,5,'F');
+        doc.setFillColor(...C.navyMid); doc.rect(14,y+i*7,barW,5,'F');
+        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.text);
+        doc.text(m.substring(0,28), 16, y+i*7+3.5);
+        doc.setFont('helvetica','bold'); doc.setTextColor(...C.amber);
+        doc.text(cnt+'×', 14+hw-2, y+i*7+3.5, {align:'right'});
+      });
+      causes.forEach(([c,cnt],i)=>{
+        const cx2=14+hw+8;
+        const barW=Math.max(4,Math.round((cnt/maxC)*hw*0.7));
+        doc.setFillColor(...C.navyLight); doc.rect(cx2,y+i*7,hw,5,'F');
+        doc.setFillColor(0,100,60); doc.rect(cx2,y+i*7,barW,5,'F');
+        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.text);
+        doc.text(c.substring(0,28), cx2+2, y+i*7+3.5);
+        doc.setFont('helvetica','bold'); doc.setTextColor(...C.green);
+        doc.text(cnt+'×', cx2+hw-2, y+i*7+3.5, {align:'right'});
+      });
+    }
+    addFooter(pageN++, totalPages);
+
+    // ══════════════════════════════════════
+    // PAGE 3+ — CHRONOLOGICAL TABLE
+    // ══════════════════════════════════════
+    const _pdfFails=events.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const _pdfChildren=events.filter(e=>e.type!=='failure');
+    const autoMap2=new Map();
+    const sF2=[..._pdfFails];
+    _pdfChildren.forEach(c=>{
+      if(c.parent_failure_id) return;
+      const cDate=new Date(c.date);let best=null;
+      sF2.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
+      if(!best&&sF2.length) best=sF2[0];
+      if(best) autoMap2.set(c.id, best.id);
+    });
+
+    const cols=['No','Tanggal & Waktu','Tipe','Judul / Deskripsi Event','Failure Mode','Root Cause','Downtime','PIC','Status'];
+    const cw=[8,24,18,62,30,32,16,24,18]; // total ~232, margin 10+10=20 → 252 on 297
+
+    let firstChronoPage=true;
+    const startChronoPage=()=>{
+      if(!firstChronoPage) doc.addPage();
+      firstChronoPage=false;
+      pageHeader('KRONOLOGIS EVENT — FAILURE HISTORY', `${eqName} — ${tag}`);
+      let rx=10, ry=22;
+      doc.setFillColor(...C.navy); doc.rect(10,ry-5,W-20,8,'F');
+      cols.forEach((c,i)=>{
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.white);
+        doc.text(c, rx+1.5, ry, {maxWidth:cw[i]-3});
+        rx+=cw[i];
+      });
+      return 30;
+    };
+
+    let ry=startChronoPage();
+    let rowNum=0;
+
+    _pdfFails.forEach(f=>{
+      if(ry>H-14){addFooter(pageN++,totalPages);ry=startChronoPage();}
+      rowNum++;
+      const myChildren=sortChildEvents(_pdfChildren.filter(c=>
+        c.parent_failure_id===f.id || autoMap2.get(c.id)===f.id
+      ));
+      const myRes=myChildren.filter(c=>c.type==='resolved');
+      const isClosed=myRes.length>0||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
+      const fDown=myRes.length?
+        Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600))+'j':
+        (f.downtime?f.downtime+' j':'—');
+
+      // Failure header row (dark)
+      doc.setFillColor(...C.navy); doc.rect(10,ry-4,W-20,8,'F');
+      doc.setFillColor(...C.red); doc.rect(10,ry-4,3,8,'F');
+      const fRow=[String(rowNum),fmtD(f.date).full,'FAILURE',
+        (f.title||'').substring(0,40),(f.mode||'—').substring(0,22),(f.cause||'—').substring(0,24),
+        fDown,(f.pic||'—').substring(0,16),isClosed?'RESOLVED':'OPEN'];
+      let cx=10;
+      fRow.forEach((cell,i)=>{
+        const isType=i===2, isStatus=i===8;
+        const col=isType?C.red:isStatus?(isClosed?C.green:C.red):C.white;
+        doc.setFont('helvetica',isType||isStatus?'bold':'normal');
+        doc.setFontSize(6.5); doc.setTextColor(...col);
+        doc.text(String(cell), cx+1.5, ry, {maxWidth:cw[i]-3});
+        cx+=cw[i];
+      });
+      ry+=9;
+
+      // Child rows
+      myChildren.forEach(ev=>{
+        if(ry>H-14){addFooter(pageN++,totalPages);ry=startChronoPage();}
+        const cColor={action:C.teal,repair:[180,120,0],resolved:C.green}[ev.type]||C.dim;
+        const cLabel={action:'↳ ACTION',repair:'↳ REPAIR',resolved:'↳ RESOLVED'}[ev.type]||('↳ '+ev.type.toUpperCase());
+        const cStatus=ev.status||'—';
+        doc.setFillColor(...C.bg); doc.rect(10,ry-4,W-20,7,'F');
+        doc.setFillColor(...C.border); doc.rect(10,ry-4,W-20,7);
+        doc.setFillColor(...cColor); doc.rect(13,ry-4,2,7,'F');
+        const cRow=['',fmtD(ev.date).full,cLabel,
+          (ev.title||'').substring(0,40),(ev.mode||'—').substring(0,22),(ev.cause||ev.actions||'—').substring(0,24),
+          ev.downtime?ev.downtime+' j':'—',(ev.pic||'—').substring(0,16),cStatus.substring(0,12)];
+        let cx2=10;
+        cRow.forEach((cell,i)=>{
+          const isType=i===2;
+          const col=isType?cColor:(i===0?C.muted:C.dim);
+          doc.setFont('helvetica',isType?'bold':'normal');
+          doc.setFontSize(i===2?6.5:6); doc.setTextColor(...col);
+          doc.text(String(cell), cx2+(i===3?4:1.5), ry, {maxWidth:cw[i]-3});
+          cx2+=cw[i];
+        });
+        ry+=7.5;
+      });
+      ry+=2; // gap between failure groups
+    });
+
+    // Outstanding section
+    const outItems=events.filter(e=>e.outstanding&&e.outstanding.trim());
+    if(outItems.length){
+      if(ry>H-30){addFooter(pageN++,totalPages);ry=startChronoPage();}
+      ry+=2;
+      ry=sectionTitle('OUTSTANDING & OPEN ITEMS',ry+4)+4;
+      outItems.forEach((ev,i)=>{
+        if(ry>H-14){addFooter(pageN++,totalPages);ry=startChronoPage();}
+        doc.setFillColor(255,243,205); doc.rect(10,ry-3,W-20,8,'F');
+        doc.setFillColor(...C.amber); doc.rect(10,ry-3,3,8,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.text);
+        doc.text(`${i+1}. ${(ev.title||'').substring(0,60)}`, 15, ry+1);
+        doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...C.dim);
+        doc.text(doc.splitTextToSize((ev.outstanding||'').substring(0,120), W-50)[0], 15, ry+5);
+        doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...C.amber);
+        doc.text(`PIC: ${ev.pic||'—'} | Target: ${ev.target_date?fmtD(ev.target_date).full:'—'}`, W-12, ry+5, {align:'right'});
+        ry+=10;
+      });
+    }
+    addFooter(pageN++, totalPages);
+
+    doc.save(`History_${tag||eqName.replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+    toast(`PDF diekspor — ${doc.getNumberOfPages()} halaman ✓`);
+  }catch(err){console.error(err);toast('Error PDF: '+err.message,'error');}
+  hideX();
+}
+
+// ══════════════════════════════════════
+// EXPORT PPT
+// ══════════════════════════════════════
+async function exportPPT(){
+  if(!events.length){toast('Tidak ada event!','warn');return;}
+  const eq=equipments.find(e=>e.id===currentEqId);
+  showX('Membuat PowerPoint...'); await sl(200);
+  try{
+    const pres=new PptxGenJS(); pres.layout='LAYOUT_WIDE';
+    const W=13.3, H=7.5;
+    const C={
+      navy:'0F1E35',navyM:'1E3A5F',navyL:'EFF6FF',steel:'DBEAFE',
+      amber:'D97706',amberL:'FEF3C7',
+      red:'DC2626',redL:'FEE2E2',
+      green:'16A34A',greenL:'DCFCE7',
+      teal:'0284C7',tealL:'E0F2FE',
+      white:'FFFFFF',text:'1E293B',dim:'475569',muted:'94A3B8',bg:'F8FAFC'
+    };
+    const sh=()=>({type:'outer',color:'000000',blur:5,offset:2,angle:135,opacity:.12});
+    const eqName=eq?.name||'Equipment', tag=eq?.tag_no||'';
+    const fails=events.filter(e=>e.type==='failure');
+    const children=events.filter(e=>e.type!=='failure');
+    const totDown=calcDowntimeFromEvents(events);
+    const openFails=calcOpenFailures(events);
+    const outCount=events.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
+    const mtbf=calcMTBF(fails);
+    const mttr=calcMTTR(fails,children);
+    const avail=calcAvailability(mtbf,mttr);
+    let pgN=1;
+
+    // ── Shared helpers ──
+    const slideHeader=(sl,title,sub,accentColor)=>{
+      accentColor=accentColor||C.amber;
+      sl.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:W,h:.18,fill:{color:accentColor},line:{color:accentColor,width:0}});
+      sl.addShape(pres.shapes.RECTANGLE,{x:0,y:.18,w:W,h:.62,fill:{color:C.navy},line:{color:C.navy,width:0}});
+      sl.addText('BAD ACTOR HISTORY RECORD — PT KILANG PERTAMINA BALIKPAPAN',{x:.35,y:.22,w:9,h:.26,fontSize:7,fontFace:'Calibri',bold:true,color:accentColor,charSpacing:1.5,margin:0});
+      sl.addText(sub||`${tag} | Technical Support`,{x:9,y:.22,w:4,h:.26,fontSize:7,fontFace:'Calibri',color:C.muted,align:'right',margin:0});
+      sl.addText(title,{x:.35,y:.5,w:12,h:.28,fontSize:10,fontFace:'Calibri',bold:true,color:C.white,margin:0});
+    };
+    const slideFooter=(sl,n)=>{
+      sl.addShape(pres.shapes.RECTANGLE,{x:0,y:H-.32,w:W,h:.32,fill:{color:C.navy},line:{color:C.navy,width:0}});
+      sl.addText('KONFIDENSIAL | Technical Support Team | PT Kilang Pertamina Balikpapan',{x:.35,y:H-.28,w:9,h:.24,fontSize:6,fontFace:'Calibri',color:C.muted,margin:0});
+      sl.addText('Slide '+n,{x:W-.7,y:H-.28,w:.6,h:.24,fontSize:6,fontFace:'Calibri',color:C.muted,align:'right',margin:0});
+    };
+    const kpiCard=(sl,x,y,w,h,val,label,sub,color,bg)=>{
+      bg=bg||C.navyL;
+      sl.addShape(pres.shapes.RECTANGLE,{x,y,w,h,fill:{color:bg},line:{color:C.steel,width:.5},shadow:sh()});
+      sl.addShape(pres.shapes.RECTANGLE,{x,y,w,h:.06,fill:{color:color},line:{color:color,width:0}});
+      sl.addText(String(val),{x,y:y+.06,w,h:h*.55,fontSize:20,fontFace:'Calibri',bold:true,color,align:'center',valign:'middle',margin:0});
+      sl.addText(label,{x,y:y+h*.64,w,h:.24,fontSize:7.5,fontFace:'Calibri',bold:true,color:C.dim,align:'center',margin:0});
+      if(sub) sl.addText(sub,{x,y:y+h*.84,w,h:.18,fontSize:6,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
+    };
+    const sectionLabel=(sl,x,y,w,text,color)=>{
+      color=color||C.navyM;
+      sl.addShape(pres.shapes.RECTANGLE,{x,y,w,h:.28,fill:{color},line:{color,width:0}});
+      sl.addShape(pres.shapes.RECTANGLE,{x,y,w:.06,h:.28,fill:{color:C.amber},line:{color:C.amber,width:0}});
+      sl.addText(text,{x:x+.1,y,w:w-.1,h:.28,fontSize:8,fontFace:'Calibri',bold:true,color:C.white,valign:'middle',margin:0});
+    };
+
+    // ══════════════════════════════════════
+    // SLIDE 1 — COVER
+    // ══════════════════════════════════════
+    const s1=pres.addSlide();
+    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:W,h:H,fill:{color:C.navy},line:{color:C.navy,width:0}});
+    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:W,h:.18,fill:{color:C.amber},line:{color:C.amber,width:0}});
+    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:H-.75,w:W,h:.75,fill:{color:'122040'},line:{color:'122040',width:0}});
+    // Left accent bar
+    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:1.2,w:.12,h:2.8,fill:{color:C.amber},line:{color:C.amber,width:0}});
+    // Header
+    s1.addText('BAD ACTOR HISTORY RECORD',{x:.35,y:.35,w:10,h:.3,fontSize:8,fontFace:'Calibri',bold:true,color:C.amber,charSpacing:2,margin:0});
+    s1.addText('PT Kilang Pertamina Balikpapan — Technical Support',{x:.35,y:.68,w:10,h:.28,fontSize:9,fontFace:'Calibri',color:C.muted,margin:0});
+    // Equipment name - big
+    const nameLines=pres.newTextBox?[]:[]; // just use addText with wrap
+    s1.addText(eqName,{x:.35,y:1.35,w:9,h:1.4,fontSize:38,fontFace:'Calibri',bold:false,color:C.white,charSpacing:.5,wrap:true,margin:0});
+    s1.addShape(pres.shapes.RECTANGLE,{x:.35,y:3.0,w:4,h:.05,fill:{color:C.amber},line:{color:C.amber,width:0}});
+    s1.addText(tag?'Tag No: '+tag:'',{x:.35,y:3.12,w:6,h:.35,fontSize:13,fontFace:'Calibri',bold:true,color:C.amber,margin:0});
+    // Info grid right side
+    const infoItems=[['Unit',eq?.unit||'—'],['Criticality',critLabel(eq?.criticality||'')],['Status',eq?.status||'Active'],['Report Date',fmtD(new Date().toISOString()).full]];
+    infoItems.forEach(([k,v],i)=>{
+      s1.addText(k.toUpperCase(),{x:9.5,y:1.5+i*.72,w:3.5,h:.22,fontSize:7,fontFace:'Calibri',color:C.muted,charSpacing:.8,margin:0});
+      s1.addText(v,{x:9.5,y:1.74+i*.72,w:3.5,h:.32,fontSize:12,fontFace:'Calibri',bold:true,color:C.white,margin:0});
+    });
+    // Divider
+    s1.addShape(pres.shapes.RECTANGLE,{x:9.3,y:1.4,w:.04,h:3,fill:{color:'253555'},line:{color:'253555',width:0}});
+    // Bottom KPI strip
+    const covKpis=[
+      {v:fails.length+'×',l:'Total Failure',c:C.red},
+      {v:totDown?totDown+' Jam':'— Jam',l:'Total Downtime',c:C.amber},
+      {v:openFails,l:'Failure Open',c:openFails?C.red:C.green},
+      {v:mtbf?mtbf+' Jam':'N/A',l:'MTBF',c:C.teal},
+      {v:avail?avail+'%':'N/A',l:'Availability',c:avail&&parseFloat(avail)>=95?C.green:C.amber},
+      {v:outCount||'—',l:'Outstanding',c:outCount?C.amber:C.green}
+    ];
+    const bW2=(W-.7)/6;
+    covKpis.forEach((k,i)=>{
+      const bx=.35+i*bW2;
+      s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:4.85,w:bW2-.1,h:1.4,fill:{color:'122040'},line:{color:'1A3060',width:.5}});
+      s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:4.85,w:bW2-.1,h:.08,fill:{color:k.c},line:{color:k.c,width:0}});
+      s1.addText(String(k.v),{x:bx,y:4.93,w:bW2-.1,h:.75,fontSize:17,fontFace:'Calibri',bold:true,color:k.c,align:'center',valign:'middle',margin:0});
+      s1.addText(k.l,{x:bx,y:5.7,w:bW2-.1,h:.25,fontSize:7.5,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
+    });
+    slideFooter(s1,pgN++);
+
+    // ══════════════════════════════════════
+    // SLIDE 2 — EQUIPMENT PROFILE & KPI
+    // ══════════════════════════════════════
+    const s2=pres.addSlide(); s2.background={color:C.bg};
+    slideHeader(s2,'EQUIPMENT PROFILE & KEY PERFORMANCE INDICATORS',`${eqName} — ${tag}`);
+
+    // Equipment detail card (left half)
+    s2.addShape(pres.shapes.RECTANGLE,{x:.35,y:1.05,w:6,h:2.6,fill:{color:C.navyL},line:{color:C.steel,width:.5},shadow:sh()});
+    s2.addShape(pres.shapes.RECTANGLE,{x:.35,y:1.05,w:.08,h:2.6,fill:{color:C.navyM},line:{color:C.navyM,width:0}});
+    sectionLabel(s2,.35,1.05,6,'EQUIPMENT DETAILS');
+    const detItems=[['Equipment Name',eqName],['Tag Number',tag||'—'],['Unit / System',eq?.unit||'—'],['Criticality',critLabel(eq?.criticality||'')],['Status',eq?.status||'Active'],['Description',(eq?.description||'—').substring(0,60)]];
+    detItems.forEach(([k,v],i)=>{
+      const dy=1.42+i*.34;
+      s2.addText(k,{x:.55,y:dy,w:1.9,h:.2,fontSize:6.5,fontFace:'Calibri',color:C.muted,bold:true,margin:0});
+      s2.addText(v,{x:2.5,y:dy,w:3.7,h:.2,fontSize:8.5,fontFace:'Calibri',color:C.text,bold:i<2,margin:0});
+    });
+
+    // KPI cards (right half)
+    const kpiItems=[
+      {v:fails.length+'×',l:'Total Failure',sub:'kejadian tercatat',c:C.red,bg:'FEF2F2'},
+      {v:totDown?totDown+' Jam':'—',l:'Total Downtime',sub:'F → Resolved',c:C.amber,bg:'FFFBEB'},
+      {v:openFails,l:'Failure Open',sub:'belum closed',c:openFails?C.red:C.green,bg:openFails?'FEF2F2':C.greenL},
+      {v:mtbf?mtbf+' Jam':'N/A',l:'MTBF',sub:'mean time between failure',c:C.teal,bg:C.tealL},
+      {v:mttr?mttr+' Jam':'N/A',l:'MTTR',sub:'mean time to repair',c:C.teal,bg:C.tealL},
+      {v:avail?avail+'%':'N/A',l:'Availability',sub:'ketersediaan estimasi',c:avail&&parseFloat(avail)>=95?C.green:C.amber,bg:avail&&parseFloat(avail)>=95?C.greenL:'FFFBEB'}
+    ];
+    const kW=1.95,kGap=.1,kH=1.18;
+    kpiItems.forEach((k,i)=>{
+      const kx=6.6+(i%3)*(kW+kGap);
+      const ky=1.05+(Math.floor(i/3))*(kH+.12);
+      kpiCard(s2,kx,ky,kW,kH,k.v,k.l,k.sub,k.c,k.bg);
+    });
+
+    // Failure mode analysis (full width bottom)
+    if(fails.length){
+      sectionLabel(s2,.35,3.82,W-.7,'FAILURE MODE & ROOT CAUSE ANALYSIS');
+      const modeMap={},causeMap={};
+      fails.forEach(f=>{const m=f.mode||'Not Specified';modeMap[m]=(modeMap[m]||0)+1;const c=f.cause||'Not Specified';causeMap[c]=(causeMap[c]||0)+1;});
+      const modes=Object.entries(modeMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      const causes=Object.entries(causeMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      const maxM=modes[0]?modes[0][1]:1, maxC=causes[0]?causes[0][1]:1;
+      const halfW=(W-.7-1.2)/2;
+
+      s2.addText('Failure Mode',{x:.35,y:4.2,w:halfW,h:.22,fontSize:7.5,fontFace:'Calibri',bold:true,color:C.dim,margin:0});
+      s2.addText('Root Cause',{x:.35+halfW+1.2,y:4.2,w:halfW,h:.22,fontSize:7.5,fontFace:'Calibri',bold:true,color:C.dim,margin:0});
+      modes.forEach(([m,cnt],i)=>{
+        const by=4.46+i*.42; const barPct=cnt/maxM;
+        s2.addShape(pres.shapes.RECTANGLE,{x:.35,y:by,w:halfW,h:.35,fill:{color:C.navyL},line:{color:C.steel,width:.3}});
+        s2.addShape(pres.shapes.RECTANGLE,{x:.35,y:by,w:Math.max(.15,halfW*.7*barPct),h:.35,fill:{color:C.navyM},line:{color:C.navyM,width:0}});
+        s2.addText(m.substring(0,32),{x:.42,y:by+.06,w:halfW*.82,h:.22,fontSize:7.5,fontFace:'Calibri',color:C.white,margin:0});
+        s2.addText(String(cnt)+'×',{x:.35+halfW-.5,y:by+.06,w:.44,h:.22,fontSize:8,fontFace:'Calibri',bold:true,color:C.amber,align:'right',margin:0});
+      });
+      causes.forEach(([c,cnt],i)=>{
+        const cx=.35+halfW+1.2; const by=4.46+i*.42; const barPct=cnt/maxC;
+        s2.addShape(pres.shapes.RECTANGLE,{x:cx,y:by,w:halfW,h:.35,fill:{color:C.greenL},line:{color:'BBF7D0',width:.3}});
+        s2.addShape(pres.shapes.RECTANGLE,{x:cx,y:by,w:Math.max(.15,halfW*.7*barPct),h:.35,fill:{color:'15803D'},line:{color:'15803D',width:0}});
+        s2.addText(c.substring(0,32),{x:cx+.07,y:by+.06,w:halfW*.82,h:.22,fontSize:7.5,fontFace:'Calibri',color:C.text,margin:0});
+        s2.addText(String(cnt)+'×',{x:cx+halfW-.5,y:by+.06,w:.44,h:.22,fontSize:8,fontFace:'Calibri',bold:true,color:C.green,align:'right',margin:0});
+      });
+    }
+    slideFooter(s2,pgN++);
+
+    // ══════════════════════════════════════
+    // SLIDES PER FAILURE (parent-child)
+    // ══════════════════════════════════════
+    const _pptFails=fails.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const _pptChildren=children;
+    const autoMapPpt=new Map();
+    _pptChildren.forEach(c=>{
+      if(c.parent_failure_id) return;
+      const cDate=new Date(c.date);let best=null;
+      _pptFails.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
+      if(!best&&_pptFails.length) best=_pptFails[0];
+      if(best) autoMapPpt.set(c.id,best.id);
+    });
+
+    _pptFails.forEach((f,fi)=>{
+      const myChildren=sortChildEvents(_pptChildren.filter(c=>c.parent_failure_id===f.id||autoMapPpt.get(c.id)===f.id));
+      const myResolved=myChildren.filter(c=>c.type==='resolved');
+      const isClosed=myResolved.length>0||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
+      const fDowntime=myResolved.length?
+        Math.round((new Date(myResolved[myResolved.length-1].date)-new Date(f.date))/(1000*3600))+' Jam':
+        (f.downtime?f.downtime+' Jam':'Belum Resolved');
+      const groupStatus=isClosed?'✓ RESOLVED':myChildren.length?'⏳ ON PROGRESS':'⚠ OPEN';
+      const statusColor=isClosed?C.green:myChildren.length?C.amber:C.red;
+      const statusBg=isClosed?C.greenL:myChildren.length?C.amberL:C.redL;
+      const df=fmtD(f.date);
+
+      const sl=pres.addSlide(); sl.background={color:C.bg};
+      // Colored top stripe based on status
+      const stripeC=isClosed?C.green:myChildren.length?C.amber:C.red;
+      sl.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:W,h:.18,fill:{color:stripeC},line:{color:stripeC,width:0}});
+      sl.addShape(pres.shapes.RECTANGLE,{x:0,y:.18,w:W,h:.62,fill:{color:C.navy},line:{color:C.navy,width:0}});
+      sl.addText(`FAILURE #${fi+1} — ${eqName.toUpperCase()}`,{x:.35,y:.22,w:9.5,h:.26,fontSize:7,fontFace:'Calibri',bold:true,color:C.amber,charSpacing:1.5,margin:0});
+      sl.addText(tag,{x:10,y:.22,w:3,h:.26,fontSize:7,fontFace:'Calibri',color:C.muted,align:'right',margin:0});
+      sl.addText('KRONOLOGIS FAILURE EVENT',{x:.35,y:.5,w:8,h:.28,fontSize:10,fontFace:'Calibri',bold:true,color:C.white,margin:0});
+      // Status badge top right
+      sl.addShape(pres.shapes.ROUNDED_RECTANGLE,{x:10.2,y:.44,w:2.75,h:.36,fill:{color:statusBg},line:{color:stripeC,width:1},rectRadius:.05});
+      sl.addText(groupStatus,{x:10.2,y:.44,w:2.75,h:.36,fontSize:10,fontFace:'Calibri',bold:true,color:statusColor,align:'center',valign:'middle',margin:0});
+
+      // ── FAILURE main card ──
+      sl.addShape(pres.shapes.RECTANGLE,{x:.35,y:1.0,w:W-.7,h:.65,fill:{color:C.redL},line:{color:C.red,width:1.5},shadow:sh()});
+      sl.addShape(pres.shapes.RECTANGLE,{x:.35,y:1.0,w:.1,h:.65,fill:{color:C.red},line:{color:C.red,width:0}});
+      sl.addText('🔴 FAILURE',{x:.55,y:1.02,w:1.8,h:.25,fontSize:8,fontFace:'Calibri',bold:true,color:C.red,margin:0});
+      sl.addText(`${df.full}${f.time?' | '+f.time+' WIB':''}`,{x:2.4,y:1.02,w:4,h:.25,fontSize:8,fontFace:'Calibri',color:C.dim,margin:0});
+      sl.addText(`PIC: ${f.pic||'—'}`,{x:W-3,y:1.02,w:2.8,h:.25,fontSize:8,fontFace:'Calibri',color:C.dim,align:'right',margin:0});
+      sl.addText((f.title||'Failure Event').substring(0,90),{x:.55,y:1.29,w:W-1.1,h:.32,fontSize:12,fontFace:'Calibri',bold:true,color:C.text,margin:0});
+
+      // Failure detail grid (2 col)
+      const fDets=[
+        ['Failure Mode', f.mode||'—'],
+        ['Root Cause / Analysis', f.cause||'—'],
+        ['Dampak / Impact', f.impact||'—'],
+        ['Total Downtime', fDowntime]
+      ];
+      fDets.forEach(([k,v],gi)=>{
+        const gx=.35+(gi%2)*((W-.7)/2+.05);
+        const gy=1.78+Math.floor(gi/2)*.52;
+        const gw=(W-.85)/2;
+        sl.addShape(pres.shapes.RECTANGLE,{x:gx,y:gy,w:gw,h:.46,fill:{color:C.navyL},line:{color:C.steel,width:.4}});
+        sl.addText(k.toUpperCase(),{x:gx+.1,y:gy+.04,w:gw-.15,h:.16,fontSize:6,fontFace:'Calibri',color:C.amber,bold:true,charSpacing:.5,margin:0});
+        sl.addText(v.substring(0,62),{x:gx+.1,y:gy+.22,w:gw-.15,h:.2,fontSize:8.5,fontFace:'Calibri',color:C.text,bold:gi===3,margin:0});
+      });
+
+      // ── Children timeline ──
+      let cy=2.98;
+      if(myChildren.length===0){
+        sl.addShape(pres.shapes.RECTANGLE,{x:.35,y:cy,w:W-.7,h:.52,fill:{color:'F1F5F9'},line:{color:C.border||C.steel,width:.4}});
+        sl.addText('Belum ada tindak lanjut tercatat untuk failure ini',{x:.35,y:cy,w:W-.7,h:.52,fontSize:10,fontFace:'Calibri',color:C.muted,italic:true,align:'center',valign:'middle',margin:0});
+      } else {
+        const maxChildren=Math.floor((H-.7-cy)/(.52+.08));
+        myChildren.slice(0,maxChildren).forEach((ev,ci)=>{
+          if(cy>H-.7) return;
+          const tc=ev.type==='action'?C.teal:ev.type==='repair'?C.amber:C.green;
+          const bg=ev.type==='action'?C.tealL:ev.type==='repair'?C.amberL:C.greenL;
+          const lbl={action:'🔵 ACTION',repair:'🟡 REPAIR',resolved:'🟢 RESOLVED'}[ev.type]||ev.type.toUpperCase();
+          const cdf=fmtD(ev.date);
+          // Connector
+          if(ci>0) sl.addShape(pres.shapes.RECTANGLE,{x:.75,y:cy-.08,w:.03,h:.1,fill:{color:C.muted},line:{color:C.muted,width:0}});
+          sl.addShape(pres.shapes.RECTANGLE,{x:.35,y:cy,w:W-.7,h:.5,fill:{color:bg},line:{color:tc,width:.8},shadow:sh()});
+          sl.addShape(pres.shapes.RECTANGLE,{x:.35,y:cy,w:.08,h:.5,fill:{color:tc},line:{color:tc,width:0}});
+          // Content
+          sl.addText(lbl,{x:.52,y:cy+.04,w:1.9,h:.2,fontSize:8,fontFace:'Calibri',bold:true,color:tc,margin:0});
+          sl.addText(cdf.full+(ev.time?' | '+ev.time+' WIB':''),{x:2.48,y:cy+.04,w:3.5,h:.2,fontSize:7.5,fontFace:'Calibri',color:C.dim,margin:0});
+          sl.addText(`PIC: ${ev.pic||'—'}`,{x:W-2.6,y:cy+.04,w:2.45,h:.2,fontSize:7.5,fontFace:'Calibri',color:C.dim,align:'right',margin:0});
+          sl.addText((ev.title||'').substring(0,80),{x:.52,y:cy+.27,w:W-1.1,h:.2,fontSize:9,fontFace:'Calibri',bold:true,color:C.text,margin:0});
+          // Status badge
+          if(ev.status){
+            const stC=ev.status==='CLOSED'||ev.status==='RESOLVED'?C.green:ev.status==='ON PROGRESS'?C.amber:C.dim;
+            sl.addText(ev.status,{x:W-2.6,y:cy+.27,w:2.45,h:.2,fontSize:7.5,fontFace:'Calibri',bold:true,color:stC,align:'right',margin:0});
+          }
+          cy+=.58;
+        });
+        if(myChildren.length>maxChildren){
+          sl.addText(`+ ${myChildren.length-maxChildren} tindak lanjut lainnya`,{x:.35,y:cy,w:W-.7,h:.3,fontSize:8,fontFace:'Calibri',color:C.muted,italic:true,align:'center',margin:0});
+        }
+      }
+      slideFooter(sl,pgN++);
+    });
+
+    // ══════════════════════════════════════
+    // FINAL SLIDE — OUTSTANDING SUMMARY
+    // ══════════════════════════════════════
+    const outEvs=events.filter(e=>e.outstanding&&String(e.outstanding).trim());
+    if(outEvs.length){
+      const sOut=pres.addSlide(); sOut.background={color:C.bg};
+      slideHeader(sOut,`OPEN ITEMS & OUTSTANDING — ${outEvs.length} ITEM PERLU PERHATIAN`,eqName);
+      const outTbl=[
+        [{text:'No',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:'Tanggal',options:{bold:true,color:C.white,fill:C.navy}},
+         {text:'Event / Judul',options:{bold:true,color:C.white,fill:C.navy}},
+         {text:'Outstanding Item',options:{bold:true,color:C.white,fill:C.navy}},
+         {text:'PIC',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:'Target Date',options:{bold:true,color:C.white,fill:C.navy,align:'center'}}],
+        ...outEvs.map((ev,i)=>{
+          const bg=i%2===0?'FFFBEB':C.amberL;
+          return [
+            {text:String(i+1),options:{bold:true,color:C.amber,fill:bg,align:'center'}},
+            {text:fmtD(ev.date).full,options:{color:C.dim,fill:bg,fontSize:8}},
+            {text:(ev.title||'—').substring(0,40),options:{bold:true,color:C.text,fill:bg,fontSize:8.5}},
+            {text:(ev.outstanding||'—').substring(0,70),options:{color:C.text,fill:bg,fontSize:8}},
+            {text:(ev.pic||'—').substring(0,16),options:{color:C.teal,fill:bg,align:'center',fontSize:8}},
+            {text:ev.target_date?fmtD(ev.target_date).full:'—',options:{color:ev.target_date&&new Date(ev.target_date)<new Date()?C.red:C.dim,fill:bg,align:'center',fontSize:8}}
+          ];
+        })
+      ];
+      sOut.addTable(outTbl,{x:.35,y:1.05,w:W-.7,h:5.9,fontSize:9,fontFace:'Calibri',
+        border:{pt:.5,color:C.steel},rowH:.52,colW:[.5,1.5,3.2,4.8,1.5,1.5]});
+      slideFooter(sOut,pgN++);
+    }
+
+    await pres.writeFile({fileName:`History_${tag||eqName.replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.pptx`});
+    toast(`PPT diekspor — ${pgN-1} slide ✓`);
+  }catch(err){console.error(err);toast('Error PPT: '+err.message,'error');}
+  hideX();
 }
 
 
-// Helper: MTBF dari failures
-function calcMTBF(failures){
-  if(failures.length<2) return null;
-  const dates=failures.map(f=>new Date(f.date)).sort((a,b)=>a-b);
-  let totalGap=0;
-  for(let i=1;i<dates.length;i++) totalGap+=(dates[i]-dates[i-1])/(1000*3600);
-  return Math.round(totalGap/(dates.length-1));
+// ══════════════════════════════════════
+// ANALYTICS HELPERS
+// ══════════════════════════════════════
+function getBaThreshold(){
+  return {
+    minFail: parseInt(g('ba-min-fail')?.value||3),
+    months: parseInt(g('ba-months')?.value||12),
+    minDown: parseInt(g('ba-min-down')?.value||100)
+  };
 }
 
-// Helper: MTTR dari failure s/d resolved
-function calcMTTR(failures,children){
-  const resolved_pairs=failures.map(f=>{
-    const myRes=children.filter(c=>c.parent_failure_id===f.id&&c.type==='resolved');
-    if(!myRes.length) return null;
-    const dh=Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600));
-    return dh>0?dh:null;
-  }).filter(Boolean);
-  if(!resolved_pairs.length) return null;
-  return Math.round(resolved_pairs.reduce((s,v)=>s+v,0)/resolved_pairs.length);
+function sortChildEvents(arr){
+  const typeOrder={action:1,repair:2,resolved:3};
+  return [...arr].sort((a,b)=>{
+    const dA=new Date(a.date), dB=new Date(b.date);
+    if(dA-dB!==0) return dA-dB;
+    const tA=typeOrder[a.type]||99, tB=typeOrder[b.type]||99;
+    if(tA-tB!==0) return tA-tB;
+    return new Date(a.created_at||0)-new Date(b.created_at||0);
+  });
 }
 
-// ── Downtime helper: hitung dari FAILURE→RESOLVED (parent-child) ──
+function calcOpenFailures(evArray){
+  const fails=evArray.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const children=evArray.filter(e=>e.type!=='failure');
+  // Build auto-assign map: for each child, find nearest preceding failure
+  const autoParentMap=new Map();
+  children.forEach(c=>{
+    if(c.parent_failure_id) return; // already linked
+    const cDate=new Date(c.date);
+    let best=null;
+    fails.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
+    if(!best&&fails.length) best=fails[0];
+    if(best) autoParentMap.set(c.id, best.id);
+  });
+  return fails.filter(f=>{
+    const hasResolvedChild=children.some(c=>(c.parent_failure_id===f.id||(autoParentMap.get(c.id)===f.id))&&c.type==='resolved');
+    const statusClosed=['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
+    return !hasResolvedChild && !statusClosed;
+  }).length;
+}
+
 function calcDowntimeFromEvents(evArray){
   const fails=evArray.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
   const children=evArray.filter(e=>e.type!=='failure');
@@ -2299,279 +2900,35 @@ function calcDowntimeFromEvents(evArray){
   });
   return total;
 }
-function calcOpenFailures(evArray){
-  const fails=evArray.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
-  const children=evArray.filter(e=>e.type!=='failure');
-  // Build auto-assign map: for each child, find nearest preceding failure
-  const autoParentMap=new Map();
-  children.forEach(c=>{
-    if(c.parent_failure_id) return; // already linked
-    const cDate=new Date(c.date);
-    let best=null;
-    fails.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
-    if(!best&&fails.length) best=fails[0];
-    if(best) autoParentMap.set(c.id, best.id);
-  });
-  return fails.filter(f=>{
-    const hasResolvedChild=children.some(c=>(c.parent_failure_id===f.id||(autoParentMap.get(c.id)===f.id))&&c.type==='resolved');
-    const statusClosed=['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
-    return !hasResolvedChild && !statusClosed;
-  }).length;
-}
 
-
-
-// Smart child event sort: date ASC → type order → created_at ASC
-function sortChildEvents(arr){
-  const typeOrder={action:1,repair:2,resolved:3};
-  return [...arr].sort((a,b)=>{
-    const dA=new Date(a.date), dB=new Date(b.date);
-    if(dA-dB!==0) return dA-dB;
-    const tA=typeOrder[a.type]||99, tB=typeOrder[b.type]||99;
-    if(tA-tB!==0) return tA-tB;
-    return new Date(a.created_at||0)-new Date(b.created_at||0);
-  });
-}
-// Quick-add child event dari tombol "+ Tindak Lanjut"
-function addChildEvent(parentFailureId){
-  resetForm();
-  g('f-type').value='action';
-  onTypeChange();
-  populateParentSelector();
-  const ps=g('f-parent-id');
-  if(ps) ps.value=parentFailureId;
-  document.querySelector('.sb-form').scrollTop=0;
-  // Highlight parent failure sebentar
-  const pw=g('f-parent-wrap');
-  if(pw){pw.style.border='2px solid var(--amber)';setTimeout(()=>pw.style.border='',1500);}
-}
-
-
-
-// ══════════════════════════════════════
-// EXPORT PDF
-// ══════════════════════════════════════
-async function exportPDF(){
-  if(!events.length){toast('Tidak ada event!','warn');return;}
-  const eq=equipments.find(e=>e.id===currentEqId);
-  showX('Membuat PDF...'); await sl(150);
-  try{
-    // CDN jsPDF: window.jspdf.jsPDF or window.jspdf (older CDN)
-    const jspdfNs = window.jspdf || {};
-    const JsPDFCtor = jspdfNs.jsPDF || window.jsPDF;
-    if(!JsPDFCtor){toast('PDF library tidak termuat, coba refresh halaman','error');hideX();return;}
-    const jsPDF = JsPDFCtor;
-    const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-    const W=297,H=210,eqName=eq?.name||'Equipment',tag=eq?.tag_no||'';
-    const pg=()=>{doc.setFillColor(248,250,252);doc.rect(0,0,W,H,'F');doc.setFillColor(232,162,23);doc.rect(0,0,W,1.5,'F');};
-    pg();
-    doc.setFillColor(30,58,95);doc.rect(0,0,W,14,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(232,162,23);
-    doc.text('BAD ACTOR HISTORY RECORD',12,9);
-    doc.setTextColor(148,163,184);doc.setFont('helvetica','normal');doc.setFontSize(7);
-    doc.text(`TAG: ${tag} | Unit: ${eq?.unit||'-'} | Criticality: ${critLabel(eq?.criticality)}`,W-12,9,{align:'right'});
-    doc.setFont('helvetica','bold');doc.setFontSize(32);doc.setTextColor(15,23,42);doc.text(eqName,12,40);
-    doc.setFontSize(13);doc.setTextColor(232,162,23);doc.text(tag?'Tag No: '+tag:'',12,50);
-    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(71,85,105);
-    doc.text(`Total ${events.length} event recorded | ${events.filter(e=>e.type==='failure').length} failure kejadian`,12,60);
-    const _pFails=events.filter(e=>e.type==='failure');
-    const _pDown=calcDowntimeFromEvents(events);
-    const _pOpen=calcOpenFailures(events);
-    const stats=[{v:_pFails.length+'×',l:'Total Failure',c:[232,64,64]},{v:_pDown+' Jam',l:'Downtime Kumulatif (F→R)',c:[232,162,23]},{v:_pOpen,l:'Failure Belum Resolved',c:[232,64,64]},{v:events.filter(e=>e.outstanding&&e.outstanding.trim()).length,l:'Outstanding',c:[232,162,23]}];
-    stats.forEach((s,i)=>{const bx=12+i*60;doc.setFillColor(15,30,53);doc.rect(bx,72,55,18,'F');doc.setFillColor(...s.c);doc.rect(bx,72,55,1.5,'F');doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(...s.c);doc.text(String(s.v),bx+27.5,82,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(148,163,184);doc.text(s.l,bx+27.5,88,{align:'center'});});
-    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text('Developed by Technical Support — PT Kilang Pertamina Balikpapan',W/2,H-4,{align:'center'});
-
-    doc.addPage();pg();
-    doc.setFillColor(30,58,95);doc.rect(0,0,W,14,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(232,162,23);doc.text('RINGKASAN TABEL KRONOLOGIS — '+eqName.toUpperCase(),12,9);
-    const cols=['No','Tanggal','Tipe','Judul / Deskripsi','Detail 1','Detail 2','Down/Durasi','PIC','Status'];
-    const cw=[10,24,18,62,30,34,18,26,18];
-    let cx=10,ry=22;doc.setFillColor(30,58,95);doc.rect(10,ry-5,W-20,8,'F');
-    cols.forEach((c,i)=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(255,255,255);doc.text(c,cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=6;
-    // Render grouped by FAILURE (parent-child)
-    const _pdfFails=events.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
-    const _pdfChildren=events.filter(e=>e.type!=='failure');
-    let rowNum=0;
-    _pdfFails.forEach(f=>{
-      // FAILURE row (dark header row)
-      if(ry>H-12){doc.addPage();pg();ry=22;}
-      rowNum++;
-      const myRes=_pdfChildren.filter(c=>c.parent_failure_id===f.id&&c.type==='resolved');
-      const fDown=myRes.length?Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600))+'Jam':(f.downtime?f.downtime+' Jam':'—');
-      doc.setFillColor(30,41,59);doc.rect(10,ry-4,W-20,8,'F');
-      const fRow=[String(rowNum),fmtD(f.date).full,'FAILURE',f.title||'',f.mode||'—',f.cause||'—',fDown,f.pic||'—',myRes.length?'RESOLVED':'OPEN'];
-      cx=10;fRow.forEach((cell,i)=>{doc.setFont('helvetica',i===2?'bold':'normal');doc.setFontSize(6.5);doc.setTextColor(i===2?232:i===8?(myRes.length?34:232):200,i===2?64:i===8?(myRes.length?197:64):200,i===2?64:i===8?(myRes.length?94:64):200);doc.text(String(cell),cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=9;
-      // Child rows (indented)
-      const myChildren=sortChildEvents(_pdfChildren.filter(c=>c.parent_failure_id===f.id));
-      myChildren.forEach(ev=>{
-        if(ry>H-12){doc.addPage();pg();ry=22;}
-        doc.setFillColor(245,248,252);doc.rect(10,ry-4,W-20,7,'F');
-        doc.setFillColor(200,210,225);doc.rect(12,ry-4,1.5,7,'F'); // indent indicator
-        const cLabel={action:'↳ ACTION',repair:'↳ REPAIR',resolved:'↳ RESOLVED'}[ev.type]||'↳ '+ev.type.toUpperCase();
-        const cColor={action:[0,100,180],repair:[150,100,0],resolved:[0,130,50]}[ev.type]||[100,100,100];
-        const cRow=['',fmtD(ev.date).full,cLabel,ev.title||'',ev.mode||'—',ev.cause?ev.cause.substring(0,35):'—',ev.downtime?ev.downtime+' Jam':'—',ev.pic||'—',ev.status||'—'];
-        cx=10;cRow.forEach((cell,i)=>{doc.setFont('helvetica',i===2?'bold':'normal');doc.setFontSize(6);doc.setTextColor(i===2?cColor[0]:50,i===2?cColor[1]:65,i===2?cColor[2]:85);doc.text(String(cell),cx+(i===3?3:1),ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=8;
-      });
-    });
-    // Orphan children
-    const orphanEvs=_pdfChildren.filter(c=>!c.parent_failure_id||!_pdfFails.find(f=>f.id===c.parent_failure_id));
-    if(orphanEvs.length){
-      if(ry>H-12){doc.addPage();pg();ry=22;}
-      doc.setFillColor(240,240,240);doc.rect(10,ry-4,W-20,6,'F');
-      doc.setFont('helvetica','italic');doc.setFontSize(6);doc.setTextColor(120,120,120);
-      doc.text('Data lama ('+orphanEvs.length+' event tanpa parent failure)',12,ry);ry+=8;
-      orphanEvs.forEach(ev=>{
-        if(ry>H-12){doc.addPage();pg();ry=22;}
-        doc.setFillColor(248,248,248);doc.rect(10,ry-4,W-20,7,'F');
-        const oRow=['',fmtD(ev.date).full,typeLbl(ev.type),ev.title||'','—','—','—',ev.pic||'—',ev.status||'—'];
-        cx=10;oRow.forEach((cell,i)=>{doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(100,100,100);doc.text(String(cell),cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=8;
-      });
-    }
-    doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text('Developed by Technical Support — PT Kilang Pertamina Balikpapan',W/2,H-4,{align:'center'});
-    doc.save(`History_${tag||eqName}_${Date.now()}.pdf`);
-    toast(`PDF diexport — ${doc.getNumberOfPages()} halaman`);
-  }catch(err){console.error(err);toast('Error PDF: '+err.message,'error');}
-  hideX();
-}
-
-// ══════════════════════════════════════
-// EXPORT PPT
-// ══════════════════════════════════════
-async function exportPPT(){
-  if(!events.length){toast('Tidak ada event!','warn');return;}
-  const eq=equipments.find(e=>e.id===currentEqId);
-  showX('Membuat PowerPoint...'); await sl(200);
-  try{
-    const pres=new PptxGenJS();pres.layout='LAYOUT_WIDE';
-    const C={navy:'1E3A5F',navyL:'EFF6FF',steel:'DBEAFE',amber:'D97706',red:'DC2626',green:'16A34A',teal:'0284C7',white:'FFFFFF',text:'1E293B',dim:'475569',muted:'94A3B8'};
-    const sh=()=>({type:'outer',color:'000000',blur:8,offset:3,angle:135,opacity:.2});
-    const eqName=eq?.name||'Equipment',tag=eq?.tag_no||'';
-    const fails=events.filter(e=>e.type==='failure');
-    const totDown=calcDowntimeFromEvents(events);
-    const openFails=calcOpenFailures(events);
-
-    const s1=pres.addSlide();s1.background={color:'F8FAFC'};
-    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.amber},line:{color:C.amber,width:0}});
-    s1.addText('BAD ACTOR HISTORY RECORD',{x:.4,y:.22,w:9,h:.28,fontSize:8,fontFace:'Calibri',bold:true,color:C.amber,charSpacing:2,margin:0});
-    s1.addText(eqName,{x:.4,y:.65,w:10,h:1.0,fontSize:38,fontFace:'Calibri',color:C.text,bold:false,margin:0});
-    s1.addText('Tag No: '+tag,{x:.4,y:1.65,w:6,h:.4,fontSize:14,fontFace:'Calibri',color:C.amber,bold:true,margin:0});
-    s1.addShape(pres.shapes.RECTANGLE,{x:.4,y:2.12,w:5,h:.04,fill:{color:C.steel},line:{color:C.steel,width:0}});
-    const info=[['Unit',eq?.unit||'—'],['Criticality',critLabel(eq?.criticality||'')],['Status',statusLabel(eq?.status||'')],['Total Events',events.length+' event recorded']];
-    info.forEach(([k,v],i)=>{s1.addText(k.toUpperCase(),{x:.4,y:2.26+i*.38,w:2,h:.26,fontSize:8,fontFace:'Calibri',color:C.dim,charSpacing:1,margin:0});s1.addShape(pres.shapes.RECTANGLE,{x:2.42,y:2.29+i*.38,w:.04,h:.18,fill:{color:C.amber},line:{color:C.amber,width:0}});s1.addText(v,{x:2.52,y:2.26+i*.38,w:5,h:.26,fontSize:12,fontFace:'Calibri',color:C.text,bold:true,margin:0});});
-    const kpis=[{v:fails.length+'×',l:'Total Failure',c:C.red},{v:totDown+' Jam',l:'Downtime Kumulatif',c:C.amber},{v:events.filter(e=>['OPEN','OVERDUE'].includes(e.status)).length,l:'Status Open',c:C.red},{v:events.filter(e=>e.outstanding&&e.outstanding.trim()).length,l:'Outstanding',c:C.amber}];
-    kpis.forEach((k,i)=>{const bx=.4+i*2.0;s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:4.5,w:1.85,h:1.0,fill:{color:C.navyL},line:{color:C.steel,width:1},shadow:sh()});s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:4.5,w:1.85,h:.06,fill:{color:k.c},line:{color:k.c,width:0}});s1.addText(String(k.v),{x:bx,y:4.62,w:1.85,h:.5,fontSize:20,fontFace:'Calibri',color:k.c,bold:true,align:'center',margin:0});s1.addText(k.l,{x:bx,y:5.12,w:1.85,h:.28,fontSize:8,fontFace:'Calibri',color:C.dim,align:'center',margin:0});});
-    s1.addText('Developed by Technical Support  |  PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
-
-    const s2=pres.addSlide();s2.background={color:'F8FAFC'};
-    s2.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.amber},line:{color:C.amber,width:0}});
-    s2.addText('RINGKASAN TABEL KRONOLOGIS',{x:.4,y:.22,w:8,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:2,bold:true,margin:0});
-    s2.addText(eqName+' ('+tag+')',{x:.4,y:.5,w:12,h:.45,fontSize:17,fontFace:'Calibri',color:C.text,bold:true,margin:0});
-    s2.addShape(pres.shapes.RECTANGLE,{x:.4,y:.98,w:12.5,h:.03,fill:{color:C.steel},line:{color:C.steel,width:0}});
-    const hdr=[[{text:'#',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'Tanggal',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Tipe',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Judul',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Mode',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Root Cause',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Down',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'PIC',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Status',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}}]];
-    const rows=events.map((ev,i)=>{const df=fmtD(ev.date);const tc=ev.type==='failure'?C.red:ev.type==='action'?C.teal:ev.type==='repair'?C.amber:C.green;const sc=ev.status==='CLOSED'?C.green:ev.status==='OPEN'||ev.status==='OVERDUE'?C.red:C.amber;
-      // Per-type detail columns
-      let d1='—',d2='—',d3='—';
-      if(ev.type==='failure'){d1=ev.mode||'—';d2=ev.cause||'—';d3=ev.downtime?ev.downtime+'j':'—';}
-      else if(ev.type==='action'){d1=ev.mode||'—';d2=ev.cause?ev.cause.substring(0,40):'—';d3='—';}
-      else if(ev.type==='repair'){d1=ev.mode||'—';d2=ev.cause?ev.cause.substring(0,40):'—';d3=ev.downtime?ev.downtime+'j':'—';}
-      else if(ev.type==='resolved'){d1=ev.mode||'—';d2=ev.cause?ev.cause.substring(0,40):'—';d3='OK';}
-      return[{text:String(i+1),options:{align:'center',bold:true}},{text:df.full,options:{}},{text:typeLbl(ev.type),options:{bold:true,color:tc}},{text:(ev.title||'').substring(0,55),options:{}},{text:d1.substring(0,30),options:{color:ev.type==='failure'&&d1!=='—'?C.red:''}},{text:d2.substring(0,35),options:{}},{text:d3,options:{align:'center',color:d3!=='—'&&d3!=='OK'?C.amber:''}},{text:ev.pic||'—',options:{color:C.teal}},{text:ev.status||'—',options:{align:'center',bold:true,color:sc}}];});
-    s2.addTable([...hdr,...rows],{x:.4,y:1.1,w:12.5,fontSize:9,fontFace:'Calibri',color:C.text,border:{pt:.5,color:C.steel},fill:{color:C.navyL},rowH:.42,colW:[.4,1.6,1.2,2.8,1.7,2.0,.8,1.5,1.2]});
-    s2.addText('Developed by Technical Support  |  PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
-
-    // SLIDE PER FAILURE GROUP (parent-child)
-    const _pptFails=events.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
-    const _pptChildren=events.filter(e=>e.type!=='failure');
-
-    _pptFails.forEach((f,fi)=>{
-      const myChildren=sortChildEvents(_pptChildren.filter(c=>c.parent_failure_id===f.id));
-      const myResolved=myChildren.filter(c=>c.type==='resolved');
-      const isResolved=myResolved.length>0;
-      const fDowntime=isResolved?Math.round((new Date(myResolved[myResolved.length-1].date)-new Date(f.date))/(1000*3600))+' Jam':(f.downtime?f.downtime+' Jam':'Belum Resolved');
-      const groupStatus=isResolved?'RESOLVED':myChildren.length?'ON PROGRESS':'OPEN';
-      const statusColor=isResolved?C.green:myChildren.length?C.amber:C.red;
-
-      const sl=pres.addSlide();sl.background={color:'F8FAFC'};
-      // Header bar - RED for failure
-      sl.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.red},line:{color:C.red,width:0}});
-      sl.addText('FAILURE #'+(fi+1)+' — '+eqName.toUpperCase()+' ('+tag+')',{x:.4,y:.22,w:10,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:1.5,bold:true,margin:0});
-      sl.addText(groupStatus,{x:10.5,y:.18,w:2.4,h:.36,fontSize:10,fontFace:'Calibri',bold:true,color:statusColor,align:'right',margin:0});
-
-      // FAILURE card (full width)
-      const df=fmtD(f.date);
-      sl.addShape(pres.shapes.RECTANGLE,{x:.4,y:.65,w:12.5,h:.5,fill:{color:'FEF2F2'},line:{color:C.red,width:1.5}});
-      sl.addShape(pres.shapes.RECTANGLE,{x:.4,y:.65,w:.08,h:.5,fill:{color:C.red},line:{color:C.red,width:0}});
-      sl.addText('🔴 FAILURE  |  '+(f.title||'').substring(0,80),{x:.55,y:.65,w:12.2,h:.5,fontSize:11,fontFace:'Calibri',bold:true,color:'1E293B',valign:'middle',margin:0});
-
-      // Failure detail grid
-      const fInfo=[['Tanggal / Waktu',`${df.full}${f.time?' '+f.time+' WIB':''}`],['Failure Mode',f.mode||'—'],['Root Cause',f.cause||'—'],['Total Downtime',fDowntime]];
-      fInfo.forEach(([k,v],gi)=>{
-        const gx=.4+(gi%2)*6.3;const gy=1.3+Math.floor(gi/2)*.46;
-        sl.addShape(pres.shapes.RECTANGLE,{x:gx,y:gy,w:6.1,h:.4,fill:{color:C.navyL},line:{color:C.steel,width:.5}});
-        sl.addText(k,{x:gx+.1,y:gy+.02,w:2,h:.18,fontSize:7,fontFace:'Calibri',color:C.amber,bold:true,margin:0});
-        sl.addText(v.substring(0,55),{x:gx+.1,y:gy+.2,w:5.9,h:.18,fontSize:8,fontFace:'Calibri',color:C.text,margin:0});
-      });
-      if(f.impact) sl.addText('Dampak: '+f.impact.substring(0,130),{x:.4,y:2.28,w:12.5,h:.3,fontSize:8,fontFace:'Calibri',color:'DC2626',margin:0});
-
-      // Children timeline (ACTION/REPAIR/RESOLVED)
-      let cy=2.7;
-      if(myChildren.length===0){
-        sl.addText('Belum ada tindak lanjut tercatat',{x:.4,y:cy,w:12.5,h:.4,fontSize:9,fontFace:'Calibri',color:C.dim,italic:true,margin:0});
-      } else {
-        myChildren.forEach((ev,ci)=>{
-          if(cy>6.8) return; // overflow protection
-          const tc=ev.type==='action'?C.teal:ev.type==='repair'?C.amber:C.green;
-          const bg=ev.type==='action'?'EFF6FF':ev.type==='repair'?'FFFBEB':'F0FDF4';
-          const lbl={action:'🔵 ACTION',repair:'🟡 REPAIR',resolved:'🟢 RESOLVED'}[ev.type]||ev.type.toUpperCase();
-          const cdf=fmtD(ev.date);
-          // Connector line
-          if(ci>0) sl.addShape(pres.shapes.RECTANGLE,{x:.7,y:cy-.1,w:.02,h:.15,fill:{color:C.steel},line:{color:C.steel,width:0}});
-          sl.addShape(pres.shapes.RECTANGLE,{x:.4,y:cy,w:12.5,h:.48,fill:{color:bg},line:{color:tc,width:1}});
-          sl.addShape(pres.shapes.RECTANGLE,{x:.4,y:cy,w:.06,h:.48,fill:{color:tc},line:{color:tc,width:0}});
-          sl.addText(lbl,{x:.55,y:cy+.02,w:2,h:.2,fontSize:8,fontFace:'Calibri',bold:true,color:tc,margin:0});
-          sl.addText(cdf.full,{x:2.6,y:cy+.02,w:2,h:.2,fontSize:8,fontFace:'Calibri',color:C.dim,margin:0});
-          sl.addText((ev.title||'').substring(0,80),{x:.55,y:cy+.24,w:9,h:.2,fontSize:8,fontFace:'Calibri',color:C.text,margin:0});
-          if(ev.pic) sl.addText('👤 '+ev.pic,{x:9.8,y:cy+.04,w:3,h:.18,fontSize:7,fontFace:'Calibri',color:C.dim,align:'right',margin:0});
-          if(ev.wo) sl.addText('📋 '+ev.wo,{x:9.8,y:cy+.26,w:3,h:.18,fontSize:7,fontFace:'Calibri',color:C.dim,align:'right',margin:0});
-          cy+=.56;
-        });
-      }
-
-      // Footer
-      sl.addText('PT Kilang Pertamina Balikpapan — Technical Support — Bad Actor History Record',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
-    });
-    await pres.writeFile({fileName:`History_${tag||eqName}_${Date.now()}.pptx`});
-    toast('PowerPoint berhasil diexport! ✓');
-  }catch(err){console.error(err);toast('Error PPT: '+err.message,'error');}
-  hideX();
-}
-
-
-// ══════════════════════════════════════
-// ANALYTICS HELPERS
-// ══════════════════════════════════════
-function getBaThreshold(){
-  return {
-    minFail: parseInt(g('ba-min-fail')?.value||3),
-    months: parseInt(g('ba-months')?.value||12),
-    minDown: parseInt(g('ba-min-down')?.value||100)
-  };
-}
-
-function isBadActor(eq, failsOrAllEvents){
+function isBadActor(eq, allEvents){
   const {minFail, months, minDown} = getBaThreshold();
   const cutoff = new Date();
   cutoff.setMonth(cutoff.getMonth() - months);
-  // Support both: pure failures array OR full allEvents array (legacy)
-  const evs = Array.isArray(failsOrAllEvents) && failsOrAllEvents.length > 0 && failsOrAllEvents[0].equipment_id !== undefined
-    ? failsOrAllEvents.filter(e => e.equipment_id === eq.id && e.type === 'failure')
-    : failsOrAllEvents;
-  const recentFails = (evs||[]).filter(e => new Date(e.date) >= cutoff).length;
-  const totalDown = (evs||[]).reduce((s,e) => s + (parseInt(e.downtime||0)||0), 0);
+  const evs = allEvents.filter(e => e.equipment_id === eq.id && e.type === 'failure');
+  const recentFails = evs.filter(e => new Date(e.date) >= cutoff).length;
+  const totalDown = evs.reduce((s,e) => s + (parseInt(e.downtime||0)||0), 0);
   return recentFails >= minFail || totalDown >= minDown;
 }
 
+function calcMTBF(failures){
+  if(failures.length<2) return null;
+  const dates=failures.map(f=>new Date(f.date)).sort((a,b)=>a-b);
+  let totalGap=0;
+  for(let i=1;i<dates.length;i++) totalGap+=(dates[i]-dates[i-1])/(1000*3600);
+  return Math.round(totalGap/(dates.length-1));
+}
 
+function calcMTTR(failures,children){
+  const resolved_pairs=failures.map(f=>{
+    const myRes=children.filter(c=>c.parent_failure_id===f.id&&c.type==='resolved');
+    if(!myRes.length) return null;
+    const dh=Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600));
+    return dh>0?dh:null;
+  }).filter(Boolean);
+  if(!resolved_pairs.length) return null;
+  return Math.round(resolved_pairs.reduce((s,v)=>s+v,0)/resolved_pairs.length);
+}
 
 function calcAvailability(mtbf, mttr){
   if(!mtbf || !mttr) return null;
@@ -2605,6 +2962,12 @@ function switchTab(tabId, btn){
 // ══════════════════════════════════════
 // RANKING TABLE
 // ══════════════════════════════════════
+function rankSort(col){
+  if(rankSortCol===col) rankSortDir=rankSortDir==='asc'?'desc':'asc';
+  else{ rankSortCol=col; rankSortDir=(col==='score'||col==='failures'||col==='downtime')?'desc':'asc'; }
+  rankPage=1; renderRanking();
+}
+
 function renderRanking(){
   const tbody=g('rank-tbody');
   if(!tbody) return;
@@ -2615,13 +2978,10 @@ function renderRanking(){
   const allDown   = equipments.reduce((s,e)=>s+(e._downtime||0),0);
   const baCount   = equipments.filter(e=>e._isBadActor).length;
   const openCount = equipments.reduce((s,e)=>s+(e._open||0),0);
-  const allFailIds=new Set(allEventsCache.filter(e=>e.type==='failure').map(e=>e.id));
-  const outCount  = allEventsCache.filter(e=>(e.type==='failure'||(e.parent_failure_id&&allFailIds.has(e.parent_failure_id)))&&e.outstanding&&String(e.outstanding).trim()).length;
-  const failureIds = new Set(allEventsCache.filter(e=>e.type==='failure').map(e=>e.id));
-  const validChildren = allEventsCache.filter(e=>e.type!=='failure'&&e.parent_failure_id&&failureIds.has(e.parent_failure_id));
-  const totalEvs  = allEventsCache.filter(e=>e.type==='failure').length + validChildren.length;
-  const actionEvs = validChildren.filter(e=>e.type==='action').length;
-  const repairEvs = validChildren.filter(e=>e.type==='repair').length;
+  const outCount  = allEventsCache.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
+  const totalEvs  = allEventsCache.length;
+  const actionEvs = allEventsCache.filter(e=>e.type==='action').length;
+  const repairEvs = allEventsCache.filter(e=>e.type==='repair').length;
 
   if(kpiRow){
     kpiRow.innerHTML=`
@@ -2663,10 +3023,40 @@ function renderRanking(){
     return;
   }
 
-  const sorted=[...equipments].sort((a,b)=>calcScore(b)-calcScore(a));
-  const maxScore=calcScore(sorted[0])||1;
+  // Sort
+  let sorted=[...equipments].sort((a,b)=>{
+    let va,vb;
+    switch(rankSortCol){
+      case 'name':     va=(a.name||'').toLowerCase();vb=(b.name||'').toLowerCase();break;
+      case 'failures': va=(a._failures||0);vb=(b._failures||0);break;
+      case 'downtime': va=(a._downtime||0);vb=(b._downtime||0);break;
+      case 'open':     va=(a._open||0);vb=(b._open||0);break;
+      default:         va=calcScore(a);vb=calcScore(b);break;
+    }
+    if(typeof va==='string') return rankSortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);
+    return rankSortDir==='asc'?va-vb:vb-va;
+  });
+  const maxScore=calcScore([...equipments].sort((a,b)=>calcScore(b)-calcScore(a))[0])||1;
 
-  tbody.innerHTML=sorted.map((eq,i)=>{
+  // Search & filter
+  const searchQ=(g('rank-search')?.value||'').toLowerCase().trim();
+  const filterTier=g('rank-filter-tier')?.value||'all';
+  const getTier=eq=>{const p=Math.round(calcScore(eq)/maxScore*100);return eq._isBadActor||p>=70?'critical':p>=40?'high':p>=15?'medium':'low';};
+  if(searchQ) sorted=sorted.filter(eq=>(eq.name||'').toLowerCase().includes(searchQ)||(eq.tag_no||'').toLowerCase().includes(searchQ)||(eq.unit||'').toLowerCase().includes(searchQ));
+  if(filterTier!=='all') sorted=sorted.filter(eq=>getTier(eq)===filterTier);
+
+  // Pagination
+  const perPage=parseInt(g('rank-per-page')?.value||'9999');
+  const totalFiltered=sorted.length;
+  const totalPages=perPage>=9999?1:Math.max(1,Math.ceil(totalFiltered/perPage));
+  if(rankPage>totalPages) rankPage=totalPages;
+  const startIdx=(rankPage-1)*perPage;
+  const paginated=perPage>=9999?sorted:sorted.slice(startIdx,startIdx+perPage);
+  const infoEl=g('rank-result-info');
+  if(infoEl) infoEl.textContent=totalFiltered===equipments.length?`${equipments.length} equipment`:`${totalFiltered} dari ${equipments.length}`;
+
+  tbody.innerHTML=paginated.map((eq,pageIdx)=>{
+    const i=startIdx+pageIdx;
     const score   = calcScore(eq);
     const pct     = Math.round(score/maxScore*100);
     const mtbf    = eq._mtbf;
@@ -2675,14 +3065,11 @@ function renderRanking(){
 
     // Event breakdown from allEventsCache
     const eqEvs = allEventsCache.filter(e=>e.equipment_id===eq.id);
-    const eqFails = eqEvs.filter(e=>e.type==='failure');
-    const eqFailIds = new Set(eqFails.map(f=>f.id));
-    const eqValidChildren = eqEvs.filter(e=>e.type!=='failure'&&e.parent_failure_id&&eqFailIds.has(e.parent_failure_id));
-    const fC  = eqFails.length;
-    const aC  = eqValidChildren.filter(e=>e.type==='action').length;
-    const rC  = eqValidChildren.filter(e=>e.type==='repair').length;
-    const sC  = eqValidChildren.filter(e=>e.type==='resolved').length;
-    const osC = [...eqFails,...eqValidChildren].filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
+    const fC  = eqEvs.filter(e=>e.type==='failure').length;
+    const aC  = eqEvs.filter(e=>e.type==='action').length;
+    const rC  = eqEvs.filter(e=>e.type==='repair').length;
+    const sC  = eqEvs.filter(e=>e.type==='resolved').length;
+    const osC = eqEvs.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
 
     // Risk tier berdasarkan score pct DAN bad actor flag
     let tierCls, tierLbl;
@@ -2787,6 +3174,26 @@ function renderRanking(){
       </td>
     </tr>`;
   }).join('');
+
+  // Pagination controls
+  const pgDiv=g('rank-pagination');
+  if(pgDiv){
+    if(totalPages>1){
+      const btn=(active,lbl,pg)=>`<button onclick="rankPage=${pg};renderRanking()" style="padding:5px 11px;border-radius:5px;border:1px solid var(--border);background:${active?'var(--amber)':'var(--card)'};color:${active?'#fff':'var(--text)'};cursor:pointer;font-size:12px;font-weight:${active?700:400};">${lbl}</button>`;
+      let html=`<span style="font-size:12px;color:var(--muted);">Halaman <b>${rankPage}</b> / <b>${totalPages}</b> &nbsp;·&nbsp; ${totalFiltered} equipment</span>`;
+      html+=`<div style="display:flex;gap:4px;flex-wrap:wrap;">`;
+      html+=btn(false,'&laquo;',1);
+      html+=btn(false,'&lsaquo;',Math.max(1,rankPage-1));
+      const ps=Math.max(1,rankPage-2),pe=Math.min(totalPages,rankPage+2);
+      for(let p=ps;p<=pe;p++) html+=btn(p===rankPage,p,p);
+      html+=btn(false,'&rsaquo;',Math.min(totalPages,rankPage+1));
+      html+=btn(false,'&raquo;',totalPages);
+      html+=`</div>`;
+      pgDiv.innerHTML=html; pgDiv.style.display='flex';
+    } else {
+      pgDiv.innerHTML=totalFiltered?`<span style="font-size:11px;color:var(--muted);">${totalFiltered} equipment</span>`:'';
+    }
+  }
 }
 
 
@@ -2948,21 +3355,15 @@ function renderTrendChart(){
   wrap.innerHTML = '<div style="height:240px;display:flex;align-items:center;justify-content:center;color:var(--textDim);font-size:11px;gap:10px;"><span style="display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin 0.8s linear infinite;"></span>Memuat data...</div>';
 
   sb.from('events')
-    .select('equipment_id,type,date,downtime,status,outstanding,title,parent_failure_id')
+    .select('equipment_id,type,date,downtime,status,outstanding,title')
     .then(({data:evData, error:fetchErr})=>{
       if(fetchErr){
         console.error('[renderTrendChart]', fetchErr);
         wrap.innerHTML='<div style="height:240px;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:12px;">Gagal memuat: '+fetchErr.message+'</div>';
         return;
       }
-      const allForEq = !evData||!evData.length ? [] :
+      const filtered = !evData||!evData.length ? [] :
         (selEqId==='all' ? evData : evData.filter(e=>e.equipment_id===selEqId));
-      // Only include failures + children that have valid parent failure
-      const validFailIds = new Set(allForEq.filter(e=>e.type==='failure').map(e=>e.id));
-      const filtered = allForEq.filter(e=>
-        e.type==='failure' ||
-        (e.parent_failure_id && validFailIds.has(e.parent_failure_id))
-      );
 
       if(!filtered.length){
         wrap.innerHTML='<div style="height:240px;display:flex;align-items:center;justify-content:center;color:var(--textDim);font-size:12px;">Belum ada event untuk ditampilkan.</div>';
@@ -2973,64 +3374,16 @@ function renderTrendChart(){
 
       const monthKeys = buildMonthKeys(monthsN);
       const labels    = getMonthLabels(monthsN);
+      const mFail     = monthKeys.map(mk=>filtered.filter(e=>e.type==='failure'  &&getMonthKey(e.date)===mk).length);
+      const mAction   = monthKeys.map(mk=>filtered.filter(e=>e.type==='action'   &&getMonthKey(e.date)===mk).length);
+      const mRepair   = monthKeys.map(mk=>filtered.filter(e=>e.type==='repair'   &&getMonthKey(e.date)===mk).length);
+      const mResolved = monthKeys.map(mk=>filtered.filter(e=>e.type==='resolved' &&getMonthKey(e.date)===mk).length);
+      const mDowntime = monthKeys.map(mk=>filtered.filter(e=>e.type==='failure'&&getMonthKey(e.date)===mk).reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0));
 
-      // Use ALL events for this equipment (not just filtered valid children)
-      // to correctly compute resolved status per failure
-      const allFails = allForEq.filter(e=>e.type==='failure');
-      const allChildren = allForEq.filter(e=>e.type!=='failure');
-
-      // Build auto-assign map: orphan children → nearest preceding failure
-      const sortedFails=[...allFails].sort((a,b)=>new Date(a.date)-new Date(b.date));
-      const autoMap=new Map();
-      allChildren.forEach(c=>{
-        if(c.parent_failure_id) return;
-        const cDate=new Date(c.date);
-        let best=null;
-        sortedFails.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
-        if(!best&&sortedFails.length) best=sortedFails[0];
-        if(best) autoMap.set(c.id, best.id);
-      });
-
-      // Determine effective status per failure
-      const isFailEffectivelyClosed=f=>{
-        const hasResolvedChild=allChildren.some(c=>
-          (c.parent_failure_id===f.id || autoMap.get(c.id)===f.id) && c.type==='resolved'
-        );
-        return hasResolvedChild || ['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
-      };
-
-      // Month-level counts (use failure date for Failure, resolved child date for Resolved)
-      const mFail     = monthKeys.map(mk=>allFails.filter(e=>getMonthKey(e.date)===mk).length);
-      const mAction   = monthKeys.map(mk=>allChildren.filter(e=>e.type==='action'&&(e.parent_failure_id||autoMap.get(e.id))&&getMonthKey(e.date)===mk).length);
-      const mRepair   = monthKeys.map(mk=>allChildren.filter(e=>e.type==='repair'&&(e.parent_failure_id||autoMap.get(e.id))&&getMonthKey(e.date)===mk).length);
-      // Resolved = count resolved children by their date (when the resolution happened)
-      const mResolved = monthKeys.map(mk=>allChildren.filter(e=>e.type==='resolved'&&(e.parent_failure_id||autoMap.get(e.id))&&getMonthKey(e.date)===mk).length);
-      // Also count failures closed by status (no resolved child) - counted in month of failure
-      const mResolvedByStatus = monthKeys.map(mk=>allFails.filter(f=>{
-        const hasResolvedChild=allChildren.some(c=>(c.parent_failure_id===f.id||autoMap.get(c.id)===f.id)&&c.type==='resolved');
-        return !hasResolvedChild && ['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()) && getMonthKey(f.date)===mk;
-      }).length);
-      const mDowntime = monthKeys.map(mk=>{
-        // Downtime = from failure date to resolved child date (or manual downtime field)
-        return allFails.filter(e=>getMonthKey(e.date)===mk).reduce((s,f)=>{
-          const myRes=allChildren.filter(c=>(c.parent_failure_id===f.id||autoMap.get(c.id)===f.id)&&c.type==='resolved')
-            .sort((a,b)=>new Date(a.date)-new Date(b.date));
-          if(myRes.length){
-            const dh=Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600));
-            return s+(dh>0?dh:0);
-          }
-          return s+(parseInt(f.downtime||0)||0);
-        },0);
-      });
-
-      const tFail    = mFail.reduce((a,b)=>a+b,0);
-      const tAction  = mAction.reduce((a,b)=>a+b,0);
-      const tRepair  = mRepair.reduce((a,b)=>a+b,0);
-      // tResolved = all effectively closed failures
-      const tResolved= allFails.filter(f=>isFailEffectivelyClosed(f)).length;
-      const tDowntime= mDowntime.reduce((a,b)=>a+b,0);
-      // tOpen = failures not yet effectively closed
-      const tOpen    = allFails.filter(f=>!isFailEffectivelyClosed(f)).length;
+      const tFail=mFail.reduce((a,b)=>a+b,0), tAction=mAction.reduce((a,b)=>a+b,0);
+      const tRepair=mRepair.reduce((a,b)=>a+b,0), tResolved=mResolved.reduce((a,b)=>a+b,0);
+      const tDowntime=mDowntime.reduce((a,b)=>a+b,0);
+      const tOpen=filtered.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
       const peakIdx=mFail.indexOf(Math.max(...mFail)), peakVal=Math.max(...mFail);
       const half=Math.floor(monthsN/2);
       const earlyF=mFail.slice(0,half).reduce((a,b)=>a+b,0), lateF=mFail.slice(-half).reduce((a,b)=>a+b,0);
@@ -3063,12 +3416,12 @@ function renderTrendChart(){
           <div class="trend-kpi-card" style="border-top:3px solid var(--green);">
             <div class="trend-kpi-val" style="color:var(--green);">${tResolved}</div>
             <div class="trend-kpi-lbl">Resolved</div>
-            <div class="trend-kpi-change" style="color:var(--textDim);font-size:10px;">${tFail} total failure tercatat</div>
+            <div class="trend-kpi-change" style="color:var(--textDim);font-size:10px;">${filtered.length} total events</div>
           </div>
           <div class="trend-kpi-card" style="border-top:3px solid ${tOpen?'var(--red)':'var(--green)'};">
             <div class="trend-kpi-val" style="color:${tOpen?'var(--red)':'var(--green)'};">${tOpen}</div>
             <div class="trend-kpi-lbl">Open / Belum Closed</div>
-            <div class="trend-kpi-change" style="color:var(--textDim);font-size:10px;">${tOpen>0?tOpen+' failure belum selesai':'Semua failure sudah closed'}</div>
+            <div class="trend-kpi-change" style="color:var(--textDim);font-size:10px;">${peakVal>0?'Peak: '+labels[peakIdx]+' ('+peakVal+'×)':'Tidak ada open issue'}</div>
           </div>`;
       }
 
@@ -3102,8 +3455,8 @@ function renderTrendChart(){
       if(statsDiv){
         const rows=monthKeys.map((mk,i)=>({
           label:labels[i],fail:mFail[i],action:mAction[i],repair:mRepair[i],
-          resolved:mResolved[i]+mResolvedByStatus[i],downtime:mDowntime[i],
-          total:mFail[i]+mAction[i]+mRepair[i]+mResolved[i]+mResolvedByStatus[i]
+          resolved:mResolved[i],downtime:mDowntime[i],
+          total:mFail[i]+mAction[i]+mRepair[i]+mResolved[i]
         })).filter(r=>r.total>0);
 
         if(!rows.length){statsDiv.innerHTML='';return;}
@@ -3160,11 +3513,6 @@ function renderTrendChart(){
 // ══════════════════════════════════════
 // MINI TREND CHART (detail view per equipment)
 // ══════════════════════════════════════
-function renderMiniTrend(){
-  if(currentEqId) renderMiniTrendChart(currentEqId, events);
-}
-
-
 function renderMiniTrendChart(eqId, evData){
   const wrap = g('mini-trend-chart-wrap');
   if(!wrap) return;
@@ -3240,186 +3588,379 @@ async function generateReport(){
 // REPORT PDF
 // ══════════════════════════════════════
 async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen){
-  showX('Membuat PDF Report...');
-  await sl(150);
+  showX('Membuat PDF Report...'); await sl(150);
   try{
-    // CDN jsPDF: window.jspdf.jsPDF or window.jspdf (older CDN)
-    const jspdfNs = window.jspdf || {};
-    const JsPDFCtor = jspdfNs.jsPDF || window.jsPDF;
-    if(!JsPDFCtor){toast('PDF library tidak termuat, coba refresh halaman','error');hideX();return;}
-    const jsPDF = JsPDFCtor;
-    const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const jspdfNs=window.jspdf||{};
+    const JsPDFCtor=jspdfNs.jsPDF||window.jsPDF;
+    if(!JsPDFCtor){toast('PDF library tidak termuat','error');hideX();return;}
+    const doc=new JsPDFCtor({orientation:'landscape',unit:'mm',format:'a4'});
     const W=297,H=210;
-    const pg=()=>{doc.setFillColor(248,250,252);doc.rect(0,0,W,H,'F');doc.setFillColor(232,162,23);doc.rect(0,0,W,1.5,'F');};
-    let pageN=1;
-    const addPgNum=()=>{doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);doc.text(`Page ${pageN++}`,W-10,H-4,{align:'right'});doc.text('Developed by Technical Support — PT Kilang Pertamina Balikpapan',W/2,H-4,{align:'center'});};
 
-    // ── COVER ──
-    pg();
-    doc.setFillColor(241,245,249);doc.rect(0,0,W,18,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(232,162,23);
-    doc.text('BAD ACTOR HISTORY RECORD — MONTHLY REPORT',12,12);
-    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(148,163,184);
-    doc.text(`PT Kilang Pertamina Balikpapan — Technical Support`,W-12,12,{align:'right'});
-    doc.setFont('helvetica','bold');doc.setFontSize(34);doc.setTextColor(30,41,59);
-    doc.text('Monthly Report',12,48);
-    doc.setFont('helvetica','normal');doc.setFontSize(14);doc.setTextColor(232,162,23);
-    doc.text(`Periode: ${fromStr} — ${toStr}`,12,60);
-    doc.setFontSize(11);doc.setTextColor(148,163,184);
-    const totalFail=evData.filter(e=>e.type==='failure').length;
+    const C={
+      navy:[15,30,53],navyMid:[30,58,95],navyLight:[241,245,249],
+      amber:[232,162,23],amberLight:[255,243,205],
+      red:[220,38,38],green:[22,163,74],teal:[2,132,199],
+      white:[255,255,255],text:[15,23,42],dim:[71,85,105],
+      muted:[148,163,184],border:[226,232,240],bg:[248,250,252]
+    };
+
+    const pageHeader=(title,sub)=>{
+      doc.setFillColor(...C.bg); doc.rect(0,0,W,H,'F');
+      doc.setFillColor(...C.navy); doc.rect(0,0,W,16,'F');
+      doc.setFillColor(...C.amber); doc.rect(0,0,W,2,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.amber);
+      doc.text('BAD ACTOR HISTORY RECORD — MONTHLY REPORT',12,10);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+      doc.text(sub||'PT Kilang Pertamina Balikpapan',W-12,10,{align:'right'});
+      if(title){doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...C.muted);doc.text(title,12,14.5);}
+    };
+    const addFooter=(n,tot)=>{
+      doc.setFillColor(...C.border); doc.rect(0,H-8,W,8,'F');
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
+      doc.text('KONFIDENSIAL — Technical Support Team | PT Kilang Pertamina Balikpapan',12,H-3.5);
+      doc.setFont('helvetica','bold');
+      doc.text(`Halaman ${n}${tot?' dari '+tot:''}`,W-12,H-3.5,{align:'right'});
+    };
+    const sectionBar=(text,y,color)=>{
+      color=color||C.navyMid;
+      doc.setFillColor(...color); doc.rect(10,y-4,W-20,7,'F');
+      doc.setFillColor(...C.amber); doc.rect(10,y-4,3,7,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...C.white);
+      doc.text(text.toUpperCase(),15,y);
+      return y+7;
+    };
+
+    const allFails=evData.filter(e=>e.type==='failure');
+    const allChildren=evData.filter(e=>e.type!=='failure');
+    const totalFail=allFails.length;
     const totDown=calcDowntimeFromEvents(evData);
     const openFails=calcOpenFailures(evData);
     const badActorEqs=equipments.filter(eq=>eq._isBadActor);
-    doc.text(`${equipments.length} Equipment  |  ${totalFail} Failure  |  ${totDown} Jam Downtime  |  ${badActorEqs.length} Bad Actor`,12,70);
+    const outItems=evData.filter(e=>e.outstanding&&String(e.outstanding).trim());
+    let pageN=1;
 
-    // KPI Boxes
-    const kpis=[
-      {v:equipments.length,l:'Total Equipment',c:[14,165,233]},
-      {v:badActorEqs.length,l:'Bad Actor',c:[232,64,64]},
-      {v:totalFail+'×',l:'Total Failure',c:[232,64,64]},
-      {v:totDown+' Jam',l:'Downtime (F→Resolved)',c:[232,162,23]},
-      {v:openFails,l:'Failure Belum Resolved',c:[232,64,64]}
+    // ══════════════════════════════════════
+    // COVER PAGE
+    // ══════════════════════════════════════
+    doc.setFillColor(...C.navy); doc.rect(0,0,W,H,'F');
+    doc.setFillColor(...C.amber); doc.rect(0,0,W,3,'F');
+    doc.setFillColor(25,50,85); doc.rect(0,H-50,W,50,'F');
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.amber);
+    doc.text('PT KILANG PERTAMINA BALIKPAPAN', 14, 20);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+    doc.text('Technical Support | Equipment Reliability Management', 14, 27);
+    doc.setFillColor(...C.amber); doc.rect(14,30,30,0.5,'F');
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(40); doc.setTextColor(...C.white);
+    doc.text('Monthly', 14, 65);
+    doc.setFontSize(26); doc.setTextColor(...C.amber);
+    doc.text('Failure Report', 14, 80);
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(12); doc.setTextColor(...C.muted);
+    doc.text(`Periode: ${fromStr}  —  ${toStr}`, 14, 95);
+    doc.setFontSize(9); doc.setTextColor(100,120,150);
+    doc.text(`Diterbitkan: ${fmtD(new Date().toISOString()).full}`, 14, 103);
+
+    // KPI boxes at bottom
+    const covKpis=[
+      {v:equipments.length,l:'Total Equipment',c:C.teal},
+      {v:badActorEqs.length,l:'Bad Actor',c:badActorEqs.length?C.red:C.green},
+      {v:totalFail+'×',l:'Total Failure',c:C.red},
+      {v:totDown+' Jam',l:'Total Downtime',c:C.amber},
+      {v:openFails,l:'Open Issues',c:openFails?C.red:C.green},
+      {v:outItems.length||'—',l:'Outstanding',c:outItems.length?C.amber:C.green}
     ];
-    kpis.forEach((k,i)=>{
-      const bx=12+i*55;
-      doc.setFillColor(241,245,249);doc.rect(bx,80,52,22,'F');
-      doc.setFillColor(...k.c);doc.rect(bx,80,52,1.5,'F');
-      doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...k.c);
-      doc.text(String(k.v),bx+26,91,{align:'center'});
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(148,163,184);
-      doc.text(k.l,bx+26,99,{align:'center'});
+    const bW=44,bGap=3;
+    covKpis.forEach((k,i)=>{
+      const bx=14+i*(bW+bGap);
+      doc.setFillColor(20,45,78); doc.rect(bx,H-44,bW,30,'F');
+      doc.setFillColor(...k.c); doc.rect(bx,H-44,bW,2,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...k.c);
+      doc.text(String(k.v), bx+bW/2, H-28, {align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(...C.muted);
+      doc.text(k.l, bx+bW/2, H-20, {align:'center'});
     });
-    addPgNum();
+    addFooter(pageN++);
 
-    // ── RANKING PAGE ──
-    if(incRanking){
-      doc.addPage();pg();
-      doc.setFillColor(30,58,95);doc.rect(0,0,W,14,'F');
-      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(232,162,23);
-      doc.text('BAD ACTOR RANKING & ANALYTICS',12,9);
-      doc.setFontSize(7);doc.setTextColor(148,163,184);
-      doc.text(`Periode: ${fromStr} — ${toStr}`,W-12,9,{align:'right'});
+    // ══════════════════════════════════════
+    // SUMMARY & KPI PAGE
+    // ══════════════════════════════════════
+    if(incSummary){
+      doc.addPage();
+      pageHeader('RINGKASAN EKSEKUTIF', `Periode: ${fromStr} — ${toStr}`);
+      let y=24;
 
-      const sorted=[...equipments].sort((a,b)=>calcScore(b)-calcScore(a));
-      const hdr=[['#','Equipment','Tag No','Unit','Failure','Downtime','MTBF','MTTR','Avail.','Open','Score','Status']];
-      const cw=[8,42,20,36,16,22,16,16,14,12,16,18];
-      let cx=10,ry=22;
-      doc.setFillColor(30,58,95);doc.rect(10,ry-5,W-20,8,'F');
-      hdr[0].forEach((h,i)=>{doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(255,255,255);doc.text(h,cx+1,ry,{maxWidth:cw[i]-2});cx+=cw[i];});ry+=7;
+      // Period info box
+      doc.setFillColor(...C.navyLight); doc.rect(10,y,W-20,14,'F');
+      doc.setFillColor(...C.navyMid); doc.rect(10,y,3,14,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...C.navyMid);
+      doc.text('PERIODE PELAPORAN', 15, y+5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...C.text);
+      doc.text(`${fromStr}  →  ${toStr}`, 15, y+11);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+      doc.text(`${equipments.length} equipment dipantau  |  Data per ${fmtD(new Date().toISOString()).full}`, W-14, y+8, {align:'right'});
+      y+=20;
 
-      sorted.forEach((eq,idx)=>{
-        if(ry>H-14){doc.addPage();pg();ry=20;addPgNum();}
-        const mtbf=eq._mtbf,mttr=eq._mttr,avail=calcAvailability(mtbf,mttr);
-        const score=calcScore(eq);
-        doc.setFillColor(255,255,255);
-        doc.rect(10,ry-4,W-20,8,'F');
-        const row=[String(idx+1),eq.name,eq.tag_no,eq.unit||'—',eq._failures+'×',eq._downtime+'h',fmtHours(mtbf),fmtHours(mttr),avail?avail+'%':'—',String(eq._open||0),String(score),statusLabel(eq.status)];
-        cx=10;
-        row.forEach((cell,ci)=>{
-          let tc=[226,232,240];
-          if(ci===4&&eq._failures>0) tc=[232,64,64];
-          if(ci===9&&eq._open>0) tc=[232,64,64];
-          if(ci===10) tc=score>50?[232,64,64]:score>25?[232,162,23]:[34,197,94];
-          doc.setFont('helvetica',ci===0||ci===10?'bold':'normal');doc.setFontSize(6.5);doc.setTextColor(...tc);
-          doc.text(String(cell).substring(0,cw[ci]/2.5),cx+1,ry,{maxWidth:cw[ci]-2});cx+=cw[ci];
-        });
-        if(eq._isBadActor){doc.setFillColor(232,64,64);doc.rect(10,ry-4,2,8,'F');}
-        ry+=9;
+      // 6 KPI cards
+      y=sectionBar('KEY PERFORMANCE INDICATORS', y+4)+4;
+      const sumKpis=[
+        {v:totalFail+'×',l:'Total Failure',sub:'kejadian dalam periode',c:C.red},
+        {v:totDown+' Jam',l:'Total Downtime',sub:'F→Resolved kumulatif',c:C.amber},
+        {v:openFails,l:'Failure Open',sub:'belum resolved',c:openFails?C.red:C.green},
+        {v:badActorEqs.length,l:'Bad Actor Equipment',sub:'≥2 failure / periode',c:badActorEqs.length?C.red:C.green},
+        {v:outItems.length||'0',l:'Outstanding Items',sub:'belum diselesaikan',c:outItems.length?C.amber:C.green},
+        {v:allChildren.filter(e=>e.type==='resolved').length||totalFail-openFails,l:'Failure Resolved',sub:'dalam periode ini',c:C.green}
+      ];
+      const kW=44,kG=2.4;
+      sumKpis.forEach((k,i)=>{
+        const bx=10+i*(kW+kG);
+        doc.setFillColor(...C.white); doc.rect(bx,y,kW,24,'F');
+        doc.setDrawColor(...C.border); doc.setLineWidth(0.3); doc.rect(bx,y,kW,24);
+        doc.setFillColor(...k.c); doc.rect(bx,y,kW,2,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(...k.c);
+        doc.text(String(k.v), bx+kW/2, y+13, {align:'center'});
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
+        doc.text(k.l, bx+kW/2, y+18, {align:'center'});
+        doc.setFont('helvetica','normal'); doc.setFontSize(5.5); doc.setTextColor(...C.muted);
+        doc.text(k.sub, bx+kW/2, y+22, {align:'center'});
       });
-      addPgNum();
+      y+=30;
+
+      // Bad Actor list
+      if(badActorEqs.length){
+        y=sectionBar('BAD ACTOR EQUIPMENT',y+4)+4;
+        const baH=8;
+        badActorEqs.slice(0,5).forEach((eq,i)=>{
+          doc.setFillColor(255,240,240); doc.rect(10,y+i*baH,W-20,baH-1,'F');
+          doc.setFillColor(...C.red); doc.rect(10,y+i*baH,3,baH-1,'F');
+          doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.text);
+          doc.text(`${i+1}. ${eq.name}`, 15, y+i*baH+5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.dim);
+          doc.text(`Tag: ${eq.tag_no||'—'} | Failure: ${eq._failures||0}× | Downtime: ${eq._downtime||0} jam | Open: ${eq._open||0}`, W-14, y+i*baH+5, {align:'right'});
+        });
+        y+=badActorEqs.slice(0,5).length*baH+6;
+      }
+
+      // Monthly trend mini-table
+      y=sectionBar('TREND BULANAN',y+4)+4;
+      const monthCols=['Bulan','Failure','Action','Repair','Resolved','Downtime (Jam)','Keterangan'];
+      const mCw=[40,22,22,22,22,30,90];
+      let mx=10;
+      doc.setFillColor(...C.navyMid); doc.rect(10,y-4,W-20,7,'F');
+      monthCols.forEach((c,i)=>{
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.white);
+        doc.text(c, mx+1.5, y, {maxWidth:mCw[i]-3}); mx+=mCw[i];
+      });
+      y+=5;
+
+      // Build monthly data
+      const now=new Date(), months=[];
+      for(let m=0;m<6;m++){
+        const d=new Date(now.getFullYear(),now.getMonth()-m,1);
+        months.unshift(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+      }
+      const monthLabel=mk=>{const[y2,m2]=mk.split('-');const mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(m2)-1];return `${mn} ${y2}`;};
+      const sortedFails2=[...allFails].sort((a,b)=>new Date(a.date)-new Date(b.date));
+      const autoMap3=new Map();
+      allChildren.forEach(c=>{
+        if(c.parent_failure_id) return;
+        const cDate=new Date(c.date); let best=null;
+        sortedFails2.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
+        if(!best&&sortedFails2.length) best=sortedFails2[0];
+        if(best) autoMap3.set(c.id, best.id);
+      });
+
+      months.forEach((mk,mi)=>{
+        const mFails=allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
+        const mAct=allChildren.filter(e=>e.type==='action'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
+        const mRep=allChildren.filter(e=>e.type==='repair'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
+        const mRes=allChildren.filter(e=>e.type==='resolved'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
+        const mResStat=mFails.filter(f=>!allChildren.some(c=>(c.parent_failure_id===f.id||autoMap3.get(c.id)===f.id)&&c.type==='resolved')&&['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()));
+        const mDown=mFails.reduce((s,f)=>{
+          const r=allChildren.filter(c=>(c.parent_failure_id===f.id||autoMap3.get(c.id)===f.id)&&c.type==='resolved').sort((a,b)=>new Date(a.date)-new Date(b.date));
+          if(r.length){const dh=Math.round((new Date(r[r.length-1].date)-new Date(f.date))/(1000*3600));return s+(dh>0?dh:0);}
+          return s+(parseInt(f.downtime||0)||0);
+        },0);
+        const tot=mFails.length+mAct.length+mRep.length+mRes.length+mResStat.length;
+        if(tot===0&&mi<months.length-1) return;
+        const note=mFails.length>=2?'⚠ Multiple failure':mDown>72?'⚠ Downtime kritis':mFails.length&&mRes.length+mResStat.length>=mFails.length?'✓ Issue diselesaikan':mFails.length?'Dalam penanganan':'';
+        const noteColor=mFails.length>=2||mDown>72?C.red:(mRes.length+mResStat.length>=mFails.length&&mFails.length)?C.green:C.dim;
+        const bg=mi%2===0?C.white:C.navyLight;
+        doc.setFillColor(...bg); doc.rect(10,y-4,W-20,7,'F');
+        doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,y-4,W-20,7);
+        const mRow=[monthLabel(mk),mFails.length||'—',mAct.length||'—',mRep.length||'—',mRes.length+mResStat.length||'—',mDown||'—',note];
+        let mx2=10;
+        mRow.forEach((cell,i)=>{
+          const isNote=i===6;
+          doc.setFont('helvetica',i===0||i===1?'bold':'normal');
+          doc.setFontSize(i===0?7.5:7);
+          doc.setTextColor(...(i===1&&cell!=='—'?C.red:i===5&&cell!=='—'?C.amber:isNote?noteColor:C.text));
+          doc.text(String(cell), mx2+1.5, y, {maxWidth:mCw[i]-3});
+          mx2+=mCw[i];
+        });
+        y+=7;
+      });
+      // Total row
+      doc.setFillColor(...C.navyMid); doc.rect(10,y-4,W-20,7,'F');
+      const totRow=['TOTAL',totalFail,allChildren.filter(e=>e.type==='action').length,allChildren.filter(e=>e.type==='repair').length,allChildren.filter(e=>e.type==='resolved').length,totDown,'Periode laporan'];
+      let mx3=10;
+      totRow.forEach((cell,i)=>{
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...(i===1?C.red:i===5?C.amber:C.white));
+        doc.text(String(cell), mx3+1.5, y, {maxWidth:mCw[i]-3}); mx3+=mCw[i];
+      });
+      addFooter(pageN++);
     }
 
-    // ── DETAIL / OPEN ISSUES ──
-    if(incDetail||incOpen){
+    // ══════════════════════════════════════
+    // RANKING PAGE
+    // ══════════════════════════════════════
+    if(incRanking){
+      doc.addPage();
+      pageHeader('EQUIPMENT RISK RANKING', `Periode: ${fromStr} — ${toStr}`);
+      let y=24;
+      const rCols=['#','Equipment','Tag No','Unit','Failure','Downtime','MTBF','MTTR','Avail%','Open','O/S','Risk Score','Tier'];
+      const rCw=[8,50,24,40,14,18,16,16,14,12,10,22,16];
+      doc.setFillColor(...C.navy); doc.rect(10,y-4,W-20,8,'F');
+      let rx=10;
+      rCols.forEach((c,i)=>{
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.white);
+        doc.text(c,rx+1.5,y,{maxWidth:rCw[i]-3}); rx+=rCw[i];
+      });
+      y+=6;
+      const sortedEqs=[...equipments].sort((a,b)=>calcScore(b)-calcScore(a));
+      const maxSc=calcScore(sortedEqs[0])||1;
+      sortedEqs.slice(0,20).forEach((eq,i)=>{
+        if(y>H-14){addFooter(pageN++);doc.addPage();pageHeader('EQUIPMENT RISK RANKING (lanjutan)',`Periode: ${fromStr} — ${toStr}`);y=24;}
+        const sc=calcScore(eq),pct=Math.round(sc/maxSc*100);
+        const tier=eq._isBadActor||pct>=70?'CRITICAL':pct>=40?'HIGH':pct>=15?'MEDIUM':'LOW';
+        const tierC={CRITICAL:C.red,HIGH:[200,100,0],MEDIUM:[150,120,0],LOW:C.green}[tier];
+        const avail=calcAvailability(eq._mtbf,eq._mttr);
+        const bg=i%2===0?C.white:C.navyLight;
+        doc.setFillColor(...bg); doc.rect(10,y-4,W-20,7,'F');
+        if(eq._isBadActor){doc.setFillColor(255,240,240);doc.rect(10,y-4,W-20,7,'F');}
+        doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,y-4,W-20,7);
+        // Rank badge
+        const rBg=i===0?C.red:i===1?C.amber:i===2?C.green:C.dim;
+        doc.setFillColor(...rBg); doc.rect(10,y-4,8,7,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.white);
+        doc.text(String(i+1),14,y,{align:'center'});
+        const rRow=['',eq.name||'—',eq.tag_no||'—',eq.unit||'—',
+          eq._failures||0,eq._downtime||0,eq._mtbf||'—',eq._mttr||'—',
+          avail?avail+'%':'—',eq._open||0,
+          allEventsCache.filter(e=>e.equipment_id===eq.id&&e.outstanding&&String(e.outstanding).trim()).length||'—',
+          sc, tier];
+        let rx2=10;
+        rRow.forEach((cell,ci)=>{
+          const isTier=ci===12,isScore=ci===11,isFail=ci===4,isDown=ci===5,isOpen=ci===9;
+          doc.setFont('helvetica',ci===1||isTier||isScore?'bold':'normal');
+          doc.setFontSize(ci===1?7:6.5);
+          doc.setTextColor(...(isTier?tierC:isScore?C.navyMid:isFail&&cell>0?C.red:isDown&&cell>0?C.amber:isOpen&&cell>0?C.red:C.text));
+          doc.text(String(cell),rx2+1.5,y,{maxWidth:rCw[ci]-3}); rx2+=rCw[ci];
+        });
+        y+=7;
+      });
+      addFooter(pageN++);
+    }
+
+    // ══════════════════════════════════════
+    // DETAIL PER EQUIPMENT
+    // ══════════════════════════════════════
+    if(incDetail){
       const eqsWithEvents=equipments.filter(eq=>evData.some(e=>e.equipment_id===eq.id));
       eqsWithEvents.forEach(eq=>{
         const eqEvs=evData.filter(e=>e.equipment_id===eq.id);
-        const toShow=incOpen?eqEvs:eqEvs;
-        if(!toShow.length) return;
-        doc.addPage();pg();
-        doc.setFillColor(30,58,95);doc.rect(0,0,W,14,'F');
-        doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(232,162,23);
-        doc.text((eq.tag_no?eq.tag_no+' — ':'')+eq.name,12,9);
-        doc.setFontSize(7);doc.setTextColor(148,163,184);
-        doc.text(`Unit: ${eq.unit||'—'} | ${critLabel(eq.criticality)} | ${statusLabel(eq.status)}`,W-12,9,{align:'right'});
-
-        // Group by FAILURE (parent-child)
-        const _rFails=eqEvs.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
-        const _rChildren=eqEvs.filter(e=>e.type!=='failure');
-        let ry=20;
-
-        _rFails.forEach((f,fi)=>{
-          if(ry>H-26){doc.addPage();pg();ry=20;addPgNum();}
-          const myRes=_rChildren.filter(c=>c.parent_failure_id===f.id&&c.type==='resolved');
-          const isResolved=myRes.length>0;
-          const fDown=isResolved?Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600))+' Jam':(f.downtime?f.downtime+' Jam':'—');
-          const groupStatus=isResolved?'RESOLVED':_rChildren.some(c=>c.parent_failure_id===f.id)?'ON PROGRESS':'OPEN';
-
-          // FAILURE header row (dark background)
-          doc.setFillColor(30,41,59);doc.rect(10,ry-4,W-20,9,'F');
-          doc.setFillColor(232,64,64);doc.rect(10,ry-4,2.5,9,'F');
-          doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(232,64,64);
-          doc.text('FAILURE #'+(fi+1),13,ry);
-          doc.setTextColor(255,255,255);
-          doc.text(fmtD(f.date).full,28,ry);
-          doc.text((f.title||'').substring(0,80),56,ry);
-          const sc2=isResolved?[34,197,94]:groupStatus==='ON PROGRESS'?[232,162,23]:[232,64,64];
-          doc.setTextColor(...sc2);
-          doc.text(groupStatus,W-12,ry,{align:'right'});
-          ry+=7;
-          if(f.mode||f.cause||fDown!=='—'){
-            doc.setFont('helvetica','normal');doc.setFontSize(6.5);
-            if(f.mode){doc.setTextColor(252,165,165);doc.text('Mode: '+f.mode.substring(0,60),14,ry);ry+=6;}
-            if(f.cause){doc.setTextColor(252,165,165);doc.text('Root Cause: '+f.cause.substring(0,80),14,ry);ry+=6;}
-            if(fDown!=='—'){doc.setTextColor(232,162,23);doc.text('Downtime: '+fDown,14,ry);ry+=6;}
+        const eqFails=eqEvs.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
+        if(!eqFails.length) return;
+        doc.addPage();
+        pageHeader(`DETAIL — ${eq.name}`, `${eq.tag_no||'—'} | ${eq.unit||'—'}`);
+        let y=24;
+        // Equipment mini-header
+        doc.setFillColor(...C.navyLight); doc.rect(10,y,W-20,10,'F');
+        doc.setFillColor(...C.navyMid); doc.rect(10,y,3,10,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...C.text);
+        doc.text(eq.name, 15, y+7);
+        const eqDown=calcDowntimeFromEvents(eqEvs);
+        const eqOpen=calcOpenFailures(eqEvs);
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.dim);
+        doc.text(`Tag: ${eq.tag_no||'—'} | Failure: ${eqFails.length}× | Downtime: ${eqDown} jam | Open: ${eqOpen}`, W-14, y+7, {align:'right'});
+        y+=16;
+        const eqChildren=eqEvs.filter(e=>e.type!=='failure');
+        const autoMap4=new Map();
+        eqFails.forEach((f,fi)=>{
+          eqChildren.forEach(c=>{
+            if(c.parent_failure_id) return;
+            if(!autoMap4.has(c.id)){const cDate=new Date(c.date);let best=null;eqFails.forEach(ff=>{if(new Date(ff.date)<=cDate) best=ff;});if(best) autoMap4.set(c.id,best.id);}
+          });
+          if(y>H-20){addFooter(pageN++);doc.addPage();pageHeader(`DETAIL — ${eq.name} (lanjutan)`,`${eq.tag_no||'—'}`);y=24;}
+          const myChildren=sortChildEvents(eqChildren.filter(c=>c.parent_failure_id===f.id||autoMap4.get(c.id)===f.id));
+          const myRes=myChildren.filter(c=>c.type==='resolved');
+          const isClosed=myRes.length>0||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
+          const fDown=myRes.length?Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600))+'j':(f.downtime?f.downtime+'j':'—');
+          // Failure group header
+          doc.setFillColor(...C.navy); doc.rect(10,y-4,W-20,8,'F');
+          doc.setFillColor(...C.red); doc.rect(10,y-4,3,8,'F');
+          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.amber);
+          doc.text(`${fi+1}. ${(f.title||'Failure Event').substring(0,50)}`,15,y);
+          doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
+          doc.text(`${fmtD(f.date).full} | Down: ${fDown} | ${isClosed?'✓ RESOLVED':'⚠ OPEN'}`,W-14,y,{align:'right'});
+          y+=10;
+          // Detail info
+          if(f.mode||f.cause){
+            doc.setFillColor(...C.amberLight); doc.rect(10,y-3,W-20,7,'F');
+            doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
+            if(f.mode){doc.setFont('helvetica','bold');doc.text('Mode: ',14,y+1);doc.setFont('helvetica','normal');doc.text(f.mode.substring(0,50),30,y+1);}
+            if(f.cause){doc.setFont('helvetica','bold');doc.text('Cause: ',W/2,y+1);doc.setFont('helvetica','normal');doc.text(f.cause.substring(0,50),W/2+16,y+1);}
+            y+=9;
           }
-
-          // Children (indented)
-          const myChildren=sortChildEvents(_rChildren.filter(c=>c.parent_failure_id===f.id));
           myChildren.forEach(ev=>{
-            if(ry>H-26){doc.addPage();pg();ry=20;addPgNum();}
-            const tc2=ev.type==='action'?[14,165,233]:ev.type==='repair'?[232,162,23]:[34,197,94];
-            doc.setFillColor(245,248,252);doc.rect(10,ry-4,W-20,8,'F');
-            doc.setFillColor(200,210,225);doc.rect(12,ry-4,1.5,8,'F'); // indent bar
-            doc.setFillColor(...tc2);doc.rect(13.5,ry-4,1.5,8,'F');   // color bar
-            const cLabel={action:'↳ ACTION',repair:'↳ REPAIR',resolved:'↳ RESOLVED'}[ev.type]||'↳ '+ev.type.toUpperCase();
-            doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...tc2);
-            doc.text(cLabel,16,ry);
-            doc.setTextColor(30,41,59);
-            doc.text(fmtD(ev.date).full,34,ry);
-            doc.setFont('helvetica','normal');
-            doc.text((ev.title||'').substring(0,90),56,ry);
-            ry+=8;
-            if(ev.mode){doc.setFontSize(6.5);doc.setTextColor(100,116,139);doc.text('   '+ev.mode.substring(0,100),16,ry);ry+=6;}
+            if(y>H-14){addFooter(pageN++);doc.addPage();pageHeader(`DETAIL — ${eq.name} (lanjutan)`,`${eq.tag_no||'—'}`);y=24;}
+            const cC={action:C.teal,repair:[180,120,0],resolved:C.green}[ev.type]||C.dim;
+            const cL={action:'↳ ACTION',repair:'↳ REPAIR',resolved:'↳ RESOLVED'}[ev.type]||'↳ '+ev.type.toUpperCase();
+            doc.setFillColor(...C.bg); doc.rect(10,y-3,W-20,7,'F');
+            doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,y-3,W-20,7);
+            doc.setFillColor(...cC); doc.rect(13,y-3,2,7,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...cC);
+            doc.text(cL,16,y+1);
+            doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.text);
+            doc.text((ev.title||'').substring(0,55),38,y+1);
+            doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
+            doc.text(`${fmtD(ev.date).full} | PIC: ${ev.pic||'—'} | ${ev.status||'—'}`,W-14,y+1,{align:'right'});
+            y+=8;
           });
-          ry+=3; // gap between failure groups
+          y+=4;
         });
-
-        // Orphan children (no parent)
-        const orphans=_rChildren.filter(c=>!c.parent_failure_id||!_rFails.find(f=>f.id===c.parent_failure_id));
-        if(orphans.length>0){
-          if(ry>H-26){doc.addPage();pg();ry=20;addPgNum();}
-          doc.setFont('helvetica','italic');doc.setFontSize(7);doc.setTextColor(148,163,184);
-          doc.text('— Event lama (tanpa parent failure): '+orphans.length+' item —',W/2,ry,{align:'center'});
-          ry+=8;
-          orphans.forEach(ev=>{
-            if(ry>H-20){doc.addPage();pg();ry=20;}
-            const tc2=ev.type==='action'?[14,165,233]:ev.type==='repair'?[232,162,23]:[34,197,94];
-            doc.setFillColor(248,250,252);doc.rect(10,ry-4,W-20,7,'F');
-            doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...tc2);
-            doc.text(typeLbl(ev.type),12,ry);
-            doc.setTextColor(100,116,139);
-            doc.text(fmtD(ev.date).full,30,ry);
-            doc.text((ev.title||'').substring(0,100),56,ry);
-            ry+=8;
-          });
-        }
-        addPgNum();
+        addFooter(pageN++);
       });
     }
 
-    doc.save(`BadActor_Report_${from}_to_${to}.pdf`);
-    toast('PDF Report berhasil dibuat! ✓');
+    // ══════════════════════════════════════
+    // OPEN ITEMS PAGE
+    // ══════════════════════════════════════
+    if(incOpen&&outItems.length){
+      doc.addPage();
+      pageHeader('OPEN ITEMS & OUTSTANDING', `Periode: ${fromStr} — ${toStr}`);
+      let y=24;
+      y=sectionBar(`${outItems.length} ITEM OUTSTANDING YANG PERLU PERHATIAN`,y+2)+4;
+      outItems.forEach((ev,i)=>{
+        if(y>H-16){addFooter(pageN++);doc.addPage();pageHeader('OPEN ITEMS (lanjutan)',`${fromStr} — ${toStr}`);y=24;}
+        const eq2=equipments.find(e=>e.id===ev.equipment_id);
+        doc.setFillColor(i%2===0?C.amberLight:C.white); doc.rect(10,y-3,W-20,14,'F');
+        doc.setFillColor(...C.amber); doc.rect(10,y-3,3,14,'F');
+        doc.setDrawColor(...C.border); doc.setLineWidth(0.2); doc.rect(10,y-3,W-20,14);
+        doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.text);
+        doc.text(`${i+1}. ${(ev.title||'').substring(0,65)}`,15,y+2);
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.dim);
+        doc.text(doc.splitTextToSize((ev.outstanding||'').substring(0,150),W-40)[0],15,y+8);
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.navyMid);
+        doc.text(`Equipment: ${eq2?.name||'—'} | PIC: ${ev.pic||'—'} | Target: ${ev.target_date?fmtD(ev.target_date).full:'—'}`,W-14,y+8,{align:'right'});
+        y+=16;
+      });
+      addFooter(pageN++);
+    }
+
+    doc.save(`Monthly_Report_${fromStr.replace(/\s/g,'_')}_${toStr.replace(/\s/g,'_')}.pdf`);
+    toast(`Monthly PDF diekspor — ${doc.getNumberOfPages()} halaman ✓`);
   }catch(err){console.error(err);toast('Error PDF: '+err.message,'error');}
   hideX();
 }
@@ -3427,41 +3968,283 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
 // ══════════════════════════════════════
 // REPORT PPT (simplified - key slides)
 // ══════════════════════════════════════
-async function generateReportPPT(evData, from, to, fromStr, toStr){
-  showX('Membuat PowerPoint Report...');
-  await sl(200);
+async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen){
+  showX('Membuat PowerPoint Report...'); await sl(200);
   try{
-    const pres=new PptxGenJS();pres.layout='LAYOUT_WIDE';
-    const C={navy:'1E3A5F',navyL:'EFF6FF',steel:'DBEAFE',amber:'D97706',red:'DC2626',green:'16A34A',teal:'0284C7',white:'FFFFFF',text:'1E293B',dim:'475569',muted:'94A3B8'};
-    const totalFail=evData.filter(e=>e.type==='failure').length;
+    const pres=new PptxGenJS(); pres.layout='LAYOUT_WIDE';
+    const C={
+      navy:'0F1E35',navyM:'1E3A5F',navyL:'EFF6FF',steel:'DBEAFE',
+      amber:'D97706',amberL:'FEF3C7',
+      red:'DC2626',redL:'FEE2E2',
+      green:'16A34A',greenL:'DCFCE7',
+      teal:'0284C7',white:'FFFFFF',
+      text:'1E293B',dim:'475569',muted:'94A3B8',bg:'F8FAFC'
+    };
+    const W=13.3, H=7.5;
+    const sh=()=>({type:'outer',color:'000000',blur:6,offset:2,angle:135,opacity:.15});
+
+    const allFails=evData.filter(e=>e.type==='failure');
+    const allChildren=evData.filter(e=>e.type!=='failure');
+    const totalFail=allFails.length;
     const totDown=calcDowntimeFromEvents(evData);
     const openFails=calcOpenFailures(evData);
-    const badActorEqs=equipments.filter(eq=>eq._isBadActor);
+    const badActors=equipments.filter(eq=>eq._isBadActor);
+    const outItems=evData.filter(e=>e.outstanding&&String(e.outstanding).trim());
+    const resolvedFails=allFails.filter(f=>{
+      const hasRes=allChildren.some(c=>(c.parent_failure_id===f.id)&&c.type==='resolved');
+      return hasRes||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
+    });
 
-    // Cover
-    const s1=pres.addSlide();s1.background={color:'F8FAFC'};
-    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.amber},line:{color:C.amber,width:0}});
-    s1.addText('MONTHLY REPORT — BAD ACTOR HISTORY RECORD',{x:.4,y:.25,w:12,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:2,bold:true,margin:0});
-    s1.addText('Monthly Report',{x:.4,y:.65,w:10,h:.9,fontSize:36,fontFace:'Calibri',color:C.text,bold:false,margin:0});
-    s1.addText(`Periode: ${fromStr} — ${toStr}`,{x:.4,y:1.6,w:10,h:.4,fontSize:14,fontFace:'Calibri',color:C.amber,bold:true,margin:0});
-    s1.addText('PT Kilang Pertamina Balikpapan | Technical Support',{x:.4,y:2.1,w:10,h:.3,fontSize:11,fontFace:'Calibri',color:C.dim,margin:0});
-    const kpis=[{v:equipments.length,l:'Total Equipment',c:C.teal},{v:badActorEqs.length,l:'Bad Actor',c:C.red},{v:totalFail+'×',l:'Total Failure',c:C.red},{v:totDown+' Jam',l:'Kumulatif Downtime',c:C.amber},{v:openFails,l:'Failure Belum Resolved',c:C.red}];
-    kpis.forEach((k,i)=>{const bx=.4+i*2.5;s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:2.8,w:2.3,h:1.1,fill:{color:C.navyL},line:{color:C.steel,width:1}});s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:2.8,w:2.3,h:.07,fill:{color:k.c},line:{color:k.c,width:0}});s1.addText(String(k.v),{x:bx,y:2.92,w:2.3,h:.55,fontSize:22,fontFace:'Calibri',color:k.c,bold:true,align:'center',margin:0});s1.addText(k.l,{x:bx,y:3.47,w:2.3,h:.28,fontSize:9,fontFace:'Calibri',color:C.dim,align:'center',margin:0});});
-    s1.addText('Developed by Technical Support | PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
+    // ── Slide header/footer helper ──
+    const addHeader=(sl,title,sub)=>{
+      sl.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:W,h:.18,fill:{color:C.amber},line:{color:C.amber,width:0}});
+      sl.addShape(pres.shapes.RECTANGLE,{x:0,y:.18,w:W,h:.62,fill:{color:C.navy},line:{color:C.navy,width:0}});
+      sl.addText('BAD ACTOR HISTORY RECORD — MONTHLY REPORT',{x:.35,y:.22,w:8,h:.28,fontSize:7,fontFace:'Calibri',bold:true,color:C.amber,charSpacing:1.5,margin:0});
+      sl.addText(sub||'PT Kilang Pertamina Balikpapan',{x:8.5,y:.22,w:4.5,h:.28,fontSize:7,fontFace:'Calibri',color:C.muted,align:'right',margin:0});
+      sl.addText(title,{x:.35,y:.5,w:10,h:.26,fontSize:9,fontFace:'Calibri',bold:true,color:C.white,margin:0});
+    };
+    const addFooter=(sl,pg)=>{
+      sl.addShape(pres.shapes.RECTANGLE,{x:0,y:H-.35,w:W,h:.35,fill:{color:C.navy},line:{color:C.navy,width:0}});
+      sl.addText('KONFIDENSIAL | Technical Support Team | PT Kilang Pertamina Balikpapan',{x:.35,y:H-.3,w:9,h:.25,fontSize:6,fontFace:'Calibri',color:C.muted,margin:0});
+      if(pg) sl.addText('Slide '+pg,{x:W-.8,y:H-.3,w:.7,h:.25,fontSize:6,fontFace:'Calibri',color:C.muted,align:'right',margin:0});
+    };
+    const kpiBox=(sl,x,y,w,h,val,label,sub,color,bgColor)=>{
+      bgColor=bgColor||C.navyL;
+      sl.addShape(pres.shapes.RECTANGLE,{x,y,w,h,fill:{color:bgColor},line:{color:C.steel,width:.5},shadow:sh()});
+      sl.addShape(pres.shapes.RECTANGLE,{x,y,w,h:.06,fill:{color:color},line:{color:color,width:0}});
+      sl.addText(String(val),{x,y:y+.06,w,h:h*.55,fontSize:22,fontFace:'Calibri',color,bold:true,align:'center',valign:'middle',margin:0});
+      sl.addText(label,{x,y:y+h*.62,w,h:.25,fontSize:8,fontFace:'Calibri',color:C.dim,bold:true,align:'center',margin:0});
+      if(sub) sl.addText(sub,{x,y:y+h*.82,w,h:.18,fontSize:6,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
+    };
+    let slideN=1;
 
-    // Ranking Slide
-    const s2=pres.addSlide();s2.background={color:'F8FAFC'};
-    s2.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:13.3,h:.1,fill:{color:C.amber},line:{color:C.amber,width:0}});
-    s2.addText('BAD ACTOR RANKING',{x:.4,y:.22,w:8,h:.28,fontSize:8,fontFace:'Calibri',color:C.amber,charSpacing:2,bold:true,margin:0});
-    s2.addText(`Periode: ${fromStr} — ${toStr}`,{x:.4,y:.52,w:12,h:.35,fontSize:13,fontFace:'Calibri',color:C.text,bold:true,margin:0});
-    const sorted=[...equipments].sort((a,b)=>calcScore(b)-calcScore(a)).slice(0,12);
-    const hdr=[[{text:'#',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'Equipment',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Tag',options:{bold:true,color:C.white,fill:{color:C.steel}}},{text:'Failure',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'Downtime',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'MTBF',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'MTTR',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'Score',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}},{text:'Status',options:{bold:true,color:C.white,fill:{color:C.steel},align:'center'}}]];
-    const rows=sorted.map((eq,i)=>{const score=calcScore(eq);const sc=score>50?C.red:score>25?C.amber:'22C55E';return [{text:String(i+1),options:{align:'center',bold:true,color:eq._isBadActor?C.red:C.text}},{text:(eq._isBadActor?'🔴 ':'')+eq.name,options:{bold:eq._isBadActor,color:eq._isBadActor?C.red:C.text}},{text:eq.tag_no,options:{color:C.amber,fontFace:'Courier New'}},{text:eq._failures+'×',options:{align:'center',bold:true,color:eq._failures>0?C.red:C.dim}},{text:eq._downtime+' Jam',options:{align:'center',color:C.amber}},{text:fmtHours(eq._mtbf),options:{align:'center',fontFace:'Courier New'}},{text:fmtHours(eq._mttr),options:{align:'center',fontFace:'Courier New'}},{text:String(score),options:{align:'center',bold:true,color:sc}},{text:statusLabel(eq.status),options:{align:'center',color:eq.status==='active'?C.green:eq.status==='maintenance'?C.red:C.teal}}];});
-    s2.addTable([...hdr,...rows],{x:.4,y:1.0,w:12.5,fontSize:9,fontFace:'Calibri',color:C.text,border:{pt:.5,color:C.steel},fill:{color:C.navyL},rowH:.46,colW:[.5,2.8,1.2,1.0,1.4,1.1,1.1,1.0,1.4]});
-    s2.addText('Developed by Technical Support | PT Kilang Pertamina Balikpapan',{x:0,y:7.2,w:13.3,h:.3,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
+    // ══════════════════════════════════════
+    // SLIDE 1: COVER
+    // ══════════════════════════════════════
+    const s1=pres.addSlide();
+    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:W,h:H,fill:{color:C.navy},line:{color:C.navy,width:0}});
+    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:W,h:.18,fill:{color:C.amber},line:{color:C.amber,width:0}});
+    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:H-.8,w:W,h:.8,fill:{color:'122040'},line:{color:'122040',width:0}});
+    // Decorative accent
+    s1.addShape(pres.shapes.RECTANGLE,{x:0,y:1.5,w:.12,h:2.5,fill:{color:C.amber},line:{color:C.amber,width:0}});
+    s1.addText('PT KILANG PERTAMINA BALIKPAPAN',{x:.35,y:.35,w:10,h:.3,fontSize:8,fontFace:'Calibri',bold:true,color:C.amber,charSpacing:2,margin:0});
+    s1.addText('Technical Support | Equipment Reliability Management',{x:.35,y:.68,w:10,h:.25,fontSize:8,fontFace:'Calibri',color:C.muted,margin:0});
+    s1.addText('Monthly',{x:.35,y:1.5,w:10,h:1.1,fontSize:52,fontFace:'Calibri',bold:false,color:C.white,margin:0});
+    s1.addText('Failure Report',{x:.35,y:2.5,w:10,h:.8,fontSize:30,fontFace:'Calibri',bold:true,color:C.amber,margin:0});
+    s1.addShape(pres.shapes.RECTANGLE,{x:.35,y:3.5,w:3,h:.05,fill:{color:C.amber},line:{color:C.amber,width:0}});
+    s1.addText(`Periode: ${fromStr}  —  ${toStr}`,{x:.35,y:3.65,w:8,h:.35,fontSize:13,fontFace:'Calibri',color:C.muted,margin:0});
+    s1.addText(`Diterbitkan: ${fmtD(new Date().toISOString()).full}`,{x:.35,y:4.05,w:8,h:.3,fontSize:9,fontFace:'Calibri',color:'4A6080',margin:0});
+    // Bottom KPI strip
+    const covKpis=[
+      {v:equipments.length,l:'Equipment',c:C.teal},
+      {v:badActors.length,l:'Bad Actor',c:badActors.length?C.red:C.green},
+      {v:totalFail+'×',l:'Total Failure',c:C.red},
+      {v:totDown+' Jam',l:'Downtime',c:C.amber},
+      {v:openFails,l:'Open Issues',c:openFails?C.red:C.green},
+      {v:resolvedFails.length,l:'Resolved',c:C.green}
+    ];
+    const bW2=(W-.7)/6;
+    covKpis.forEach((k,i)=>{
+      const bx=.35+i*bW2;
+      s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:5.0,w:bW2-.1,h:1.4,fill:{color:'122040'},line:{color:'1A3060',width:.5}});
+      s1.addShape(pres.shapes.RECTANGLE,{x:bx,y:5.0,w:bW2-.1,h:.08,fill:{color:k.c},line:{color:k.c,width:0}});
+      s1.addText(String(k.v),{x:bx,y:5.08,w:bW2-.1,h:.75,fontSize:18,fontFace:'Calibri',bold:true,color:k.c,align:'center',valign:'middle',margin:0});
+      s1.addText(k.l,{x:bx,y:5.85,w:bW2-.1,h:.25,fontSize:7.5,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
+    });
+    addFooter(s1, slideN++);
 
-    await pres.writeFile({fileName:`BadActor_Report_${from}_to_${to}.pptx`});
-    toast('PowerPoint Report berhasil dibuat! ✓');
+    // ══════════════════════════════════════
+    // SLIDE 2: EXECUTIVE SUMMARY
+    // ══════════════════════════════════════
+    if(incSummary){
+      const s2=pres.addSlide(); s2.background={color:C.bg};
+      addHeader(s2,'EXECUTIVE SUMMARY — KPI UTAMA',`Periode: ${fromStr} — ${toStr}`);
+      const sumKpis=[
+        {v:totalFail+'×',l:'Total Failure',sub:'kejadian tercatat',c:C.red,bg:C.navyL},
+        {v:totDown+' Jam',l:'Total Downtime',sub:'F → Resolved',c:C.amber,bg:'FFFBEB'},
+        {v:openFails,l:'Failure Open',sub:'belum resolved',c:openFails?C.red:C.green,bg:openFails?'FEF2F2':C.greenL},
+        {v:badActors.length,l:'Bad Actor Equip.',sub:'≥ 2 failure',c:badActors.length?C.red:C.green,bg:badActors.length?'FEF2F2':C.greenL},
+        {v:resolvedFails.length,l:'Failure Resolved',sub:'dalam periode',c:C.green,bg:C.greenL},
+        {v:outItems.length||'0',l:'Outstanding',sub:'perlu tindak lanjut',c:outItems.length?C.amber:C.green,bg:outItems.length?'FFFBEB':C.greenL}
+      ];
+      const kW=2.05,kH=1.5,kY=1.05,kGap=.08;
+      sumKpis.forEach((k,i)=>{
+        const kx=.35+i*(kW+kGap);
+        kpiBox(s2,kx,kY,kW,kH,k.v,k.l,k.sub,k.c,k.bg);
+      });
+
+      // Bad actor highlight
+      s2.addShape(pres.shapes.RECTANGLE,{x:.35,y:2.8,w:W-.7,h:.04,fill:{color:C.amber},line:{color:C.amber,width:0}});
+      s2.addText('EQUIPMENT YANG MEMERLUKAN PERHATIAN KHUSUS',{x:.35,y:2.9,w:8,h:.3,fontSize:8.5,fontFace:'Calibri',bold:true,color:C.dim,charSpacing:1,margin:0});
+
+      if(badActors.length){
+        badActors.slice(0,4).forEach((eq,i)=>{
+          const by=3.3+i*(.75);
+          s2.addShape(pres.shapes.RECTANGLE,{x:.35,y:by,w:W-.7,h:.65,fill:{color:'FEF2F2'},line:{color:'FECACA',width:.5},shadow:sh()});
+          s2.addShape(pres.shapes.RECTANGLE,{x:.35,y:by,w:.08,h:.65,fill:{color:C.red},line:{color:C.red,width:0}});
+          s2.addText('⚠ BAD ACTOR',{x:.5,y:by+.05,w:1.5,h:.22,fontSize:7,fontFace:'Calibri',bold:true,color:C.red,margin:0});
+          s2.addText(eq.name,{x:.5,y:by+.28,w:5,h:.28,fontSize:11,fontFace:'Calibri',bold:true,color:C.text,margin:0});
+          s2.addText(`Tag: ${eq.tag_no||'—'}`,{x:.5,y:by+.48,w:3,h:.2,fontSize:8,fontFace:'Calibri',color:C.dim,margin:0});
+          const metrics=[
+            {l:'Failure',v:eq._failures+'×',c:C.red},
+            {l:'Downtime',v:eq._downtime+' jam',c:C.amber},
+            {l:'Open',v:eq._open,c:eq._open?C.red:C.green},
+            {l:'Unit',v:eq.unit||'—',c:C.dim}
+          ];
+          metrics.forEach((m,mi)=>{
+            const mx=5.8+mi*1.8;
+            s2.addText(m.l,{x:mx,y:by+.08,w:1.7,h:.2,fontSize:7,fontFace:'Calibri',color:C.muted,align:'center',margin:0});
+            s2.addText(String(m.v),{x:mx,y:by+.28,w:1.7,h:.3,fontSize:13,fontFace:'Calibri',bold:true,color:m.c,align:'center',margin:0});
+          });
+        });
+      } else {
+        s2.addShape(pres.shapes.RECTANGLE,{x:.35,y:3.3,w:W-.7,h:.9,fill:{color:C.greenL},line:{color:'BBF7D0',width:.5}});
+        s2.addText('✓  Tidak ada Bad Actor Equipment pada periode ini',{x:.35,y:3.55,w:W-.7,h:.4,fontSize:13,fontFace:'Calibri',bold:true,color:C.green,align:'center',margin:0});
+      }
+      addFooter(s2, slideN++);
+
+      // ── SLIDE 3: Monthly trend table ──
+      const s3=pres.addSlide(); s3.background={color:C.bg};
+      addHeader(s3,'REKAP BULANAN — FAILURE TREND',`Periode: ${fromStr} — ${toStr}`);
+
+      // Build month data (last 6 months)
+      const now2=new Date(), months2=[];
+      for(let m=5;m>=0;m--){
+        const d=new Date(now2.getFullYear(),now2.getMonth()-m,1);
+        months2.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+      }
+      const monLabel=mk=>{const[y2,m2]=mk.split('-');return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(m2)-1]+' '+y2;};
+      const sF3=[...allFails].sort((a,b)=>new Date(a.date)-new Date(b.date));
+      const autoM3=new Map();
+      allChildren.forEach(c=>{
+        if(c.parent_failure_id) return;
+        const cDate=new Date(c.date);let best=null;
+        sF3.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
+        if(!best&&sF3.length) best=sF3[0];
+        if(best) autoM3.set(c.id,best.id);
+      });
+      const mData=months2.map(mk=>{
+        const mF=allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
+        const mAc=allChildren.filter(e=>e.type==='action'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM3.get(e.id)));
+        const mRp=allChildren.filter(e=>e.type==='repair'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM3.get(e.id)));
+        const mRs=allChildren.filter(e=>e.type==='resolved'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM3.get(e.id)));
+        const mRsSt=mF.filter(f=>!allChildren.some(c=>(c.parent_failure_id===f.id||autoM3.get(c.id)===f.id)&&c.type==='resolved')&&['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()));
+        const mDn=mF.reduce((s,f)=>{
+          const r=allChildren.filter(c=>(c.parent_failure_id===f.id||autoM3.get(c.id)===f.id)&&c.type==='resolved').sort((a,b)=>new Date(a.date)-new Date(b.date));
+          if(r.length){const dh=Math.round((new Date(r[r.length-1].date)-new Date(f.date))/(1000*3600));return s+(dh>0?dh:0);}
+          return s+(parseInt(f.downtime||0)||0);
+        },0);
+        return {mk,label:monLabel(mk),fail:mF.length,action:mAc.length,repair:mRp.length,resolved:mRs.length+mRsSt.length,downtime:mDn};
+      });
+
+      const tblData=[
+        [{text:'BULAN',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+         {text:'FAILURE',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+         {text:'ACTION',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+         {text:'REPAIR',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+         {text:'RESOLVED',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+         {text:'DOWNTIME',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+         {text:'KETERANGAN',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}}],
+        ...mData.map((r,i)=>{
+          const note=r.fail>=2?'⚠ Multiple failure':r.downtime>72?'⚠ Downtime kritis':r.fail&&r.resolved>=r.fail?'✓ Resolved':'';
+          const bg=i%2===0?'F8FAFC':'EFF6FF';
+          return [
+            {text:r.label,options:{bold:true,color:C.text,fill:bg}},
+            {text:r.fail||'—',options:{bold:r.fail>0,color:r.fail?C.red:C.muted,fill:bg,align:'center'}},
+            {text:r.action||'—',options:{color:r.action?C.teal:C.muted,fill:bg,align:'center'}},
+            {text:r.repair||'—',options:{color:r.repair?C.amber:C.muted,fill:bg,align:'center'}},
+            {text:r.resolved||'—',options:{color:r.resolved?C.green:C.muted,fill:bg,align:'center'}},
+            {text:r.downtime?r.downtime+' jam':'—',options:{bold:r.downtime>0,color:r.downtime?C.amber:C.muted,fill:bg,align:'center'}},
+            {text:note,options:{color:note.includes('⚠')?C.red:note.includes('✓')?C.green:C.muted,fill:bg,fontSize:8}}
+          ];
+        }),
+        // Total row
+        [{text:'TOTAL',options:{bold:true,color:C.white,fill:C.navy}},
+         {text:totalFail||'—',options:{bold:true,color:C.amber,fill:C.navy,align:'center'}},
+         {text:allChildren.filter(e=>e.type==='action').length||'—',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:allChildren.filter(e=>e.type==='repair').length||'—',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:resolvedFails.length||'—',options:{bold:true,color:C.green,fill:C.navy,align:'center'}},
+         {text:totDown?totDown+' jam':'—',options:{bold:true,color:C.amber,fill:C.navy,align:'center'}},
+         {text:'Periode laporan',options:{color:C.muted,fill:C.navy}}]
+      ];
+      s3.addTable(tblData,{x:.35,y:1.05,w:W-.7,h:5.5,fontSize:9,fontFace:'Calibri',
+        border:{pt:.5,color:C.steel},rowH:.55});
+      addFooter(s3, slideN++);
+    }
+
+    // ══════════════════════════════════════
+    // RANKING SLIDE
+    // ══════════════════════════════════════
+    if(incRanking){
+      const s4=pres.addSlide(); s4.background={color:C.bg};
+      addHeader(s4,'EQUIPMENT RISK RANKING',`Periode: ${fromStr} — ${toStr}`);
+      const sortedEqs=[...equipments].sort((a,b)=>calcScore(b)-calcScore(a)).slice(0,10);
+      const maxSc=calcScore(sortedEqs[0])||1;
+      const rTbl=[
+        [{text:'#',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:'Equipment',options:{bold:true,color:C.white,fill:C.navy}},
+         {text:'Tag No',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:'Failure',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:'Downtime',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:'Open',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:'Risk Score',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:'Tier',options:{bold:true,color:C.white,fill:C.navy,align:'center'}}],
+        ...sortedEqs.map((eq,i)=>{
+          const sc=calcScore(eq),pct=Math.round(sc/maxSc*100);
+          const tier=eq._isBadActor||pct>=70?'CRITICAL':pct>=40?'HIGH':pct>=15?'MEDIUM':'LOW';
+          const tierC={CRITICAL:C.red,HIGH:'B45309',MEDIUM:'92400E',LOW:C.green}[tier];
+          const bg=eq._isBadActor?'FEF2F2':i%2===0?'F8FAFC':'EFF6FF';
+          const rankC=i===0?C.red:i===1?'B45309':i===2?C.green:C.dim;
+          return [
+            {text:String(i+1),options:{bold:true,color:rankC,fill:bg,align:'center'}},
+            {text:eq.name||'—',options:{bold:eq._isBadActor,color:C.text,fill:bg}},
+            {text:eq.tag_no||'—',options:{color:C.amber,fill:bg,align:'center'}},
+            {text:String(eq._failures||0)+'×',options:{bold:true,color:(eq._failures||0)>0?C.red:C.muted,fill:bg,align:'center'}},
+            {text:(eq._downtime||0)+' jam',options:{color:(eq._downtime||0)>0?C.amber:C.muted,fill:bg,align:'center'}},
+            {text:String(eq._open||0),options:{bold:true,color:(eq._open||0)>0?C.red:C.green,fill:bg,align:'center'}},
+            {text:String(sc),options:{bold:true,color:pct>=70?C.red:pct>=40?C.amber:C.green,fill:bg,align:'center'}},
+            {text:tier,options:{bold:true,color:tierC,fill:bg,align:'center'}}
+          ];
+        })
+      ];
+      s4.addTable(rTbl,{x:.35,y:1.05,w:W-.7,h:5.8,fontSize:9,fontFace:'Calibri',
+        border:{pt:.5,color:C.steel},rowH:.58});
+      addFooter(s4, slideN++);
+    }
+
+    // ══════════════════════════════════════
+    // OUTSTANDING SLIDE
+    // ══════════════════════════════════════
+    if(incOpen&&outItems.length){
+      const s5=pres.addSlide(); s5.background={color:C.bg};
+      addHeader(s5,`OPEN ITEMS & OUTSTANDING — ${outItems.length} ITEM`,`Periode: ${fromStr} — ${toStr}`);
+      const oTbl=[
+        [{text:'No',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:'Equipment',options:{bold:true,color:C.white,fill:C.navy}},
+         {text:'Event / Judul',options:{bold:true,color:C.white,fill:C.navy}},
+         {text:'Outstanding Item',options:{bold:true,color:C.white,fill:C.navy}},
+         {text:'PIC',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+         {text:'Target',options:{bold:true,color:C.white,fill:C.navy,align:'center'}}],
+        ...outItems.slice(0,10).map((ev,i)=>{
+          const eq2=equipments.find(e=>e.id===ev.equipment_id);
+          const bg=i%2===0?'FFFBEB':C.amberL;
+          return [
+            {text:String(i+1),options:{bold:true,color:C.amber,fill:bg,align:'center'}},
+            {text:(eq2?.name||'—').substring(0,22),options:{bold:true,color:C.text,fill:bg,fontSize:8}},
+            {text:(ev.title||'—').substring(0,35),options:{color:C.dim,fill:bg,fontSize:8}},
+            {text:(ev.outstanding||'—').substring(0,60),options:{color:C.text,fill:bg,fontSize:8}},
+            {text:(ev.pic||'—').substring(0,15),options:{color:C.navyM,fill:bg,align:'center',fontSize:8}},
+            {text:ev.target_date?fmtD(ev.target_date).full:'—',options:{color:C.dim,fill:bg,align:'center',fontSize:8}}
+          ];
+        })
+      ];
+      s5.addTable(oTbl,{x:.35,y:1.05,w:W-.7,h:5.8,fontSize:9,fontFace:'Calibri',
+        border:{pt:.5,color:C.steel},rowH:.54});
+      addFooter(s5, slideN++);
+    }
+
+    await pres.writeFile({fileName:`Monthly_Report_${fromStr.replace(/\s/g,'_')}_${toStr.replace(/\s/g,'_')}.pptx`});
+    toast(`Monthly PPT diekspor — ${slideN-1} slide ✓`);
   }catch(err){console.error(err);toast('Error PPT: '+err.message,'error');}
   hideX();
 }
