@@ -232,7 +232,7 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .dash-subtitle{font-size:22px;font-weight:700;color:var(--text);margin-top:3px;}
 .dash-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .search-box{position:relative;}
-.search-box input{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 12px 7px 32px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;border-radius:3px;outline:none;width:220px;transition:border-color .15s;}
+.search-box input{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 12px 7px 32px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;border-radius:3px;outline:none;width:260px;transition:border-color .15s;}
 .search-box input:focus{border-color:var(--amber);}
 .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--textDim);}
 
@@ -335,6 +335,14 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .ld-a{border-color:var(--teal);background:rgba(14,165,233,.15);}
 .ld-r{border-color:var(--amber);background:rgba(232,162,23,.15);}
 .ld-s{border-color:var(--green);background:rgba(34,197,94,.15);}
+/* Startup phase legend dots */
+.ld-defect{border-color:var(--red);background:rgba(232,64,64,.15);}
+.ld-corrective{border-color:#2563eb;background:rgba(37,99,235,.15);}
+.ld-closed{border-color:var(--green);background:rgba(34,197,94,.15);}
+/* Startup timeline dot colors */
+.dot-defect{border-color:var(--red);color:var(--red);}
+.dot-corrective{border-color:#2563eb;color:#2563eb;}
+.dot-closed{border-color:var(--green);color:var(--green);}
 
 .tl-area{flex:1;overflow-y:auto;padding:22px 26px;}
 .tl-area::-webkit-scrollbar{width:5px;}
@@ -345,6 +353,7 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .timeline::before{content:'';position:absolute;left:128px;top:0;bottom:0;width:2px;background:var(--tline);}
 .tl-entry{display:flex;margin-bottom:18px;animation:fadeUp .3s ease both;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 .tl-date{width:112px;flex-shrink:0;padding-right:16px;text-align:right;padding-top:11px;}
 .tl-day{font-size:17px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text);line-height:1;}
 .tl-mon{font-size:10px;color:var(--textDim);font-family:'IBM Plex Mono',monospace;}
@@ -564,6 +573,51 @@ canvas{width:100%;max-height:260px;}
 .risk-high{background:rgba(232,162,23,.15);color:var(--amber);border:1px solid rgba(232,162,23,.3);}
 .risk-medium{background:rgba(14,165,233,.15);color:var(--teal);border:1px solid rgba(14,165,233,.3);}
 .risk-low{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+
+/* ── STARTUP PHASE STYLES ── */
+.phase-startup-badge {
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+  padding:2px 8px;border-radius:4px;
+  background:rgba(2,132,199,.12);color:var(--teal);
+  border:1px solid rgba(2,132,199,.25);
+}
+.startup-bad-actor-badge {
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+  padding:2px 8px;border-radius:4px;
+  background:rgba(220,38,38,.12);color:var(--red);
+  border:1px solid rgba(220,38,38,.3);
+  animation:pulse-red 2s infinite;
+}
+.cat-a { background:rgba(220,38,38,.12);color:var(--red);border:1px solid rgba(220,38,38,.3); }
+.cat-b { background:rgba(232,162,23,.12);color:var(--amber);border:1px solid rgba(232,162,23,.3); }
+.cat-c { background:rgba(2,132,199,.12);color:var(--teal);border:1px solid rgba(2,132,199,.3); }
+.defect-category-badge {
+  font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;
+}
+.inherited-high { background:rgba(220,38,38,.1);color:var(--red);border:1px solid rgba(220,38,38,.25); }
+.inherited-medium { background:rgba(232,162,23,.1);color:var(--amber);border:1px solid rgba(232,162,23,.25); }
+.inherited-low { background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.25); }
+.inherited-none { background:rgba(100,100,100,.08);color:var(--muted);border:1px solid var(--border); }
+.repeat-defect-badge {
+  font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;
+  background:rgba(220,38,38,.15);color:var(--red);
+}
+.c-green { color: var(--green) !important; }
+/* Graduate button */
+.btn-graduate {
+  padding:5px 12px;border-radius:6px;border:1px solid var(--teal);
+  background:rgba(2,132,199,.1);color:var(--teal);
+  cursor:pointer;font-size:11px;font-weight:600;
+  transition:all .2s;
+}
+.btn-graduate:hover { background:var(--teal);color:#fff; }
+/* Startup event timeline items */
+.tl-item.ev-defect .tl-dot { background:var(--red); }
+.tl-item.ev-corrective .tl-dot { background:var(--teal); }
+.tl-item.ev-closed .tl-dot { background:var(--green); }
+
 </style>
 </head>
 <body>
@@ -659,26 +713,59 @@ canvas{width:100%;max-height:260px;}
   <div class="dash-wrap">
     <div class="dash-top">
       <div>
-        <div class="dash-title">Bad Actor Equipment Management</div>
-        <div class="dash-subtitle">Summary</div>
+        <div class="dash-title" id="dash-title-text">Bad Actor Equipment Management</div>
+        <div class="dash-subtitle" id="dash-subtitle-text">Operational Phase — Summary</div>
       </div>
       <div class="dash-controls">
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input type="text" id="eq-search" placeholder="Cari nama / tag no / unit..." oninput="renderDashboard()">
+          <input type="text" id="eq-search" placeholder="Cari nama / tag no / unit..." oninput="renderDashboard()" onkeyup="renderDashboard()" autocomplete="off" spellcheck="false">
         </div>
         <button class="btn btn-teal btn-sm" onclick="openReportModal()">📋 Monthly Report</button>
         <button class="btn btn-amber" onclick="openAddEquipment()" id="btn-add-eq">＋ Tambah Equipment</button>
       </div>
     </div>
 
-    <!-- Summary Stats -->
-    <div class="dash-stats">
+    <!-- Phase Toggle Bar — fixed between title and KPI strip, never moves -->
+    <div id="phase-toggle-bar" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:2px solid var(--border);margin-bottom:12px;">
+      <!-- Left: Phase label -->
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Phase:</span>
+        <!-- Fixed-width 240px segmented control — position never changes -->
+        <div style="flex-shrink:0;background:rgba(0,0,0,.06);border:1px solid var(--border);border-radius:9px;padding:3px;display:grid;grid-template-columns:1fr 1fr;gap:2px;min-width:320px;">
+          <button id="btn-phase-op" onclick="setPhase('operational')"
+            style="padding:7px 12px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:700;background:var(--amber);color:#fff;transition:background .18s,color .18s,box-shadow .18s;text-align:center;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.18);">
+            ⚙️ Operational Phase
+          </button>
+          <button id="btn-phase-su" onclick="setPhase('startup')"
+            style="padding:7px 12px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:transparent;color:var(--muted);transition:background .18s,color .18s,box-shadow .18s;text-align:center;white-space:nowrap;">
+            🔧 Startup / Commissioning
+          </button>
+        </div>
+      </div>
+      <!-- Right: status info -->
+      <div style="font-size:11px;color:var(--muted);">
+        Phase aktif: <strong id="phase-toggle-hint-label" style="color:var(--amber)">Operational</strong>
+        <span style="margin-left:8px;font-size:10px;color:var(--border)">|</span>
+        <span style="margin-left:8px;font-size:10px;color:var(--muted);" id="phase-eq-count"></span>
+      </div>
+    </div>
+
+    <!-- Summary Stats — OPERATIONAL (default) -->
+    <div class="dash-stats" id="kpi-operational">
       <div class="ds-box" style="border-top-color:var(--text)"><div class="ds-val" id="ds-total" style="color:var(--text)">0</div><div class="ds-lbl">Total Equipment</div></div>
       <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-bad-actor">0</div><div class="ds-lbl">Bad Actor</div></div>
       <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-failures">0</div><div class="ds-lbl">Total Failure</div></div>
       <div class="ds-box" style="border-top-color:var(--amber)"><div class="ds-val c-amber" id="ds-open">0</div><div class="ds-lbl">Status Open</div></div>
       <div class="ds-box" style="border-top-color:var(--amber)"><div class="ds-val c-amber" id="ds-downtime">0</div><div class="ds-lbl">Total Downtime (Jam)</div></div>
+    </div>
+    <!-- Summary Stats — STARTUP (hidden by default) -->
+    <div class="dash-stats" id="kpi-startup" style="display:none;">
+      <div class="ds-box" style="border-top-color:var(--text)"><div class="ds-val" id="su-total" style="color:var(--text)">0</div><div class="ds-lbl">Total Equipment</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="su-bad-actor">0</div><div class="ds-lbl">Startup Bad Actor</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="su-defects">0</div><div class="ds-lbl">Total Defect</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="su-cat-a">0</div><div class="ds-lbl">Cat A Open</div></div>
+      <div class="ds-box" style="border-top-color:var(--green)"><div class="ds-val c-green" id="su-closure">0%</div><div class="ds-lbl">Closure Rate</div></div>
     </div>
 
     <!-- TABS -->
@@ -686,6 +773,7 @@ canvas{width:100%;max-height:260px;}
       <button class="dash-tab active" onclick="switchTab('tab-equipment',this)">🏭 Equipment List</button>
       <button class="dash-tab" onclick="switchTab('tab-ranking',this)">🏆 Bad Actor Ranking</button>
       <button class="dash-tab" onclick="switchTab('tab-trend',this)">📈 Failure Trend</button>
+
     </div>
 
     <!-- TAB: Equipment List -->
@@ -776,7 +864,7 @@ canvas{width:100%;max-height:260px;}
       <div style="overflow-x:auto;border-radius:6px;border:1px solid var(--border);">
         <table class="rank-table">
           <thead>
-            <tr>
+            <tr id="rank-thead-row">
               <th style="width:44px;text-align:center;">#</th>
               <th>Equipment</th>
               <th>Unit</th>
@@ -835,6 +923,7 @@ canvas{width:100%;max-height:260px;}
       <!-- Stats Table Below Chart -->
       <div id="trend-stats-table" style="overflow-x:auto;border-radius:6px;border:1px solid var(--border);"></div>
     </div>
+    </div>
 
   </div>
 </div>
@@ -861,13 +950,92 @@ canvas{width:100%;max-height:260px;}
         </div>
         <div class="fg"><label>Tipe Event *</label>
           <select id="f-type" onchange="onTypeChange()">
-            <option value="failure">🔴 Failure / Trip</option>
-            <option value="action">🔵 Action / Investigasi</option>
-            <option value="repair">🟡 Repair / Perbaikan</option>
-            <option value="resolved">🟢 Resolved / Selesai</option>
+            <!-- Operational types -->
+            <optgroup label="⚙️ Operational Phase" id="optgrp-operational">
+              <option value="failure">🔴 Failure / Trip</option>
+              <option value="action">🔵 Action / Investigasi</option>
+              <option value="repair">🟡 Repair / Perbaikan</option>
+              <option value="resolved">🟢 Resolved / Selesai</option>
+            </optgroup>
+            <!-- Startup types -->
+            <optgroup label="🔧 Startup / Commissioning Phase" id="optgrp-startup" style="display:none;">
+              <option value="defect">🔴 Commissioning Defect</option>
+              <option value="corrective">🔵 Corrective Action</option>
+              <option value="closed">🟢 Closed / Selesai</option>
+            </optgroup>
           </select>
         </div>
+        <!-- Parent failure/defect selector — shown for child event types -->
+        <!-- Parent selector — shown for all child event types (corrective, action, repair, resolved, closed) -->
+        <div id="f-parent-row" style="display:none;padding:12px 14px;background:rgba(217,119,6,.08);border:2px solid var(--amber);border-radius:10px;margin-bottom:8px;animation:fadeUp .2s ease both;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <label id="f-parent-label" style="color:var(--amber);font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin:0;">🔗 Hubungkan ke Parent *</label>
+            <span id="f-parent-count" style="font-size:10px;font-weight:600;color:var(--amber);background:rgba(217,119,6,.15);padding:2px 8px;border-radius:10px;"></span>
+          </div>
+          <select id="f-parent-select" onchange="onParentSelectChange(this.value)"
+            style="border:2px solid var(--amber);border-radius:8px;background:var(--card);font-size:13px;font-weight:600;padding:8px 10px;width:100%;">
+            <option value="">— Pilih parent event —</option>
+          </select>
+          <div id="f-parent-hint" style="font-size:10px;margin-top:5px;"></div>
+        </div>
         <div class="fg"><label>Judul / Deskripsi *</label><input id="f-title" placeholder="cth: Sudden Trip — Vibration HH"></div>
+        <!-- Startup: Category + Repeat flag — hidden for operational -->
+        <div id="f-startup-meta" style="display:none;">
+          <div class="frow">
+            <div class="fg">
+              <label>Kategori Defect *</label>
+              <select id="f-category">
+                <option value="A">A — Critical (blocks startup / safety risk)</option>
+                <option value="B">B — Major (perlu fix sebelum continuous run)</option>
+                <option value="C">C — Minor (tidak pengaruhi operasi)</option>
+              </select>
+            </div>
+            <div class="fg" style="display:flex;align-items:flex-end;padding-bottom:6px;">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0;">
+                <input type="checkbox" id="f-is-repeat" style="width:16px;height:16px;accent-color:var(--red);">
+                <span style="font-size:12px;"><strong style="color:var(--red);">Repeat Defect</strong><br><span style="color:var(--muted);font-size:10px;">Masalah sama muncul kembali</span></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <!-- STARTUP DEFECT BLOCK -->
+        <div id="f-defect-block" style="display:none;">
+          <div class="fsect">🔴 Detail Commissioning Defect</div>
+          <div class="fg"><label>Deskripsi Temuan</label><textarea id="f-defect-desc" placeholder="Jelaskan defect yang ditemukan secara detail&#10;cth: Mechanical seal bocor saat hydro test 1.5x design pressure&#10;Valve body retak pada weld joint di nozzle inlet"></textarea></div>
+          <div class="fg"><label>Sumber Temuan</label>
+            <select id="f-defect-source">
+              <option value="">— Pilih sumber temuan —</option>
+              <option value="Walk-down Inspection">Walk-down Inspection</option>
+              <option value="Pressure Test / Hydro Test">Pressure Test / Hydro Test</option>
+              <option value="Function Test / Loop Test">Function Test / Loop Test</option>
+              <option value="Vendor Commissioning Test">Vendor Commissioning Test</option>
+              <option value="Pre-startup Safety Review (PSSR)">Pre-startup Safety Review (PSSR)</option>
+              <option value="First Run / Initial Start">First Run / Initial Start</option>
+              <option value="HAZOP / Safety Review">HAZOP / Safety Review</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="fg"><label>Dampak ke Startup</label><textarea id="f-defect-impact" placeholder="Bagaimana defect ini mempengaruhi jadwal startup&#10;cth: Unit tidak bisa di-pressurize sampai seal diganti"></textarea></div>
+          <div class="fg"><label>Catatan Tambahan</label><textarea id="f-defect-notes" placeholder="Informasi tambahan, referensi dokumen, atau tindak lanjut awal&#10;cth: Refer to ITP No. KPB-ITP-2025-001 | Hold Point H2"></textarea></div>
+          <div class="fg" style="display:none"><input id="f-mode" value=""><input id="f-cause" value=""><input id="f-down" type="number" value="0"><input id="f-fno" value=""><textarea id="f-impact"></textarea><textarea id="f-act"></textarea><textarea id="f-out"></textarea></div>
+        </div>
+        <!-- CORRECTIVE ACTION BLOCK (startup) -->
+        <div id="f-corrective-block" style="display:none;">
+          <div class="fsect">🔵 Detail Corrective Action</div>
+          <div class="fg"><label>Tindakan yang Dilakukan</label><textarea id="f-corr-act" placeholder="Jelaskan corrective action yang diambil&#10;cth: Penggantian mechanical seal dengan spec yang sesuai&#10;Grinding dan re-weld pada weld joint yang retak"></textarea></div>
+          <div class="fg"><label>Pelaksana</label><input id="f-corr-pic" placeholder="cth: Vendor MAN Turbo / Tim Mekanik KPB / PT. XYZ"></div>
+          <div class="fg"><label>Progress / Status Perbaikan</label><textarea id="f-corr-progress" placeholder="Update terkini progress perbaikan&#10;cth: Material sudah dipesan, ETA 5 hari"></textarea></div>
+          <div class="fg"><label>Catatan / Outstanding</label><textarea id="f-corr-notes" placeholder="Item yang masih outstanding atau perlu follow-up&#10;cth: Material spare seal belum tersedia — ETA konfirmasi vendor 3 hari"></textarea></div>
+          <div class="fg" style="display:none"><input id="f-mode" value=""><input id="f-cause" value=""><input id="f-down" type="number" value="0"><input id="f-fno" value=""><textarea id="f-impact"></textarea><textarea id="f-act"></textarea><textarea id="f-out"></textarea></div>
+        </div>
+        <!-- CLOSED BLOCK (startup) -->
+        <div id="f-closed-block" style="display:none;">
+          <div class="fsect">🟢 Detail Closed / Selesai</div>
+          <div class="fg"><label>Konfirmasi Penyelesaian</label><textarea id="f-close-confirm" placeholder="cth: Mechanical seal baru terpasang dan hydro test ulang passed&#10;Leak test 24 jam — no leak detected"></textarea></div>
+          <div class="fg"><label>Verifikasi / Bukti Selesai</label><textarea id="f-close-verify" placeholder="cth: Pressure test report No. PT-052-001 passed&#10;Witness: KPB Inspector + TPIA"></textarea></div>
+          <div class="fg"><label>Catatan Penutupan</label><textarea id="f-close-notes" placeholder="Informasi tambahan saat menutup defect&#10;cth: Unit telah di-commission dan siap operasi — approval KPB Inspector No. INS-2025-088"></textarea></div>
+          <div class="fg" style="display:none"><input id="f-mode" value=""><input id="f-cause" value=""><input id="f-down" type="number" value="0"><input id="f-fno" value=""><textarea id="f-impact"></textarea><textarea id="f-act"></textarea><textarea id="f-out"></textarea></div>
+        </div>
         <!-- FAILURE BLOCK -->
         <div id="f-fail-block">
           <div class="fsect">🔴 Detail Failure</div>
@@ -976,17 +1144,26 @@ canvas{width:100%;max-height:260px;}
       </div>
       <div class="toolbar">
         <div class="legend">
-          <div class="lg-item"><div class="lg-dot ld-f"></div>Failure</div>
-          <div class="lg-item"><div class="lg-dot ld-a"></div>Action</div>
-          <div class="lg-item"><div class="lg-dot ld-r"></div>Repair</div>
-          <div class="lg-item"><div class="lg-dot ld-s"></div>Resolved</div>
+          <!-- Operational legend -->
+          <div class="lg-item op-legend"><div class="lg-dot ld-f"></div>Failure</div>
+          <div class="lg-item op-legend"><div class="lg-dot ld-a"></div>Action</div>
+          <div class="lg-item op-legend"><div class="lg-dot ld-r"></div>Repair</div>
+          <div class="lg-item op-legend"><div class="lg-dot ld-s"></div>Resolved</div>
+          <!-- Startup legend (hidden by default) -->
+          <div class="lg-item su-legend" style="display:none;"><div class="lg-dot ld-defect"></div>Defect</div>
+          <div class="lg-item su-legend" style="display:none;"><div class="lg-dot ld-corrective"></div>Corrective Action</div>
+          <div class="lg-item su-legend" style="display:none;"><div class="lg-dot ld-closed"></div>Closed</div>
         </div>
         <div class="tsep"></div>
         <button class="fchip active" onclick="doFilter('all',this)">Semua</button>
-        <button class="fchip" onclick="doFilter('failure',this)">Failure</button>
-        <button class="fchip" onclick="doFilter('action',this)">Action</button>
-        <button class="fchip" onclick="doFilter('repair',this)">Repair</button>
-        <button class="fchip" onclick="doFilter('resolved',this)">Resolved</button>
+        <!-- Operational filter chips -->
+        <button class="fchip op-filter" onclick="doFilter('failure',this)">Failure</button>
+        <button class="fchip op-filter" onclick="doFilter('action',this)">Action</button>
+        <button class="fchip op-filter" onclick="doFilter('repair',this)">Repair</button>
+        <button class="fchip op-filter" onclick="doFilter('resolved',this)">Resolved</button>
+        <!-- Startup filter chips (hidden by default) — filter by defect STATUS -->
+        <button class="fchip su-filter" style="display:none;" onclick="doFilter('open',this)">Open</button>
+        <button class="fchip su-filter" style="display:none;" onclick="doFilter('closed',this)">Closed</button>
         <div class="tsep"></div>
         <span style="font-size:10px;color:var(--textDim);" id="fc-lbl"></span>
       </div>
@@ -1074,7 +1251,22 @@ canvas{width:100%;max-height:260px;}
           </select>
         </div>
       </div>
-      <div class="fg"><label>Deskripsi / Keterangan (opsional)</label><textarea id="eq-desc" placeholder="Deskripsi singkat tentang equipment..."></textarea></div>
+      <!-- Phase selector -->
+      <div class="fg" id="eq-phase-row">
+        <label>Phase Equipment</label>
+        <div style="display:flex;gap:8px;">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 14px;border:2px solid var(--border);border-radius:7px;flex:1;transition:all .15s;" id="phase-lbl-op">
+            <input type="radio" name="eq-phase" id="eq-phase-operational" value="operational" checked onchange="onPhaseRadioChange()" style="accent-color:var(--amber);">
+            <span>⚙️ <strong>Operational Phase</strong><br><span style="font-size:10px;color:var(--muted);">Sudah beroperasi normal</span></span>
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 14px;border:2px solid var(--border);border-radius:7px;flex:1;transition:all .15s;" id="phase-lbl-su">
+            <input type="radio" name="eq-phase" id="eq-phase-startup" value="startup" onchange="onPhaseRadioChange()" style="accent-color:var(--teal);">
+            <span>🔧 <strong>Startup / Commissioning Phase</strong><br><span style="font-size:10px;color:var(--muted);">Dalam proses komisioning & startup</span></span>
+          </label>
+        </div>
+      </div>
+      <!-- Startup mode: no extra date fields needed -->
+
     </div>
     <div class="mf">
       <button class="btn btn-outline" onclick="closeModal('modal-eq')">Batal</button>
@@ -1088,7 +1280,7 @@ canvas{width:100%;max-height:260px;}
   <div class="modal" style="width:400px;">
     <div class="mh"><div class="mh-title">Hapus Event?</div><button class="mclose" onclick="closeModal('modal-del')">×</button></div>
     <div class="mb">
-      <p style="font-size:13px;color:var(--textDim);line-height:1.7">Event ini akan dihapus dari database secara permanen.</p>
+      <p style="font-size:13px;color:var(--textDim);line-height:1.7">Event ini akan dihapus secara permanen. <span id="del-cascade-warn" style="color:var(--red);font-weight:600;display:none;">Semua event turunan (corrective/action) juga akan ikut terhapus.</span></p>
       <p style="font-size:12px;color:var(--red);margin-top:10px;" id="del-name"></p>
     </div>
     <div class="mf">
@@ -1231,7 +1423,21 @@ canvas{width:100%;max-height:260px;}
 // ══════════════════════════════════════
 const SUPABASE_URL  = 'https://mvhgccreqqkewhneamuq.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12aGdjY3JlcXFrZXdobmVhbXVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzYwMTAsImV4cCI6MjA4NzMxMjAxMH0.Xl4K1ydP-8vHnxHCMfC7PGybV32hDY57nxSuz5FpTPk';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false
+  }
+});
+
+// ── Auto session refresh helper ──
+async function ensureSession(){
+  // Supabase SDK auto-refreshes tokens via autoRefreshToken:true
+  // This is a lightweight check only — no manual refresh to avoid loops
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session) console.warn('[ensureSession] No active session');
+}
 
 // ══════════════════════════════════════
 // STATE
@@ -1241,7 +1447,12 @@ let currentUser=null, currentRole=null;
 let currentEqId=null;
 let editEvId=null, delEvId=null, editEqId=null, delEqId=null;
 let curFilter='all', eqFilter='all';
+// ── Phase type arrays (defined early — used by renderRanking etc.) ──
+const startupTypes_global     = ['defect','corrective','closed'];
+const operationalTypes_global = ['failure','action','repair','resolved'];
+
 let rankPage=1, rankSortCol='score', rankSortDir='desc';
+let currentParentFailureId = null; // for addChildEvent
 let realtimeCh=null;
 let trendChartInstance=null, miniChartInstance=null;
 const TK='hr_theme';
@@ -1406,27 +1617,55 @@ function goHome(){
 // EQUIPMENT CRUD
 // ══════════════════════════════════════
 async function loadEquipments(){
-  const{data,error}=await sb.from('equipments').select('*').order('created_at',{ascending:true});
+  // Set loading indicator
+  const _dlShow=g('dash-loading');if(_dlShow)_dlShow.style.display='flex';
+  let{data,error}=await sb.from('equipments').select('*').order('created_at',{ascending:true});
+  // Retry once if 401 (token may have just expired between calls)
+  if(error && (String(error.status)==='401' || error.message?.includes('JWT') || error.message?.includes('expired'))){
+    console.warn('[loadEquipments] 401 — refreshing token and retrying...');
+    await sb.auth.refreshSession();
+    const retry=await sb.from('equipments').select('*').order('created_at',{ascending:true});
+    data=retry.data; error=retry.error;
+  }
   const _dl=g('dash-loading');if(_dl)_dl.style.display='none';
   if(error){toast('Gagal memuat equipment: '+error.message,'error');setConn('err');return;}
   equipments=data||[];
 
   // Load event summaries + MTBF/MTTR
   if(equipments.length>0){
-    const{data:evData}=await sb.from('events').select('id,equipment_id,type,status,downtime,date,outstanding,parent_failure_id,title');
+    const {data:evData,error:evQErr}=await sb.from('events')
+      .select('id,equipment_id,type,status,downtime,date,outstanding,parent_failure_id,title,category,is_repeat')
+      .order('date',{ascending:false});
+    if(evQErr){
+      console.warn('[loadEquipments] Events query error:', evQErr.message);
+      // Continue — dashboard will show without KPI metrics
+    }
     if(evData){
       allEventsCache=evData;
       equipments.forEach(eq=>{
         const evs=evData.filter(e=>e.equipment_id===eq.id);
-        const fails=evs.filter(e=>e.type==='failure');
-        const children=evs.filter(e=>e.type!=='failure');
-        eq._failures=fails.length;
-        eq._downtime=calcDowntimeFromEvents(evs);
-        eq._open=calcOpenFailures(evs);
-        eq._total=evs.length;
-        eq._mtbf=calcMTBF(fails);
-        eq._mttr=calcMTTR(fails,children);
-        eq._isBadActor=isBadActor(eq, fails);
+        const isStartupEq = (eq.phase||'operational') === 'startup';
+        const allowedEvTypes = isStartupEq ? startupTypes_global : operationalTypes_global;
+        const phaseEvs  = evs.filter(e => allowedEvTypes.includes(e.type));
+        const fails     = isStartupEq
+          ? phaseEvs.filter(e=>e.type==='defect')
+          : phaseEvs.filter(e=>e.type==='failure');
+        const children  = isStartupEq
+          ? phaseEvs.filter(e=>e.type!=='defect')
+          : phaseEvs.filter(e=>e.type!=='failure');
+        // For startup: _failures = defect count, _downtime = 0 (not relevant)
+        eq._failures    = fails.length;
+        eq._downtime    = isStartupEq ? 0 : calcDowntimeFromEvents(phaseEvs);
+        eq._open        = isStartupEq
+          ? phaseEvs.filter(e=>e.type==='defect'&&e.status!=='CLOSED').length
+          : calcOpenFailures(phaseEvs);
+        eq._total       = phaseEvs.length;
+        eq._outstanding = isStartupEq ? 0 : phaseEvs.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
+        eq._mtbf        = isStartupEq ? null : calcMTBF(fails);
+        eq._mttr        = isStartupEq ? null : calcMTTR(fails,children);
+        eq._isBadActor  = isStartupEq
+          ? isStartupBadActor(eq, allEventsCache)
+          : isBadActor(eq, fails);
       });
       // Populate trend chart equipment select
       const sel=g('trend-eq-select');
@@ -1457,6 +1696,10 @@ function buildEqCard(eq){
   const stClass={active:'es-active',standby:'es-standby',maintenance:'es-maintenance'}[eq.status]||'es-active';
   const failures=eq._failures||0, openN=eq._open||0;
   const canEdit=window._canEdit, canDel=window._canDelete;
+  const _bcIsStartup = (eq.phase||'operational')==='startup';
+  const _bcDefects   = _bcIsStartup ? allEventsCache.filter(e=>e.equipment_id===eq.id&&e.type==='defect') : [];
+  const _bcClosed    = _bcDefects.filter(e=>e.status==='CLOSED').length;
+  const _bcClosure   = _bcDefects.length>0 ? Math.round(_bcClosed/_bcDefects.length*100) : 100;
 
   // Build action buttons HTML - placed in footer, always visible for authorized roles
   const actBtns = canEdit ? `
@@ -1477,12 +1720,16 @@ function buildEqCard(eq){
       <div class="eq-name">${esc(eq.name)}${eq._isBadActor?'<span class="ba-badge" style="margin-left:8px;vertical-align:middle;">🔴 BAD ACTOR</span>':''}</div>
       <div class="eq-meta-row" style="margin-bottom:10px;">
         <div class="eq-meta-item"><div class="emi-k">Criticality</div><div class="emi-v" style="color:${eq.criticality==='critical'?'var(--red)':eq.criticality==='major'?'var(--amber)':'var(--green)'}">${critLabel(eq.criticality)}</div></div>
-        <div class="eq-meta-item"><div class="emi-k">Total Failure</div><div class="emi-v" style="color:${failures>0?'var(--red)':'var(--textDim)'}">${failures}×</div></div>
-        <div class="eq-meta-item"><div class="emi-k">Downtime</div><div class="emi-v" style="color:var(--amber)">${eq._downtime||0} Jam</div></div>
+        ${_bcIsStartup
+          ? `<div class="eq-meta-item"><div class="emi-k">Total Defect</div><div class="emi-v" style="color:${failures>0?'var(--red)':'var(--textDim)'}">${failures}×</div></div>
+             <div class="eq-meta-item"><div class="emi-k">Closure Rate</div><div class="emi-v" style="color:${_bcClosure>=80?'var(--green)':_bcClosure>=50?'var(--amber)':'var(--red)'}">${_bcClosure}%</div></div>`
+          : `<div class="eq-meta-item"><div class="emi-k">Total Failure</div><div class="emi-v" style="color:${failures>0?'var(--red)':'var(--textDim)'}">${failures}×</div></div>
+             <div class="eq-meta-item"><div class="emi-k">Downtime</div><div class="emi-v" style="color:var(--amber)">${eq._downtime||0} Jam</div></div>`
+        }
       </div>
       <div class="eq-footer">
-        <div style="font-size:10px;color:var(--textDim);">${eq._total||0} events recorded</div>
-        ${openN>0?`<span class="eq-open-badge">⚠ ${openN} Open Issue${openN>1?'s':''}</span>`:`<span class="eq-open-none">✓ No Open Issues</span>`}
+        <div style="font-size:10px;color:var(--textDim);">${_bcIsStartup ? `${eq._total||0} commissioning events` : `${eq._total||0} events recorded`}</div>
+        ${openN>0?`<span class="eq-open-badge">⚠ ${openN} ${_bcIsStartup?'Defect Open':'Open Issue'}${openN>1?'s':''}</span>`:`<span class="eq-open-none">${_bcIsStartup?'✓ All Defects Closed':'✓ No Open Issues'}</span>`}
       </div>
       ${actBtns}
     </div>`;
@@ -1505,9 +1752,14 @@ function buildEqCard(eq){
 function renderDashboard(){
   const search=(g('eq-search')?.value||'').toLowerCase().trim();
 
-  // Recalculate bad actor FIRST before any filtering
+  // Recalculate bad actor FIRST — phase-aware (don't overwrite startup with operational logic)
   if(allEventsCache.length>0){
-    equipments.forEach(eq=>{ eq._isBadActor=isBadActor(eq, allEventsCache); });
+    equipments.forEach(eq=>{
+      const isStartupEq = (eq.phase||'operational')==='startup';
+      eq._isBadActor = isStartupEq
+        ? isStartupBadActor(eq, allEventsCache)
+        : isBadActor(eq, allEventsCache.filter(e=>e.type==='failure'&&e.equipment_id===eq.id));
+    });
   }
 
   let filtered=equipments;
@@ -1644,7 +1896,7 @@ function openAddEquipment(){
   editEqId=null;
   g('modal-eq-title').textContent='Tambah Equipment Baru';
   g('btn-save-eq').textContent='Simpan Equipment';
-  ['eq-name','eq-tag','eq-unit','eq-desc'].forEach(id=>g(id).value='');
+  ['eq-name','eq-tag','eq-unit'].forEach(id=>{ const el=g(id); if(el) el.value=''; });
   const _usel=g('eq-unit-select'),_uinp=g('eq-unit'),_ubtn=g('unit-back-btn');
   if(_usel){_usel.value='';_usel.style.display='';}
   if(_uinp)_uinp.style.display='none';
@@ -1676,13 +1928,22 @@ function openEditEquipment(id){
     if(_ubtn2)_ubtn2.style.display='none';
   }
   g('eq-status').value=eq.status||'active';
-  g('eq-crit').value=eq.criticality||'critical';g('eq-desc').value=eq.description||'';
+  g('eq-crit').value=eq.criticality||'critical';
   g('modal-eq').classList.add('open');
 }
 async function saveEquipment(){
-  const name=g('eq-name').value.trim(),tag=g('eq-tag').value.trim(),unit=g('eq-unit').value.trim();
+  const name=g('eq-name').value.trim(),tag=g('eq-tag').value.trim();
+  // Unit: either from select or custom input
+  const unitSel=g('eq-unit-select'); 
+  const unitCustom=g('eq-unit');
+  const unit=(unitSel&&unitSel.value&&unitSel.value!=='__custom__'
+    ? unitSel.value
+    : (unitCustom?unitCustom.value.trim():''));
   if(!name||!tag||!unit){toast('Nama, Tag No, dan Unit wajib diisi!','error');return;}
-  const payload={name,tag_no:tag,unit,status:g('eq-status').value,criticality:g('eq-crit').value,description:g('eq-desc').value.trim()||null};
+  // Phase from radio buttons
+  const phaseRadio=document.querySelector('input[name="eq-phase"]:checked');
+  const phase=phaseRadio?phaseRadio.value:'operational';
+  const payload={name,tag_no:tag,unit,status:g('eq-status').value,criticality:g('eq-crit').value,phase};
   let error;
   if(editEqId){
     const res=await sb.from('equipments').update(payload).eq('id',editEqId);error=res.error;
@@ -1712,6 +1973,7 @@ async function doDeleteEquipment(){
 // OPEN EQUIPMENT DETAIL
 // ══════════════════════════════════════
 function updateMtbfStrip(eq, evData){
+  const _isStartupEq = (eq.phase||'operational')==='startup';
   const failEvs = evData.filter(e=>e.type==='failure');
   const repairEvs = evData.filter(e=>e.type==='repair');
   const mtbf = calcMTBF(evData.filter(e=>e.equipment_id===eq.id&&e.type==='failure'));
@@ -1723,10 +1985,21 @@ function updateMtbfStrip(eq, evData){
   const totDown=failEvs.reduce((s,e)=>s+(parseInt(e.downtime||0)||0),0);
   const ba=eq._isBadActor||(recentFails>=minFail||totDown>=minDown);
 
-  // ── MTBF ──
+  // ── MTBF (startup: show Cat A count) ──
   const mtbfEl=g('mt-mtbf');const mtbfSub=g('mt-mtbf-sub');
   if(mtbfEl){
-    if(failEvs.length<2){
+    if(_isStartupEq){
+      const _defectEvs = evData.filter(e=>e.type==='defect');
+      const _catA = _defectEvs.filter(e=>e.category==='A').length;
+      mtbfEl.textContent = _defectEvs.length>0 ? _catA+'×' : 'N/A';
+      mtbfEl.style.color = _catA>0?'var(--red)':'var(--green)';
+      // Update label
+      const _lblMtbf = mtbfEl.closest('.stat-box')?.querySelector('.stat-lbl');
+      if(_lblMtbf) _lblMtbf.textContent='Cat A Defect';
+      if(mtbfSub) mtbfSub.textContent = _defectEvs.length>0
+        ? `Cat B: ${_defectEvs.filter(e=>e.category==='B').length} | Cat C: ${_defectEvs.filter(e=>e.category==='C').length}`
+        : 'Belum ada defect';
+    } else if(failEvs.length<2){
       mtbfEl.textContent='N/A';
       mtbfEl.style.color='var(--muted)';
       if(mtbfSub)mtbfSub.textContent=failEvs.length===0?'Belum ada failure':`Butuh ≥2 failure (saat ini ${failEvs.length})`;
@@ -1737,10 +2010,21 @@ function updateMtbfStrip(eq, evData){
     }
   }
 
-  // ── MTTR ──
+  // ── MTTR (startup: show Closure Rate) ──
   const mttrEl=g('mt-mttr');const mttrSub=g('mt-mttr-sub');
   if(mttrEl){
-    if(!mttr){
+    if(_isStartupEq){
+      const _allDefs = evData.filter(e=>e.type==='defect');
+      const _closed = _allDefs.filter(e=>e.status==='CLOSED').length;
+      const _closure = _allDefs.length>0 ? Math.round(_closed/_allDefs.length*100) : 100;
+      mttrEl.textContent = _allDefs.length>0 ? _closure+'%' : 'N/A';
+      mttrEl.style.color = _closure>=80?'var(--green)':_closure>=50?'var(--amber)':'var(--red)';
+      const _lblMttr = mttrEl.closest('.stat-box')?.querySelector('.stat-lbl');
+      if(_lblMttr) _lblMttr.textContent='Closure Rate';
+      if(mttrSub) mttrSub.textContent = _allDefs.length>0
+        ? `${_closed} dari ${_allDefs.length} defect closed`
+        : 'Belum ada defect';
+    } else if(!mttr){
       mttrEl.textContent='N/A';
       mttrEl.style.color='var(--muted)';
       if(mttrSub)mttrSub.textContent='Tidak ada data downtime';
@@ -1752,10 +2036,18 @@ function updateMtbfStrip(eq, evData){
     }
   }
 
-  // ── Availability ──
+  // ── Availability (startup: show Open Defect count) ──
   const availEl=g('mt-avail');const availSub=g('mt-avail-sub');
   if(availEl){
-    if(avail){
+    if(_isStartupEq){
+      const _openDefs = evData.filter(e=>e.type==='defect'&&e.status!=='CLOSED').length;
+      const _repeatDefs = evData.filter(e=>e.type==='defect'&&e.is_repeat).length;
+      availEl.textContent = _openDefs > 0 ? _openDefs+'×' : '0';
+      availEl.style.color = _openDefs>0?'var(--red)':'var(--green)';
+      const _lblAvail = availEl.closest('.stat-box')?.querySelector('.stat-lbl');
+      if(_lblAvail) _lblAvail.textContent='Defect Open';
+      if(availSub) availSub.textContent = _repeatDefs>0 ? `↺ ${_repeatDefs} repeat defect` : 'Semua defect closed';
+    } else if(avail){
       availEl.textContent=avail+'%';
       availEl.style.color=parseFloat(avail)>95?'var(--green)':parseFloat(avail)>80?'var(--amber)':'var(--red)';
       if(availSub)availSub.textContent=`MTBF/(MTBF+MTTR) formula`;
@@ -1786,9 +2078,18 @@ function updateMtbfStrip(eq, evData){
     baEl.style.fontWeight=ba?'800':'600';
   }
   if(baSubEl){
-    baSubEl.textContent=ba
-      ?`${recentFails} failure / ${months} bln | ${totDown}h downtime`
-      :`${recentFails} failure dalam ${months} bln terakhir`;
+    if(_isStartupEq){
+      const _suDefects = evData.filter(e=>e.type==='defect');
+      const _suCatA = _suDefects.filter(e=>e.category==='A').length;
+      const _suOpen = _suDefects.filter(e=>e.status!=='CLOSED').length;
+      baSubEl.textContent = ba
+        ? `${_suCatA} Cat A defect | ${_suOpen} open`
+        : `${_suDefects.length} defect | ${_suDefects.filter(e=>e.status==='CLOSED').length} closed`;
+    } else {
+      baSubEl.textContent = ba
+        ? `${recentFails} failure / ${months} bln | ${totDown}h downtime`
+        : `${recentFails} failure dalam ${months} bln terakhir`;
+    }
   }
 }
 
@@ -1813,7 +2114,14 @@ async function openEquipment(eqId){
   // Load events
   g('tl-loading').style.display='flex';
   g('tl-empty').style.display='none';
-  const{data,error}=await sb.from('events').select('*').eq('equipment_id',eqId).order('date',{ascending:true}).order('created_at',{ascending:true});
+  let{data,error}=await sb.from('events').select('*').eq('equipment_id',eqId).order('date',{ascending:true}).order('created_at',{ascending:true});
+  // If JWT expired, refresh and retry once
+  if(error && (error.message?.includes('JWT') || error.code==='PGRST301' || String(error.status)==='401')){
+    console.warn('JWT expired, refreshing session and retrying...');
+    await sb.auth.refreshSession();
+    const retry = await sb.from('events').select('*').eq('equipment_id',eqId).order('date',{ascending:true}).order('created_at',{ascending:true});
+    data = retry.data; error = retry.error;
+  }
   g('tl-loading').style.display='none';
   if(error){toast('Gagal memuat events: '+error.message,'error');return;}
   // Debug: log what was returned to help diagnose if events are cross-contaminated
@@ -1854,59 +2162,308 @@ function subscribeRealtime(){
 // ══════════════════════════════════════
 // EVENT FORM
 // ══════════════════════════════════════
+// ── Parent selector: populate + show/hide based on current type ──
+function updateParentSelector(preselectedId){
+  const typeVal = g('f-type')?.value || '';
+  const isChildType = ['action','repair','resolved','corrective','closed'].includes(typeVal);
+  const row    = g('f-parent-row');
+  const sel    = g('f-parent-select');
+  const lbl    = g('f-parent-label');
+  const hint   = g('f-parent-hint');
+  const cntBdg = g('f-parent-count');
+  if(!row || !sel) return;
+
+  const wasHidden = row.style.display === 'none';
+  row.style.display = isChildType ? 'block' : 'none';
+  if(!isChildType){ currentParentFailureId = null; return; }
+
+  // Scroll into view when first shown
+  if(wasHidden) setTimeout(()=>row.scrollIntoView({behavior:'smooth',block:'nearest'}), 50);
+
+  // Phase-aware config
+  const eq = equipments.find(e=>e.id===currentEqId);
+  const isStartup = (eq?.phase||'operational')==='startup';
+  const parentType = isStartup ? 'defect' : 'failure';
+  const childLabel = {
+    corrective:'Corrective Action', closed:'Closed Event',
+    action:'Action/Investigasi', repair:'Repair', resolved:'Resolved'
+  }[typeVal] || typeVal;
+
+  if(lbl) lbl.textContent = `🔗 ${childLabel} ini bagian dari ${isStartup?'Defect':'Failure'} mana? *`;
+
+  // Build parent list — newest first, with rich info
+  const parents = events
+    .filter(e => e.type === parentType)
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
+
+  const prevVal = preselectedId || currentParentFailureId || sel.value || '';
+
+  // Build dropdown options
+  sel.innerHTML = `<option value="">— Pilih ${parentType} yang ditindaklanjuti —</option>`;
+  parents.forEach((p, idx) => {
+    const dStr = p.date ? p.date.slice(0,10) : '—';
+    const catStr = p.category ? ` │ Cat ${p.category}` : '';
+    const statusStr = p.status ? ` │ ${p.status}` : '';
+    const numStr = parents.length > 1 ? `#${parents.length - idx}. ` : '';
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = `${numStr}${dStr}${catStr}${statusStr} — ${p.title}`;
+    if(p.id === prevVal) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  // Auto-select single parent
+  if(parents.length === 1){
+    sel.value = parents[0].id;
+    currentParentFailureId = parents[0].id;
+  } else if(prevVal && sel.value === prevVal){
+    currentParentFailureId = prevVal;
+  }
+
+  // Count badge
+  if(cntBdg) cntBdg.textContent = parents.length > 0
+    ? `${parents.length} ${parentType} tersedia`
+    : `Belum ada ${parentType}`;
+
+  // Hint
+  if(hint){
+    if(parents.length === 0){
+      hint.textContent = `⚠ Belum ada ${parentType} tercatat. Tambahkan ${isStartup?'Commissioning Defect':'Failure'} terlebih dahulu.`;
+      hint.style.color = 'var(--red)';
+      sel.disabled = true;
+    } else if(!sel.value){
+      hint.textContent = `👆 Pilih ${parentType} di atas untuk menghubungkan event ini`;
+      hint.style.color = 'var(--amber)';
+      sel.disabled = false;
+    } else {
+      const chosen = parents.find(p=>p.id===sel.value);
+      hint.textContent = chosen ? `✓ Terhubung ke: "${chosen.title}"` : '';
+      hint.style.color = 'var(--green)';
+      sel.disabled = false;
+    }
+  }
+}
+
+function onParentSelectChange(val){
+  currentParentFailureId = val || null;
+  // Refresh hint to confirm selection
+  updateParentSelector(val);
+}
+
 function onTypeChange(){
   const t=g('f-type').value;
-  // Show/hide sections based on type
-  g('f-fail-block').style.display=t==='failure'?'block':'none';
-  g('f-action-block').style.display=t==='action'?'block':'none';
-  g('f-repair-block').style.display=t==='repair'?'block':'none';
-  g('f-resolved-block').style.display=t==='resolved'?'block':'none';
-  // Update placeholder for title
+  // ── Show/hide correct block for ALL types ──
+  const allBlocks=['f-fail-block','f-action-block','f-repair-block','f-resolved-block',
+                   'f-defect-block','f-corrective-block','f-closed-block'];
+  allBlocks.forEach(id=>{ const el=g(id); if(el) el.style.display='none'; });
+  const activeBlock={
+    failure:'f-fail-block', action:'f-action-block',
+    repair:'f-repair-block', resolved:'f-resolved-block',
+    defect:'f-defect-block', corrective:'f-corrective-block', closed:'f-closed-block'
+  }[t];
+  if(activeBlock){ const el=g(activeBlock); if(el) el.style.display='block'; }
+
+  // ── Show/hide startup meta (category + is-repeat) — ONLY for defect type ──
+  // Category and Repeat flag belong to the defect, not to corrective/closed events
+  const metaEl = g('f-startup-meta');
+  if(metaEl) metaEl.style.display = (t === 'defect') ? 'block' : 'none';
+
+  // ── Title placeholder per type ──
   const titleEl=g('f-title');
   const ph={
     failure:'cth: Sudden Trip — Vibration HH / High Temperature Alarm',
     action:'cth: Investigasi Root Cause — Boroskop Inspection',
     repair:'cth: Penggantian Bearing + Alignment / Overhaul Impeller',
-    resolved:'cth: Unit kembali normal — Trial Run 72 jam OK'
+    resolved:'cth: Unit kembali normal — Trial Run 72 jam OK',
+    defect:'cth: Mechanical Seal Bocor — Hydro Test Failure',
+    corrective:'cth: Penggantian Mechanical Seal — In Progress',
+    closed:'cth: Defect Closed — Hydro Test Repeat Passed'
   };
   if(titleEl) titleEl.placeholder=ph[t]||'';
-  // Auto-set status default per type
+
+  // ── Set status options + default per event type ──
   const statusEl=g('f-status');
   if(statusEl){
-    const def={failure:'OPEN',action:'ON PROGRESS',repair:'ON PROGRESS',resolved:'CLOSED'};
-    if(statusEl.value==='' || ['OPEN','ON PROGRESS','CLOSED'].includes(statusEl.value)) statusEl.value=def[t];
+    const statusOptions = {
+      failure:  [['OPEN','🔴 OPEN'],['ON PROGRESS','🟡 ON PROGRESS'],['CLOSED','🟢 CLOSED'],['OVERDUE','🔴 OVERDUE']],
+      action:   [['ON PROGRESS','🟡 ON PROGRESS'],['OPEN','🔴 OPEN'],['CLOSED','🟢 CLOSED']],
+      repair:   [['ON PROGRESS','🟡 ON PROGRESS'],['OPEN','🔴 OPEN'],['CLOSED','🟢 CLOSED'],['PARTIAL','🟠 PARTIALLY CLOSED']],
+      resolved: [['CLOSED','🟢 CLOSED'],['ON PROGRESS','🟡 ON PROGRESS']],
+      defect:   [['OPEN','🔴 OPEN'],['ON PROGRESS','🟡 ON PROGRESS - Corrective in progress'],['CLOSED','🟢 CLOSED'],['OVERDUE','🔴 OVERDUE']],
+      corrective:[['ON PROGRESS','🟡 ON PROGRESS'],['OPEN','🔴 OPEN / PENDING'],['CLOSED','🟢 COMPLETED'],['OVERDUE','🔴 OVERDUE']],
+      closed:   [['CLOSED','🟢 CLOSED'],['ON PROGRESS','🟡 ON PROGRESS']]
+    };
+    const currentVal = statusEl.value;
+    const opts = statusOptions[t] || statusOptions['failure'];
+    statusEl.innerHTML = opts.map(([v,lbl])=>`<option value="${v}">${lbl}</option>`).join('');
+    // Restore value if it still exists, else use default
+    const def={failure:'OPEN',action:'ON PROGRESS',repair:'ON PROGRESS',resolved:'CLOSED',
+                defect:'OPEN',corrective:'ON PROGRESS',closed:'CLOSED'};
+    statusEl.value = opts.find(([v])=>v===currentVal) ? currentVal : (def[t]||'OPEN');
+  }
+  // ── Update parent selector visibility + options ──
+  updateParentSelector();
+
+  // ── Adapt PIC label per event type ──
+  const picLabelEl = document.querySelector('label[for="f-pic"], .sb-form label:has(+ input#f-pic)');
+  // Use a simpler approach — find the label next to f-pic
+  const picInput = g('f-pic');
+  if(picInput){
+    const picLbl = picInput.previousElementSibling;
+    if(picLbl && picLbl.tagName==='LABEL'){
+      const picLabels = {
+        failure:'PIC Penanganan', action:'PIC Investigasi', repair:'Pelaksana Perbaikan',
+        resolved:'Diverifikasi oleh', defect:'Assigned to / PIC',
+        corrective:'Pelaksana Corrective', closed:'Diverifikasi / Witness'
+      };
+      picLbl.textContent = picLabels[t] || 'PIC';
+    }
   }
 }
 onTypeChange();
 function resetForm(){
-  editEvId=null;g('form-lbl').textContent='Tambah event baru';
-  g('fs-icon').textContent='＋';g('fs-lbl').textContent='Tambah Event';
+  editEvId=null; g('form-lbl').textContent='Tambah event baru';
+  g('fs-icon').textContent='＋'; g('fs-lbl').textContent='Tambah Event';
   ['f-date','f-time','f-title','f-pic','f-tgt','f-wo','f-ref'].forEach(id=>{const el=g(id);if(el)el.value='';});
-  // Reset all per-type fields (there may be multiple els with same id in different blocks)
+  // Reset all shared per-type fields
   document.querySelectorAll('#f-mode,#f-cause,#f-act,#f-out,#f-impact').forEach(el=>el.value='');
   document.querySelectorAll('#f-down,#f-fno').forEach(el=>el.value='');
-  g('f-type').value='failure';g('f-status').value='OPEN';onTypeChange();
+  // Reset startup-specific block fields
+  ['f-defect-desc','f-defect-impact','f-defect-notes',
+   'f-corr-act','f-corr-pic','f-corr-progress','f-corr-notes',
+   'f-close-confirm','f-close-verify','f-close-notes'].forEach(id=>{const el=g(id);if(el)el.value='';});
+  const srcEl=g('f-defect-source'); if(srcEl) srcEl.value='';
+  const catEl=g('f-category'); if(catEl) catEl.value='A';
+  const repEl=g('f-is-repeat'); if(repEl) repEl.checked=false;
+  currentParentFailureId=null;
+  // Determine default type based on current equipment phase
+  const curEq = equipments.find(e=>e.id===currentEqId);
+  const isStartup = (curEq?.phase||'operational')==='startup';
+  g('f-type').value = isStartup ? 'defect' : 'failure';
+  g('f-status').value = 'OPEN';
+  // Hide parent selector (default type = failure/defect = parent type)
+  const _pRow = g('f-parent-row');
+  if(_pRow) _pRow.style.display = 'none';
+  const _pSel = g('f-parent-select');
+  if(_pSel) _pSel.value = '';
+  onTypeChange();
 }
+function addChildEvent(failureId){
+  // Set parent context first so onTypeChange/updateParentSelector can read it
+  currentParentFailureId = failureId;
+  const eq = equipments.find(e => e.id === currentEqId);
+  const isStartup = eq && (eq.phase||'operational') === 'startup';
+  const typeEl = g('f-type');
+  if(typeEl){
+    typeEl.value = isStartup ? 'corrective' : 'action';
+    onTypeChange(); // triggers updateParentSelector() which pre-selects failureId
+  }
+  // Pre-select the specific parent in dropdown (in case events list changed)
+  updateParentSelector(failureId);
+  g('form-lbl').textContent = 'Tindak Lanjut — Event';
+  const _sb = document.querySelector('.sidebar');
+  if(_sb) _sb.scrollTop = 0;
+  const dateEl = g('f-date');
+  if(dateEl && !dateEl.value){
+    dateEl.value = new Date().toISOString().split('T')[0];
+  }
+}
+
 async function submitForm(){
   if(!window._canEdit){toast('Tidak memiliki akses edit.','error');return;}
   const date=g('f-date').value,title=g('f-title').value.trim();
-  if(!date||!title){toast('Tanggal dan Judul wajib diisi!','error');return;}
+  if(!date){toast('⚠ Tanggal event harus diisi!','error');return;}
+  if(!title){toast('⚠ Judul / Deskripsi singkat harus diisi!','error');g('f-title').focus();return;}
+  // Validate parent selection for child event types
+  const _valType = g('f-type')?.value || '';
+  const _valIsChild = ['action','repair','resolved','corrective','closed'].includes(_valType);
+  const _valHasParents = events.some(e => e.type === (_valType==='corrective'||_valType==='closed' ? 'defect' : 'failure'));
+  if(_valIsChild && _valHasParents && !currentParentFailureId){
+    const _parentRow = g('f-parent-row');
+    if(_parentRow){ _parentRow.style.animation='none'; setTimeout(()=>{ _parentRow.style.animation='shake .4s ease'; _parentRow.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 10); }
+    const _phaseName = (equipments.find(e=>e.id===currentEqId)?.phase||'operational')==='startup' ? 'defect' : 'failure';
+    toast(`⚠ Pilih ${_phaseName} yang ditindaklanjuti terlebih dahulu!`,'error');
+    return;
+  }
+  // Validate parent selection for child event types
+  const _svType = g('f-type').value;
+  const _svNeedsParent = ['action','repair','resolved','corrective','closed'].includes(_svType);
+  const _svParentId = currentParentFailureId || g('f-parent-select')?.value || null;
+  if(_svNeedsParent && !_svParentId){
+    const _isStartupCtx = (equipments.find(e=>e.id===currentEqId)?.phase||'operational')==='startup';
+    toast('⚠ Pilih ' + (_isStartupCtx?'defect':'failure') + ' yang ditindaklanjuti!','error');
+    g('f-parent-select')?.focus();
+    return;
+  }
+  if(_svNeedsParent && _svParentId) currentParentFailureId = _svParentId;
   // Read from VISIBLE type block to handle per-type field layout
   const typeVal=g('f-type').value;
-  const blockId={'failure':'f-fail-block','action':'f-action-block','repair':'f-repair-block','resolved':'f-resolved-block'}[typeVal]||'f-fail-block';
+  // Map each type to its visible block
+  const blockIdMap={
+    failure:'f-fail-block', action:'f-action-block',
+    repair:'f-repair-block', resolved:'f-resolved-block',
+    defect:'f-defect-block', corrective:'f-corrective-block', closed:'f-closed-block'
+  };
+  const blockId = blockIdMap[typeVal]||'f-fail-block';
   const activeBlock=g(blockId);
-  const gv=(id)=>{if(activeBlock){const el=activeBlock.querySelector('#'+id);if(el)return el.value;}const el=g(id);return el?el.value:'';};
+  const gv=(id)=>{if(activeBlock){const el=activeBlock.querySelector('#'+id);if(el)return el.value||'';}const el=g(id);return el?el.value:'';};
+  const gvTrim=(id)=>gv(id).trim();
+
+  // Startup-specific fields
+  const _sfCatEl   = g('f-category');
+  const _sfRepEl   = g('f-is-repeat');
+  const _sfIsStartupEq = (equipments.find(e=>e.id===currentEqId)?.phase||'operational')==='startup';
+
+  // ── Read fields per event type and map to DB columns ──
+  let evMode=null, evCause=null, evImpact=null, evActions=null, evOutstanding=null, evDowntime=null;
+
+  if(typeVal==='defect'){
+    // Defect: desc→mode, source→cause, impact→impact
+    evMode    = gvTrim('f-defect-desc')  || null;
+    evCause   = gvTrim('f-defect-source')|| null;
+    evImpact  = gvTrim('f-defect-impact')|| null;
+  } else if(typeVal==='corrective'){
+    // Corrective: actions→actions, pic saved via f-pic, progress→cause
+    evActions = gvTrim('f-corr-act')     || null;
+    evCause   = gvTrim('f-corr-progress')|| null;  // progress in cause column
+    evMode    = gvTrim('f-corr-pic')     || null;  // pelaksana in mode column
+  } else if(typeVal==='closed'){
+    // Closed: confirm→actions, verify→cause
+    evActions = gvTrim('f-close-confirm')|| null;
+    evCause   = gvTrim('f-close-verify') || null;
+  } else {
+    // Operational types — use standard fields
+    evMode       = gvTrim('f-mode')   || null;
+    evCause      = gvTrim('f-cause')  || null;
+    evImpact     = gvTrim('f-impact') || null;
+    evActions    = gvTrim('f-act')    || null;
+    evOutstanding= gvTrim('f-out')    || null;
+    evDowntime   = gv('f-down') ? parseInt(gv('f-down')) : null;
+  }
+
   const ev={
-    equipment_id:currentEqId,date,time:g('f-time').value||null,
-    type:typeVal,title,
-    mode:gv('f-mode').trim()||null,cause:gv('f-cause').trim()||null,
-    downtime:gv('f-down')?parseInt(gv('f-down')):null,
+    equipment_id:currentEqId, date, time:g('f-time').value||null,
+    type:typeVal, title,
+    parent_failure_id:currentParentFailureId||null,
+    mode:evMode, cause:evCause,
+    downtime:evDowntime,
     fail_no:gv('f-fno')?parseInt(gv('f-fno')):null,
-    impact:gv('f-impact').trim()||null,actions:gv('f-act').trim()||null,
-    outstanding:g('f-out').value.trim()||null,pic:g('f-pic').value.trim()||null,
-    target_date:g('f-tgt').value||null,wo:g('f-wo').value.trim()||null,
-    status:g('f-status').value,ref:g('f-ref').value.trim()||null,
+    impact:evImpact, actions:evActions,
+    outstanding:(()=>{
+      // For startup types, read from block-specific notes field
+      if(typeVal==='defect') return g('f-defect-notes')?.value?.trim()||null;
+      if(typeVal==='corrective') return g('f-corr-notes')?.value?.trim()||null;
+      if(typeVal==='closed') return g('f-close-notes')?.value?.trim()||null;
+      return evOutstanding||g('f-out')?.value?.trim()||null;
+    })(),
+    pic:g('f-pic').value.trim()||null,
+    target_date:g('f-tgt').value||null,
+    wo:g('f-wo').value.trim()||null,
+    status:g('f-status').value,
+    ref:g('f-ref').value.trim()||null,
     modified_by:currentUser?.email||null,
+    category: _sfIsStartupEq && _sfCatEl ? (_sfCatEl.value||null) : null,
+    is_repeat: _sfIsStartupEq && _sfRepEl ? !!_sfRepEl.checked : false,
   };
   setConn('sync');
   let error;
@@ -1926,54 +2483,139 @@ async function submitForm(){
   render();
 }
 async function refreshEqSummary(eqId){
-  const{data}=await sb.from('events').select('type,status,downtime,date').eq('equipment_id',eqId);
+  const{data}=await sb.from('events').select('id,equipment_id,type,status,downtime,date,outstanding,parent_failure_id,is_repeat,category,title').eq('equipment_id',eqId);
   const eq=equipments.find(e=>e.id===eqId);if(!eq||!data)return;
-  eq._failures=data.filter(e=>e.type==='failure').length;
-  eq._downtime=data.reduce((s,e)=>{const n=parseInt(e.downtime||0);return s+(isNaN(n)?0:n)},0);
-  eq._open=data.filter(e=>['OPEN','ON PROGRESS','PARTIAL','OVERDUE'].includes(e.status)).length;
-  eq._total=data.length;
-  eq._mtbf=calcMTBF(data.filter(e=>e.equipment_id===eqId&&e.type==='failure'));
-  eq._mttr=calcMTTR(data.filter(e=>e.equipment_id===eqId&&e.type==='failure'),data.filter(e=>e.equipment_id===eqId&&e.type!=='failure'));
-  eq._isBadActor=isBadActor(eq,data);
   // Update allEventsCache for this equipment
   allEventsCache=allEventsCache.filter(e=>e.equipment_id!==eqId).concat(data);
+  // Phase-aware calculation
+  const isStartupEq = (eq.phase||'operational')==='startup';
+  const allowedTypes = isStartupEq ? startupTypes_global : operationalTypes_global;
+  const phaseEvs = data.filter(e=>allowedTypes.includes(e.type));
+  const fails    = isStartupEq
+    ? phaseEvs.filter(e=>e.type==='defect')
+    : phaseEvs.filter(e=>e.type==='failure');
+  const children = isStartupEq
+    ? phaseEvs.filter(e=>e.type!=='defect')
+    : phaseEvs.filter(e=>e.type!=='failure');
+  eq._failures    = fails.length;
+  eq._downtime    = isStartupEq ? 0 : calcDowntimeFromEvents(phaseEvs);
+  eq._open        = isStartupEq
+    ? fails.filter(e=>e.status!=='CLOSED').length
+    : calcOpenFailures(phaseEvs);
+  eq._total       = phaseEvs.length;
+  eq._outstanding = isStartupEq ? 0 : phaseEvs.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
+  eq._mtbf        = isStartupEq ? null : calcMTBF(fails);
+  eq._mttr        = isStartupEq ? null : calcMTTR(fails,children);
+  eq._isBadActor  = isStartupEq
+    ? isStartupBadActor(eq, allEventsCache)
+    : isBadActor(eq, fails);
 }
 
 function editEv(id){
   if(!window._canEdit){toast('Tidak memiliki akses edit.','error');return;}
-  const ev=events.find(e=>e.id===id);if(!ev)return;
-  editEvId=id;g('form-lbl').textContent='Edit: '+ev.title.substring(0,40)+'...';
-  g('fs-icon').textContent='✎';g('fs-lbl').textContent='Update Event';
-  g('f-date').value=ev.date||'';g('f-time').value=ev.time||'';
-  g('f-type').value=ev.type||'failure';g('f-title').value=ev.title||'';
-  g('f-pic').value=ev.pic||'';g('f-tgt').value=ev.target_date||'';g('f-wo').value=ev.wo||'';
+  const ev=events.find(e=>e.id===id); if(!ev) return;
+  editEvId=id;
+  g('form-lbl').textContent='Edit: '+(ev.title||'').substring(0,40)+'...';
+  g('fs-icon').textContent='✎'; g('fs-lbl').textContent='Update Event';
+
+  // Set shared fields
+  g('f-date').value=ev.date||''; g('f-time').value=ev.time||'';
+  g('f-type').value=ev.type||'failure'; g('f-title').value=ev.title||'';
+  g('f-pic').value=ev.pic||''; g('f-tgt').value=ev.target_date||''; g('f-wo').value=ev.wo||'';
+  g('f-ref').value=ev.ref||'';
+
+  // Trigger block show/hide + rebuild status options FIRST
   onTypeChange();
-  const blkId={'failure':'f-fail-block','action':'f-action-block','repair':'f-repair-block','resolved':'f-resolved-block'}[ev.type||'failure']||'f-fail-block';
-  const blk=g(blkId);
-  const sv=(id,val)=>{if(blk){const el=blk.querySelector('#'+id);if(el){el.value=val;return;}}const el2=g(id);if(el2)el2.value=val;};
-  sv('f-mode',ev.mode||'');sv('f-cause',ev.cause||'');
-  sv('f-down',ev.downtime||'');sv('f-fno',ev.fail_no||'');
-  sv('f-impact',ev.impact||'');sv('f-act',ev.actions||'');
-  sv('f-out',ev.outstanding||'');
-  g('f-status').value=ev.status||'OPEN';g('f-ref').value=ev.ref||'';
-  onTypeChange();document.querySelector('.sb-form').scrollTop=0;
+
+  // Set status AFTER onTypeChange (which rebuilds status options)
+  g('f-status').value=ev.status||'OPEN';
+
+  // Populate per-type block fields
+  if(ev.type==='defect'){
+    const el=g('f-defect-desc'); if(el) el.value=ev.mode||'';
+    const el2=g('f-defect-source'); if(el2) el2.value=ev.cause||'';
+    const el3=g('f-defect-impact'); if(el3) el3.value=ev.impact||'';
+    const el4=g('f-defect-notes'); if(el4) el4.value=ev.outstanding||'';
+  } else if(ev.type==='corrective'){
+    const el=g('f-corr-act'); if(el) el.value=ev.actions||'';
+    const el2=g('f-corr-pic'); if(el2) el2.value=ev.mode||'';
+    const el3=g('f-corr-progress'); if(el3) el3.value=ev.cause||'';
+    const el4=g('f-corr-notes'); if(el4) el4.value=ev.outstanding||'';
+  } else if(ev.type==='closed'){
+    const el=g('f-close-confirm'); if(el) el.value=ev.actions||'';
+    const el2=g('f-close-verify'); if(el2) el2.value=ev.cause||'';
+    const el3=g('f-close-notes'); if(el3) el3.value=ev.outstanding||'';
+  } else {
+    // Operational — use block querySelector
+    const blkId={'failure':'f-fail-block','action':'f-action-block','repair':'f-repair-block','resolved':'f-resolved-block'}[ev.type||'failure']||'f-fail-block';
+    const blk=g(blkId);
+    const sv=(fid,val)=>{if(blk){const el=blk.querySelector('#'+fid);if(el){el.value=val;return;}}const el2=g(fid);if(el2)el2.value=val;};
+    sv('f-mode',ev.mode||''); sv('f-cause',ev.cause||'');
+    sv('f-down',ev.downtime||''); sv('f-fno',ev.fail_no||'');
+    sv('f-impact',ev.impact||''); sv('f-act',ev.actions||'');
+    sv('f-out',ev.outstanding||'');
+  }
+
+  // Startup category + repeat
+  const catEl=g('f-category'); if(catEl) catEl.value=ev.category||'A';
+  const repEl=g('f-is-repeat'); if(repEl) repEl.checked=!!ev.is_repeat;
+
+  // Pre-select parent in dropdown (for child event types)
+  currentParentFailureId = ev.parent_failure_id || null;
+  updateParentSelector(ev.parent_failure_id || '');
+
+  document.querySelector('.sb-form').scrollTop=0;
 }
 function delEv(id){
   if(!window._canDelete){toast('Hanya Admin yang dapat menghapus.','error');return;}
-  delEvId=id;const ev=events.find(e=>e.id===id);
+  delEvId=id;
+  const ev=events.find(e=>e.id===id);
   g('del-name').textContent=ev?'"'+ev.title+'"':'';
+  // Check if this is a parent with children
+  const isParent = ev && ['failure','defect'].includes(ev.type);
+  const childCount = isParent
+    ? events.filter(c=>c.parent_failure_id===id||(!c.parent_failure_id&&c._autoParent===id)).length
+    : 0;
+  const warnEl = g('del-cascade-warn');
+  if(warnEl){
+    warnEl.style.display = childCount > 0 ? 'inline' : 'none';
+    if(childCount > 0) warnEl.textContent = `⚠ ${childCount} event turunan (corrective/action) juga akan ikut terhapus.`;
+  }
   g('modal-del').classList.add('open');
 }
 async function doDelete(){
+  if(!delEvId) return;
+  const evToDelete = events.find(e=>e.id===delEvId);
+  const isParent = evToDelete && (['failure','defect'].includes(evToDelete.type));
+
+  // Cascade: collect child IDs linked to this parent
+  let childIds = [];
+  if(isParent){
+    // Children with explicit parent_failure_id OR auto-linked (_autoParent set client-side)
+    childIds = events
+      .filter(c => c.parent_failure_id===delEvId ||
+                   (!c.parent_failure_id && c._autoParent===delEvId))
+      .map(c=>c.id);
+  }
+
+  // Delete children first (cascade)
+  if(childIds.length > 0){
+    const{error:cErr} = await sb.from('events').delete().in('id', childIds);
+    if(cErr){toast('Gagal hapus turunan: '+cErr.message,'error');return;}
+  }
+
+  // Delete the parent
   const{error}=await sb.from('events').delete().eq('id',delEvId);
-  delEvId=null;closeModal('modal-del');
+  delEvId=null; closeModal('modal-del');
   if(error){toast('Gagal hapus: '+error.message,'error');return;}
-  // Reload events from DB and re-render timeline immediately
+
+  // Reload & re-render
   const{data:newEvs}=await sb.from('events').select('*').eq('equipment_id',currentEqId).order('date',{ascending:true}).order('created_at',{ascending:true});
   if(newEvs) events=newEvs;
   await refreshEqSummary(currentEqId);
   render();
-  toast('Event dihapus','warn');
+  const totalDel = 1 + childIds.length;
+  toast(totalDel > 1 ? `${totalDel} event dihapus (1 parent + ${childIds.length} turunan)` : 'Event dihapus','warn');
 }
 
 // ══════════════════════════════════════
@@ -1987,8 +2629,15 @@ function render(){
   const wrap=g('tl-wrap');
   if(currentEqId) events=events.filter(e=>e.equipment_id===currentEqId||!e.equipment_id);
 
-  const failures=events.filter(e=>e.type==='failure');
-  const children=events.filter(e=>e.type!=='failure');
+  // Filter events by phase — prevent startup/operational type crossover
+  const eq_phase = (equipments.find(e=>e.id===currentEqId)||{}).phase || 'operational';
+  const startupTypes     = ['defect','corrective','closed'];
+  const operationalTypes = ['failure','action','repair','resolved'];
+  const allowedTypes = eq_phase==='startup' ? startupTypes : operationalTypes;
+  events = events.filter(e => allowedTypes.includes(e.type));
+
+  const failures=events.filter(e=>eq_phase==='startup' ? e.type==='defect' : e.type==='failure');
+  const children=events.filter(e=>eq_phase==='startup' ? e.type!=='defect' : e.type!=='failure');
 
   // ── CLIENT-SIDE AUTO-ASSIGN orphan children to nearest preceding failure ──
   // This handles data before SQL migration runs
@@ -2021,16 +2670,63 @@ function render(){
   });
   const outN=events.filter(e=>e.outstanding&&e.outstanding.trim()).length;
 
-  g('st-f').textContent=failures.length+'×';
-  g('st-d').textContent=totDown>0?totDown+' Jam':'—';
-  g('st-o').textContent=openFailures.length;
-  g('st-ot').textContent=outN;
-  g('st-t').textContent=events.length;
-  const fSub=g('st-f-sub');if(fSub)fSub.textContent=failures.length?`terakhir: ${fmtD(sortedFails[sortedFails.length-1]?.date||'').full}`:'Tidak ada failure';
-  const dSub=g('st-d-sub');if(dSub)dSub.textContent=failures.length&&totDown?`avg ${Math.round(totDown/failures.length)} jam/failure`:'dari failure s/d resolved';
-  const oSub=g('st-o-sub');if(oSub)oSub.textContent=openFailures.length?`${failures.length-openFailures.length} resolved`:'Semua failure resolved';
-  const otSub=g('st-ot-sub');if(otSub)otSub.textContent=outN?'item belum diselesaikan':'Tidak ada outstanding';
-  const tSub=g('st-t-sub');if(tSub)tSub.textContent=`${failures.length}F · ${children.filter(c=>c.type==='action').length}A · ${children.filter(c=>c.type==='repair').length}R · ${children.filter(c=>c.type==='resolved').length}✓`;
+  // Phase-aware stats strip
+  const _stEq = equipments.find(e=>e.id===currentEqId);
+  const _stIsStartup = (_stEq?.phase||'operational')==='startup';
+
+  // Update stat labels dynamically
+  const _lbl_f  = document.querySelector('#st-f + .stat-lbl, [id="st-f"] ~ .stat-lbl');
+  const _lbl_d  = document.querySelector('#st-d + .stat-lbl, [id="st-d"] ~ .stat-lbl');
+  const _lbl_o  = document.querySelector('#st-o + .stat-lbl, [id="st-o"] ~ .stat-lbl');
+  const _lbl_ot = document.querySelector('#st-ot + .stat-lbl, [id="st-ot"] ~ .stat-lbl');
+  // Set labels via parent .stat-box
+  document.querySelectorAll('.stat-box').forEach(box=>{
+    const id = box.querySelector('[id]')?.id;
+    if(id==='st-f')  { const l=box.querySelector('.stat-lbl'); if(l) l.textContent=_stIsStartup?'Total Defect':'Total Failure'; }
+    if(id==='st-d')  { const l=box.querySelector('.stat-lbl'); if(l) l.textContent=_stIsStartup?'Closure Rate':'Total Downtime'; }
+    if(id==='st-o')  { const l=box.querySelector('.stat-lbl'); if(l) l.textContent=_stIsStartup?'Defect Open':'Status Open'; }
+    if(id==='st-ot') { const l=box.querySelector('.stat-lbl'); if(l) l.textContent=_stIsStartup?'Repeat Defect':'Outstanding'; }
+  });
+
+  // Compute startup-specific values for stats
+  const _suAllDefs = events.filter(e=>e.type==='defect');
+  const _suClosed  = _suAllDefs.filter(e=>e.status==='CLOSED').length;
+  const _suClosure = _suAllDefs.length>0 ? Math.round(_suClosed/_suAllDefs.length*100) : 100;
+  const _suRepeat  = _suAllDefs.filter(e=>e.is_repeat).length;
+
+  g('st-f').textContent  = _stIsStartup ? failures.length+'×' : failures.length+'×';
+  g('st-d').textContent  = _stIsStartup ? _suClosure+'%' : (totDown>0?totDown+' Jam':'—');
+  g('st-o').textContent  = _stIsStartup ? openFailures.length : openFailures.length;
+  g('st-ot').textContent = _stIsStartup ? _suRepeat : outN;
+  g('st-t').textContent  = _stIsStartup ? events.filter(e=>startupTypes_global.includes(e.type)).length : events.length;
+
+  const fSub=g('st-f-sub');
+  if(fSub) fSub.textContent = _stIsStartup
+    ? (failures.length ? `Cat A: ${failures.filter(e=>e.category==='A').length} | Cat B: ${failures.filter(e=>e.category==='B').length}` : 'Belum ada defect')
+    : (failures.length?`terakhir: ${fmtD(sortedFails[sortedFails.length-1]?.date||'').full}`:'Tidak ada failure');
+  const dSub=g('st-d-sub');
+  if(dSub) dSub.textContent = _stIsStartup
+    ? (_suAllDefs.length>0 ? `${_suClosed} dari ${_suAllDefs.length} defect closed` : 'Belum ada defect')
+    : (failures.length&&totDown?`avg ${Math.round(totDown/failures.length)} jam/failure`:'dari failure s/d resolved');
+  const oSub=g('st-o-sub');
+  if(oSub) oSub.textContent = _stIsStartup
+    ? (openFailures.length ? `${_suClosed} defect sudah closed` : 'Semua defect closed')
+    : (openFailures.length?`${failures.length-openFailures.length} resolved`:'Semua failure resolved');
+  const otSub=g('st-ot-sub');
+  if(otSub) otSub.textContent = _stIsStartup
+    ? (_suRepeat ? 'masalah sama muncul kembali' : 'Tidak ada repeat defect')
+    : (outN?'item belum diselesaikan':'Tidak ada outstanding');
+  const tSub=g('st-t-sub');
+  if(tSub){
+    if(_stIsStartup){
+      const _tDef=failures.length;
+      const _tCorr=children.filter(c=>c.type==='corrective').length;
+      const _tClosed=children.filter(c=>c.type==='closed').length;
+      tSub.textContent=`${_tDef}D · ${_tCorr}C · ${_tClosed}✓`;
+    } else {
+      tSub.textContent=`${failures.length}F · ${children.filter(c=>c.type==='action').length}A · ${children.filter(c=>c.type==='repair').length}R · ${children.filter(c=>c.type==='resolved').length}✓`;
+    }
+  }
 
   // ── FILTER ──
   // Helper: is failure effectively closed?
@@ -2042,12 +2738,22 @@ function render(){
   const isFailureOnProgress=f=>children.some(c=>c.parent_failure_id===f.id||c._autoParent===f.id)&&!isFailureClosed(f);
 
   let filteredFailures;
-  if(curFilter==='all') filteredFailures=failures;
-  else if(curFilter==='open') filteredFailures=failures.filter(f=>!isFailureClosed(f)&&!isFailureOnProgress(f));
-  else if(curFilter==='onprogress') filteredFailures=failures.filter(f=>isFailureOnProgress(f));
-  else if(curFilter==='resolved') filteredFailures=failures.filter(f=>isFailureClosed(f));
-  else filteredFailures=failures;
-  g('fc-lbl').textContent=filteredFailures.length+' failure';
+  if(curFilter==='all'){
+    filteredFailures=failures;
+  } else if(eq_phase==='startup'){
+    // Startup: filter by status (OPEN / ON PROGRESS / CLOSED) or by type
+    if(curFilter==='defect')     filteredFailures=failures.filter(f=>f.type==='defect');
+    else if(curFilter==='open')  filteredFailures=failures.filter(f=>!['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()));
+    else if(curFilter==='closed')filteredFailures=failures.filter(f=>['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()));
+    else filteredFailures=failures;
+  } else {
+    // Operational: filter by status
+    if(curFilter==='open')            filteredFailures=failures.filter(f=>!isFailureClosed(f)&&!isFailureOnProgress(f));
+    else if(curFilter==='onprogress') filteredFailures=failures.filter(f=>isFailureOnProgress(f));
+    else if(curFilter==='resolved')   filteredFailures=failures.filter(f=>isFailureClosed(f));
+    else filteredFailures=failures;
+  }
+  g('fc-lbl').textContent=filteredFailures.length+(eq_phase==='startup'?' defect':' failure');
 
   wrap.querySelectorAll('.tl-entry,.tl-failure-group,.tl-connector,.no-res').forEach(el=>el.remove());
   g('tl-empty').style.display=events.length===0?'block':'none';
@@ -2064,7 +2770,8 @@ function render(){
   displayFailures.forEach((f,fi)=>{
     const myChildren=sortChildEvents(children
       .filter(c=>c.parent_failure_id===f.id || (!c.parent_failure_id && c._autoParent===f.id)));
-    const myResolved=myChildren.filter(c=>c.type==='resolved');
+    // Startup: 'closed' type = resolved; Operational: 'resolved' type = resolved
+    const myResolved=myChildren.filter(c=>eq_phase==='startup' ? c.type==='closed' : c.type==='resolved');
     const isResolved=myResolved.length>0||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
     const isOnProgress=myChildren.length>0&&!isResolved;
     const groupStatus=isResolved||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase())?'RESOLVED':isOnProgress?'ON PROGRESS':'OPEN';
@@ -2093,26 +2800,34 @@ function render(){
         ${f.time?`<div style="font-size:10px;color:var(--amber);font-weight:600;margin-top:2px">${f.time} WIB</div>`:''}
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:32px">
-        <div style="width:2px;height:14px;background:${fi===0?'transparent':'rgba(232,64,64,.4)'}"></div>
-        <div style="width:22px;height:22px;border-radius:50%;background:var(--red);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1">
-          <span style="color:#fff;font-size:9px;font-weight:800">F</span>
+        <div style="width:2px;height:14px;background:${fi===0?'transparent':eq_phase==='startup'?'rgba(217,119,6,.4)':'rgba(232,64,64,.4)'}"></div>
+        <div style="width:22px;height:22px;border-radius:50%;background:${eq_phase==='startup'?'var(--amber)':'var(--red)'};border:3px solid var(--bg);box-shadow:0 0 0 2px ${eq_phase==='startup'?'var(--amber)':'var(--red)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1">
+          <span style="color:#fff;font-size:9px;font-weight:800">${eq_phase==='startup'?'D':'F'}</span>
         </div>
-        <div style="width:2px;flex:1;min-height:${isLast?'8':'20'}px;background:${isLast?'transparent':'rgba(232,64,64,.3)'}"></div>
+        <div style="width:2px;flex:1;min-height:${isLast?'8':'20'}px;background:${isLast?'transparent':eq_phase==='startup'?'rgba(217,119,6,.3)':'rgba(232,64,64,.3)'}"></div>
       </div>
       <div style="flex:1;padding:0 0 0 14px;min-width:0">
-        <div class="tl-card cc-f" style="margin-bottom:0;border-left:3px solid var(--red)">
-          ${hasAutoLinked?`<div style="font-size:10px;color:var(--amber);margin-bottom:6px;padding:3px 8px;background:rgba(245,158,11,.08);border-radius:4px">⚠ Tindak lanjut di-link otomatis — jalankan SQL migration untuk menyimpan permanen</div>`:''}
+        <div class="tl-card ${eq_phase==='startup'?'cc-defect':'cc-f'}" style="margin-bottom:0;border-left:3px solid ${eq_phase==='startup'?'var(--amber)':'var(--red)'}">
+          <!-- auto-link warning removed — auto-link works correctly client-side -->
           <div class="ct">
             <div class="ct-title" style="font-size:15px;font-weight:700">${esc(f.title)}</div>
             <div class="ct-right" style="flex-wrap:wrap;gap:4px">
               <span style="background:${statusColor};color:#fff;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700">${groupStatus}</span>
-              <span class="tbadge tb-f">FAILURE</span>
+              <span class="tbadge">${eq_phase==='startup'?'DEFECT':'FAILURE'}</span>
               ${window._canEdit?`<button class="btn btn-ghost btn-sm" onclick="editEv('${f.id}')" title="Edit">✎</button>`:''}
               ${window._canDelete?`<button class="btn btn-red btn-sm" onclick="delEv('${f.id}')" title="Hapus">✕</button>`:''}
-              ${window._canEdit?`<button class="btn btn-sm" style="background:#2563eb;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;white-space:nowrap" onclick="addChildEvent('${f.id}')">+ Tindak Lanjut</button>`:''}
+              ${window._canEdit?`<button class="btn btn-sm" style="background:#2563eb;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;white-space:nowrap" onclick="addChildEvent('${f.id}')">${eq_phase==='startup'?'+ Corrective Action':'+ Tindak Lanjut'}</button>`:''}
             </div>
           </div>
-          ${(f.mode||f.cause||f.downtime)?`<div class="ci-grid">${ciRow('Failure Mode',f.mode,'vr')}${ciRow('Root Cause',f.cause,'va')}<div><div class="ci-k">Downtime</div><div class="ci-v" style="color:${isResolved?'var(--green)':'var(--red)'};font-weight:700">${fDowntime}</div></div></div>`:''}
+          ${eq_phase==='startup'
+            ? (f.category||f.mode||f.cause)?`<div class="ci-grid">
+                ${f.category?`<div><div class="ci-k">Kategori</div><div class="ci-v"><span class="defect-category-badge cat-${f.category}">Cat ${f.category}</span>${f.is_repeat?'<span class="repeat-defect-badge" style="margin-left:4px;">↺ Repeat</span>':''}</div></div>`:''}
+                ${ciRow('Deskripsi Temuan',f.mode,'va')}
+                ${ciRow('Sumber Temuan',f.cause,'va')}
+                ${f.impact?ciRow('Dampak ke Startup',f.impact,'va'):''}
+              </div>`:''
+            : (f.mode||f.cause||f.downtime)?`<div class="ci-grid">${ciRow('Failure Mode',f.mode,'vr')}${ciRow('Root Cause',f.cause,'va')}<div><div class="ci-k">Downtime</div><div class="ci-v" style="color:${isResolved?'var(--green)':'var(--red)'};font-weight:700">${fDowntime}</div></div></div>`:''
+          }
           ${f.impact?`<div class="cdiv"></div><div class="clbl">Dampak Operasional</div><div class="ctext">${esc(f.impact)}</div>`:''}
           ${f.actions?`<div class="cdiv"></div><div class="clbl">Immediate Action</div>${linesHtml(f.actions)}`:''}
           ${f.outstanding?`<div class="c-out"><div class="co-k">⚠ Outstanding / Follow-up</div>${linesHtml(f.outstanding,'co-item')}</div>`:''}
@@ -2127,9 +2842,9 @@ function render(){
         </div>
 
         ${myChildren.map((ev,ci)=>{
-          const ccolor={action:'#2563eb',repair:'#d97706',resolved:'#16a34a'}[ev.type]||'#64748b';
-          const cbg={action:'rgba(37,99,235,.04)',repair:'rgba(217,119,6,.04)',resolved:'rgba(22,163,74,.05)'}[ev.type]||'transparent';
-          const clabel={action:'ACTION',repair:'REPAIR',resolved:'RESOLVED'}[ev.type]||ev.type.toUpperCase();
+          const ccolor={action:'#2563eb',repair:'#d97706',resolved:'#16a34a',corrective:'#2563eb',closed:'#16a34a'}[ev.type]||'#64748b';
+          const cbg={action:'rgba(37,99,235,.04)',repair:'rgba(217,119,6,.04)',resolved:'rgba(22,163,74,.05)',corrective:'rgba(37,99,235,.04)',closed:'rgba(22,163,74,.05)'}[ev.type]||'transparent';
+          const clabel={action:'ACTION',repair:'REPAIR',resolved:'RESOLVED',corrective:'CORRECTIVE',closed:'CLOSED'}[ev.type]||ev.type.toUpperCase();
           const cdf=fmtD(ev.date);
           const cIsLast=ci===myChildren.length-1&&isLast;
           const csc=scColor(ev.status);
@@ -2141,9 +2856,9 @@ function render(){
               ${ev.time?`<div style="font-size:9px;color:${ccolor};font-weight:600">${ev.time} WIB</div>`:''}
             </div>
             <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:32px">
-              <div style="width:2px;height:0;background:rgba(232,64,64,.3)"></div>
+              <div style="width:2px;height:0;background:${eq_phase==='startup'?'rgba(217,119,6,.3)':'rgba(232,64,64,.3)'}"></div>
               <div style="width:14px;height:14px;border-radius:50%;background:${ccolor};border:2px solid var(--bg);box-shadow:0 0 0 1.5px ${ccolor};flex-shrink:0;z-index:1;margin-top:10px"></div>
-              <div style="width:2px;flex:1;min-height:8px;background:${cIsLast?'transparent':'rgba(232,64,64,.3)'}"></div>
+              <div style="width:2px;flex:1;min-height:8px;background:${cIsLast?'transparent':eq_phase==='startup'?'rgba(217,119,6,.3)':'rgba(232,64,64,.3)'}"></div>
             </div>
             <div style="flex:1;padding-left:14px;padding-top:6px;padding-bottom:2px;min-width:0">
               <div style="background:${cbg};border-left:2px solid ${ccolor};border-radius:0 8px 8px 0;padding:10px 12px">
@@ -2153,10 +2868,10 @@ function render(){
                   ${window._canEdit?`<button class="btn btn-ghost btn-sm" onclick="editEv('${ev.id}')" title="Edit">✎</button>`:''}
                   ${window._canDelete?`<button class="btn btn-red btn-sm" onclick="delEv('${ev.id}')" title="Hapus">✕</button>`:''}
                 </div>
-                ${ev.mode?`<div style="font-size:11px;color:${ccolor};margin-bottom:3px;font-weight:500">${esc(ev.mode)}</div>`:''}
-                ${ev.cause?`<div style="font-size:11px;color:var(--text);margin-bottom:3px">${esc(ev.cause)}</div>`:''}
-                ${ev.actions?`<div style="font-size:11px;color:var(--muted);margin-top:3px">${esc(ev.actions)}</div>`:''}
-                ${ev.outstanding?`<div class="c-out" style="margin-top:6px"><div class="co-k">⚠ ${ev.type==='resolved'?'Rekomendasi PM':'Open Point'}</div>${linesHtml(ev.outstanding,'co-item')}</div>`:''}
+                ${ev.mode?`<div style="font-size:11px;color:${ccolor};margin-bottom:3px;font-weight:500">${ev.type==='corrective'?'👤 Pelaksana: ':ev.type==='repair'?'🔧 ':ev.type==='action'?'🔍 ':''}${esc(ev.mode)}</div>`:''}
+                ${ev.cause?`<div style="font-size:11px;color:var(--text);margin-bottom:3px">${ev.type==='corrective'?'📋 Progress: ':ev.type==='closed'?'✅ Verifikasi: ':''}${esc(ev.cause)}</div>`:''}
+                ${ev.actions?`<div style="font-size:11px;color:var(--muted);margin-top:3px">${ev.type==='corrective'?'🔧 Tindakan: ':ev.type==='closed'?'✅ Konfirmasi: ':ev.type==='resolved'?'✅ ':ev.type==='repair'?'🔧 ':''}${esc(ev.actions)}</div>`:''}
+                ${ev.outstanding?`<div class="c-out" style="margin-top:6px"><div class="co-k">⚠ ${{resolved:'Rekomendasi PM',closed:'Catatan Penutupan',corrective:'Outstanding Item'}[ev.type]||'Open Point'}</div>${linesHtml(ev.outstanding,'co-item')}</div>`:''}
                 <div style="display:flex;gap:10px;margin-top:5px;flex-wrap:wrap;align-items:center">
                   ${ev.pic?`<span style="font-size:10px;color:var(--muted)">👤 ${esc(ev.pic)}</span>`:''}
                   ${ev.wo?`<span style="font-size:10px;color:var(--muted)">📋 ${esc(ev.wo)}</span>`:''}
@@ -2188,10 +2903,11 @@ function render(){
       </div>
       <div style="flex:1;padding-left:14px;padding-bottom:16px">
         <div style="border:1px dashed var(--border);border-radius:8px;padding:10px 14px">
-          <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:8px">📋 ${trueOrphans.length} event (belum ada failure tercatat)</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:4px">📋 ${trueOrphans.length} event (belum ada ${eq_phase==='startup'?'defect':'failure'} tercatat)</div>
+          ${eq_phase==='startup'?`<div style="font-size:10px;color:var(--amber);margin-bottom:8px;padding:4px 8px;background:rgba(217,119,6,.1);border-radius:4px;">💡 Tambahkan Commissioning Defect terlebih dahulu, lalu klik <strong>+ Tindak Lanjut</strong> untuk menghubungkan corrective action ke defect</div>`:''}
           ${trueOrphans.map(ev=>`
             <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--border)">
-              <span>${{action:'🔵',repair:'🟡',resolved:'🟢'}[ev.type]||'⚪'}</span>
+              <span>${{action:'🔵',repair:'🟡',resolved:'🟢',corrective:'🔵',closed:'🟢',defect:'🔴'}[ev.type]||'⚪'}</span>
               <span style="font-size:11px;flex:1;font-weight:600">${esc(ev.title)}</span>
               <span style="font-size:10px;color:var(--muted)">${fmtD(ev.date).full}</span>
               ${window._canEdit?`<button class="btn btn-ghost btn-sm" onclick="editEv('${ev.id}')" title="Edit">✎</button>`:''}
@@ -2215,7 +2931,12 @@ function render(){
 // EXPORT PDF
 // ══════════════════════════════════════
 async function exportPDF(){
-  if(!events.length){toast('Tidak ada event!','warn');return;}
+  // Fallback: use allEventsCache if events[] not yet populated
+  if(!events.length && currentEqId){
+    const cached = allEventsCache.filter(e=>e.equipment_id===currentEqId);
+    if(cached.length) events = cached;
+  }
+  if(!events.length){toast('Tidak ada event untuk di-export!','warn');return;}
   const eq=equipments.find(e=>e.id===currentEqId);
   showX('Membuat PDF...'); await sl(150);
   try{
@@ -2262,13 +2983,33 @@ async function exportPDF(){
       return y+6;
     };
 
-    const _pFails=events.filter(e=>e.type==='failure');
-    const _pDown=calcDowntimeFromEvents(events);
-    const _pOpen=calcOpenFailures(events);
-    const _pOut=events.filter(e=>e.outstanding&&e.outstanding.trim()).length;
-    const _pMTBF=calcMTBF(_pFails);
-    const _pMTTR=calcMTTR(_pFails,events.filter(e=>e.type!=='failure'));
-    const _pAvail=calcAvailability(_pMTBF,_pMTTR);
+    // Phase-aware data for individual equipment PDF
+    const _pEq = equipments.find(e=>e.id===currentEqId);
+    const _pIsStartup = (_pEq?.phase||'operational')==='startup';
+    const _pAllowedTypes = _pIsStartup ? startupTypes_global : operationalTypes_global;
+    const _pPhaseEvs = events.filter(e=>_pAllowedTypes.includes(e.type));
+    const _pFails = _pIsStartup
+      ? _pPhaseEvs.filter(e=>e.type==='defect')
+      : _pPhaseEvs.filter(e=>e.type==='failure');
+    const _pChildren = _pIsStartup
+      ? _pPhaseEvs.filter(e=>e.type!=='defect')
+      : _pPhaseEvs.filter(e=>e.type!=='failure');
+    const _pDown  = _pIsStartup ? 0 : calcDowntimeFromEvents(_pPhaseEvs);
+    const _pOpen  = _pIsStartup
+      ? _pFails.filter(e=>e.status!=='CLOSED').length
+      : calcOpenFailures(_pPhaseEvs);
+    const _pOut   = _pIsStartup ? 0 : _pPhaseEvs.filter(e=>e.outstanding&&e.outstanding.trim()).length;
+    const _pMTBF  = _pIsStartup ? null : calcMTBF(_pFails);
+    const _pMTTR  = _pIsStartup ? null : calcMTTR(_pFails,_pChildren);
+    const _pAvail = _pIsStartup ? null : calcAvailability(_pMTBF,_pMTTR);
+    // Startup-specific stats
+    const _pCatA  = _pIsStartup ? _pFails.filter(e=>e.category==='A').length : 0;
+    const _pCatB  = _pIsStartup ? _pFails.filter(e=>e.category==='B').length : 0;
+    const _pCatC  = _pIsStartup ? _pFails.filter(e=>e.category==='C').length : 0;
+    const _pRepeat= _pIsStartup ? _pFails.filter(e=>e.is_repeat).length : 0;
+    const _pClosed= _pIsStartup ? _pFails.filter(e=>e.status==='CLOSED').length : 0;
+    const _pClosureRate = _pIsStartup && _pFails.length>0
+      ? Math.round(_pClosed/_pFails.length*100) : null;
     let pageN=1, totalPages=3+Math.ceil(events.length/18);
 
     // ══════════════════════════════════════
@@ -2280,9 +3021,9 @@ async function exportPDF(){
 
     // Title block
     doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.amber);
-    doc.text('BAD ACTOR HISTORY RECORD', 14, 20);
+    doc.text(_pIsStartup ? 'COMMISSIONING DEFECT TRACKER' : 'BAD ACTOR HISTORY RECORD', 14, 20);
     doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
-    doc.text('PT Kilang Pertamina Balikpapan — Technical Support', 14, 26);
+    doc.text('PT Kilang Pertamina Balikpapan — Technical Support' + (_pIsStartup ? ' | Startup/Commissioning Phase' : ''), 14, 26);
 
     doc.setFont('helvetica','bold'); doc.setFontSize(36); doc.setTextColor(...C.white);
     const nameLines=doc.splitTextToSize(eqName, 200);
@@ -2306,14 +3047,21 @@ async function exportPDF(){
       doc.text(v, 14, 93+i*8);
     });
 
-    // KPI boxes
-    const kpis=[
-      {v:_pFails.length+'×',l:'Total Failure',c:C.red},
-      {v:_pDown?_pDown+' Jam':'— Jam',l:'Total Downtime',c:C.amber},
-      {v:_pOpen,l:'Failure Open',c:_pOpen>0?C.red:C.green},
-      {v:_pOut||'—',l:'Outstanding',c:_pOut>0?C.amber:C.green},
-      {v:_pMTBF?_pMTBF+' Jam':'N/A',l:'MTBF',c:C.teal},
-      {v:_pAvail?_pAvail+'%':'N/A',l:'Availability',c:_pAvail&&parseFloat(_pAvail)>=95?C.green:C.amber}
+    // KPI boxes — phase-aware
+    const kpis = _pIsStartup ? [
+      {v:_pFails.length+'×',       l:'Total Defect',       c:C.red},
+      {v:_pCatA+'× Cat A',         l:'Critical (Cat A)',   c:_pCatA>0?C.red:C.green},
+      {v:_pOpen,                   l:'Defect Open',        c:_pOpen>0?C.red:C.green},
+      {v:_pClosureRate!==null?_pClosureRate+'%':'N/A', l:'Closure Rate', c:_pClosureRate>=80?C.green:_pClosureRate>=50?C.amber:C.red},
+      {v:_pRepeat||'—',            l:'Repeat Defect',      c:_pRepeat>0?C.red:C.green},
+      {v:(_pEq?.inherited_risk||'none').toUpperCase(), l:'Inherited Risk', c:(_pEq?.inherited_risk==='high')?C.red:(_pEq?.inherited_risk==='medium')?C.amber:C.green}
+    ] : [
+      {v:_pFails.length+'×',       l:'Total Failure',      c:C.red},
+      {v:_pDown?_pDown+' Jam':'— Jam', l:'Total Downtime', c:C.amber},
+      {v:_pOpen,                   l:'Failure Open',       c:_pOpen>0?C.red:C.green},
+      {v:_pOut||'—',               l:'Outstanding',        c:_pOut>0?C.amber:C.green},
+      {v:_pMTBF?_pMTBF+' Jam':'N/A', l:'MTBF',            c:C.teal},
+      {v:_pAvail?_pAvail+'%':'N/A', l:'Availability',      c:_pAvail&&parseFloat(_pAvail)>=95?C.green:C.amber}
     ];
     kpis.forEach((k,i)=>{
       const bx=14+i*47;
@@ -2330,7 +3078,7 @@ async function exportPDF(){
     // PAGE 2 — EQUIPMENT PROFILE + ANALYSIS
     // ══════════════════════════════════════
     doc.addPage();
-    pageHeader('EQUIPMENT PROFILE & FAILURE ANALYSIS', `${eqName} — ${tag}`);
+    pageHeader(_pIsStartup ? 'EQUIPMENT PROFILE & COMMISSIONING STATUS' : 'EQUIPMENT PROFILE & FAILURE ANALYSIS', `${eqName} — ${tag}`);
     let y=24;
 
     // Equipment detail box
@@ -2438,7 +3186,7 @@ async function exportPDF(){
     const startChronoPage=()=>{
       if(!firstChronoPage) doc.addPage();
       firstChronoPage=false;
-      pageHeader('KRONOLOGIS EVENT — FAILURE HISTORY', `${eqName} — ${tag}`);
+      pageHeader(_pIsStartup ? 'KRONOLOGIS — COMMISSIONING DEFECT HISTORY' : 'KRONOLOGIS EVENT — FAILURE HISTORY', `${eqName} — ${tag}`);
       let rx=10, ry=22;
       doc.setFillColor(...C.navy); doc.rect(10,ry-5,W-20,8,'F');
       cols.forEach((c,i)=>{
@@ -2538,7 +3286,12 @@ async function exportPDF(){
 // EXPORT PPT
 // ══════════════════════════════════════
 async function exportPPT(){
-  if(!events.length){toast('Tidak ada event!','warn');return;}
+  // Fallback: use allEventsCache if events[] not yet populated
+  if(!events.length && currentEqId){
+    const cached = allEventsCache.filter(e=>e.equipment_id===currentEqId);
+    if(cached.length) events = cached;
+  }
+  if(!events.length){toast('Tidak ada event untuk di-export!','warn');return;}
   const eq=equipments.find(e=>e.id===currentEqId);
   showX('Membuat PowerPoint...'); await sl(200);
   try{
@@ -2554,12 +3307,30 @@ async function exportPPT(){
     };
     const sh=()=>({type:'outer',color:'000000',blur:5,offset:2,angle:135,opacity:.12});
     const eqName=eq?.name||'Equipment', tag=eq?.tag_no||'';
-    const fails=events.filter(e=>e.type==='failure');
-    const children=events.filter(e=>e.type!=='failure');
-    const totDown=calcDowntimeFromEvents(events);
-    const openFails=calcOpenFailures(events);
-    const outCount=events.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
-    const mtbf=calcMTBF(fails);
+    // Phase-aware data for individual equipment PPT
+    const _pptEq = equipments.find(e=>e.id===currentEqId);
+    const _pptIsStartup = (_pptEq?.phase||'operational')==='startup';
+    const _pptAllowedTypes = _pptIsStartup ? startupTypes_global : operationalTypes_global;
+    const _pptPhaseEvs = events.filter(e=>_pptAllowedTypes.includes(e.type));
+    const fails    = _pptIsStartup
+      ? _pptPhaseEvs.filter(e=>e.type==='defect')
+      : _pptPhaseEvs.filter(e=>e.type==='failure');
+    const children = _pptIsStartup
+      ? _pptPhaseEvs.filter(e=>e.type!=='defect')
+      : _pptPhaseEvs.filter(e=>e.type!=='failure');
+    const totDown  = _pptIsStartup ? 0 : calcDowntimeFromEvents(_pptPhaseEvs);
+    const openFails= _pptIsStartup
+      ? fails.filter(e=>e.status!=='CLOSED').length
+      : calcOpenFailures(_pptPhaseEvs);
+    const outCount = _pptIsStartup ? 0 : _pptPhaseEvs.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
+    const mtbf = _pptIsStartup ? null : calcMTBF(fails);
+    // Startup extras
+    const _pptCatA = _pptIsStartup ? fails.filter(e=>e.category==='A').length : 0;
+    const _pptCatB = _pptIsStartup ? fails.filter(e=>e.category==='B').length : 0;
+    const _pptCatC = _pptIsStartup ? fails.filter(e=>e.category==='C').length : 0;
+    const _pptRepeat = _pptIsStartup ? fails.filter(e=>e.is_repeat).length : 0;
+    const _pptClosed = _pptIsStartup ? fails.filter(e=>e.status==='CLOSED').length : 0;
+    const _pptClosure= _pptIsStartup && fails.length>0 ? Math.round(_pptClosed/fails.length*100) : null;
     const mttr=calcMTTR(fails,children);
     const avail=calcAvailability(mtbf,mttr);
     let pgN=1;
@@ -2618,14 +3389,21 @@ async function exportPPT(){
     });
     // Divider
     s1.addShape(pres.shapes.RECTANGLE,{x:9.3,y:1.4,w:.04,h:3,fill:{color:'253555'},line:{color:'253555',width:0}});
-    // Bottom KPI strip
-    const covKpis=[
-      {v:fails.length+'×',l:'Total Failure',c:C.red},
-      {v:totDown?totDown+' Jam':'— Jam',l:'Total Downtime',c:C.amber},
-      {v:openFails,l:'Failure Open',c:openFails?C.red:C.green},
-      {v:mtbf?mtbf+' Jam':'N/A',l:'MTBF',c:C.teal},
-      {v:avail?avail+'%':'N/A',l:'Availability',c:avail&&parseFloat(avail)>=95?C.green:C.amber},
-      {v:outCount||'—',l:'Outstanding',c:outCount?C.amber:C.green}
+    // Bottom KPI strip — phase-aware
+    const covKpis = _pptIsStartup ? [
+      {v:fails.length+'×',         l:'Total Defect',     c:C.red},
+      {v:_pptCatA+'× Cat A',       l:'Critical (Cat A)', c:_pptCatA>0?C.red:C.green},
+      {v:openFails,                 l:'Defect Open',     c:openFails?C.red:C.green},
+      {v:_pptClosure!==null?_pptClosure+'%':'N/A', l:'Closure Rate', c:_pptClosure>=80?C.green:_pptClosure>=50?C.amber:C.red},
+      {v:_pptRepeat||'—',          l:'Repeat Defect',    c:_pptRepeat>0?C.red:C.green},
+      {v:(_pptEq?.inherited_risk||'none').toUpperCase(), l:'Inherited Risk', c:_pptEq?.inherited_risk==='high'?C.red:_pptEq?.inherited_risk==='medium'?C.amber:C.green}
+    ] : [
+      {v:fails.length+'×',         l:'Total Failure',    c:C.red},
+      {v:totDown?totDown+' Jam':'— Jam', l:'Total Downtime', c:C.amber},
+      {v:openFails,                l:'Failure Open',     c:openFails?C.red:C.green},
+      {v:mtbf?mtbf+' Jam':'N/A',  l:'MTBF',             c:C.teal},
+      {v:avail?avail+'%':'N/A',    l:'Availability',     c:avail&&parseFloat(avail)>=95?C.green:C.amber},
+      {v:outCount||'—',            l:'Outstanding',      c:outCount?C.amber:C.green}
     ];
     const bW2=(W-.7)/6;
     covKpis.forEach((k,i)=>{
@@ -2957,6 +3735,7 @@ function switchTab(tabId, btn){
   btn.classList.add('active');
   if(tabId==='tab-ranking') renderRanking();
   if(tabId==='tab-trend')   renderTrendChart();
+
 }
 
 // ══════════════════════════════════════
@@ -2972,16 +3751,53 @@ function renderRanking(){
   const tbody=g('rank-tbody');
   if(!tbody) return;
 
-  // ── KPI Summary ──
+  // ── Phase filter — only show equipment matching current mode ──
+  const phaseEqs = equipments.filter(eq => (eq.phase||'operational') === currentPhase);
+  const startupDefects = allEventsCache.filter(e => startupTypes_global.includes(e.type));
+
+  // For startup: pre-calculate defect metrics per equipment
+  if(currentPhase === 'startup'){
+    phaseEqs.forEach(eq=>{
+      const myDefs = startupDefects.filter(d=>d.equipment_id===eq.id && d.type==='defect');
+      eq._su_defects  = myDefs.length;
+      eq._su_cat_a    = myDefs.filter(d=>d.category==='A'&&d.status!=='CLOSED').length;
+      eq._su_open_def = myDefs.filter(d=>d.status!=='CLOSED').length;
+      eq._su_repeat   = myDefs.filter(d=>d.is_repeat).length;
+      eq._su_closure  = myDefs.length>0 ? Math.round(myDefs.filter(d=>d.status==='CLOSED').length/myDefs.length*100) : 100;
+      eq._isBadActor  = isStartupBadActor(eq, allEventsCache);
+    });
+    renderStartupRanking(phaseEqs);
+    return;
+  }
+
+  // ── OPERATIONAL: KPI Summary ──
   const kpiRow=g('rank-kpi-row');
-  const allFails  = equipments.reduce((s,e)=>s+(e._failures||0),0);
-  const allDown   = equipments.reduce((s,e)=>s+(e._downtime||0),0);
-  const baCount   = equipments.filter(e=>e._isBadActor).length;
-  const openCount = equipments.reduce((s,e)=>s+(e._open||0),0);
-  const outCount  = allEventsCache.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
-  const totalEvs  = allEventsCache.length;
-  const actionEvs = allEventsCache.filter(e=>e.type==='action').length;
-  const repairEvs = allEventsCache.filter(e=>e.type==='repair').length;
+  const allFails  = phaseEqs.reduce((s,e)=>s+(e._failures||0),0);
+  const allDown   = phaseEqs.reduce((s,e)=>s+(e._downtime||0),0);
+  const baCount   = phaseEqs.filter(e=>e._isBadActor).length;
+  const openCount = phaseEqs.reduce((s,e)=>s+(e._open||0),0);
+  const phaseEqIds = new Set(phaseEqs.map(e=>e.id));
+  // Reset operational thead columns when in operational mode
+  const _rTR = g('rank-thead-row');
+  if(_rTR && currentPhase==='operational') _rTR.innerHTML=`
+    <th style="width:44px;text-align:center;">#</th><th>Equipment</th><th>Unit</th>
+    <th style="text-align:center;cursor:pointer;" onclick="rankSort('failures')">Events</th>
+    <th style="text-align:center;cursor:pointer;" onclick="rankSort('failures')">Failure</th>
+    <th style="text-align:center;cursor:pointer;" onclick="rankSort('downtime')">Downtime</th>
+    <th style="text-align:center;">MTBF</th><th style="text-align:center;">MTTR</th>
+    <th style="text-align:center;">Avail %</th>
+    <th style="text-align:center;cursor:pointer;" onclick="rankSort('open')">Open</th>
+    <th style="text-align:center;">O/S</th>
+    <th style="text-align:center;cursor:pointer;" onclick="rankSort('score')">Risk Score</th>
+    <th style="text-align:center;">Status</th>`;
+  const outCount  = allEventsCache.filter(e=>phaseEqIds.has(e.equipment_id)&&e.outstanding&&String(e.outstanding).trim()).length;
+  // Phase-filtered event counts for KPI
+  const phaseEvCache = allEventsCache.filter(e=>phaseEqIds.has(e.equipment_id));
+  const allowedKpiTypes = currentPhase==='startup' ? startupTypes_global : operationalTypes_global;
+  const phaseEvCacheFiltered = phaseEvCache.filter(e=>allowedKpiTypes.includes(e.type));
+  const totalEvs  = phaseEvCacheFiltered.length;
+  const actionEvs = phaseEvCacheFiltered.filter(e=>e.type==='action'||e.type==='corrective').length;
+  const repairEvs = phaseEvCacheFiltered.filter(e=>e.type==='repair'||e.type==='closed').length;
 
   if(kpiRow){
     kpiRow.innerHTML=`
@@ -2998,7 +3814,7 @@ function renderRanking(){
       <div class="rank-kpi-card ${baCount?'kpi-red':'kpi-green'}">
         <div class="rank-kpi-val" style="color:${baCount?'var(--red)':'var(--green)'}">${baCount}</div>
         <div class="rank-kpi-lbl">Bad Actor Equipment</div>
-        <div class="rank-kpi-sub">${baCount?baCount+' dari '+equipments.length+' equipment':'Semua equipment normal'}</div>
+        <div class="rank-kpi-sub">${baCount?baCount+' dari '+phaseEqs.length+' equipment':'Semua equipment normal'}</div>
       </div>
       <div class="rank-kpi-card kpi-teal">
         <div class="rank-kpi-val" style="color:${openCount?'var(--red)':'var(--green)'}">${openCount}</div>
@@ -3018,13 +3834,13 @@ function renderRanking(){
     }
   }
 
-  if(!equipments.length){
+  if(!phaseEqs.length){
     tbody.innerHTML='<tr><td colspan="13" style="text-align:center;padding:50px;color:var(--textDim);font-size:13px;">Belum ada equipment. Tambahkan equipment untuk mulai tracking.</td></tr>';
     return;
   }
 
   // Sort
-  let sorted=[...equipments].sort((a,b)=>{
+  let sorted=[...phaseEqs].sort((a,b)=>{
     let va,vb;
     switch(rankSortCol){
       case 'name':     va=(a.name||'').toLowerCase();vb=(b.name||'').toLowerCase();break;
@@ -3036,7 +3852,7 @@ function renderRanking(){
     if(typeof va==='string') return rankSortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);
     return rankSortDir==='asc'?va-vb:vb-va;
   });
-  const maxScore=calcScore([...equipments].sort((a,b)=>calcScore(b)-calcScore(a))[0])||1;
+  const maxScore=calcScore([...phaseEqs].sort((a,b)=>calcScore(b)-calcScore(a))[0])||1;
 
   // Search & filter
   const searchQ=(g('rank-search')?.value||'').toLowerCase().trim();
@@ -3053,7 +3869,7 @@ function renderRanking(){
   const startIdx=(rankPage-1)*perPage;
   const paginated=perPage>=9999?sorted:sorted.slice(startIdx,startIdx+perPage);
   const infoEl=g('rank-result-info');
-  if(infoEl) infoEl.textContent=totalFiltered===equipments.length?`${equipments.length} equipment`:`${totalFiltered} dari ${equipments.length}`;
+  if(infoEl) infoEl.textContent=totalFiltered===phaseEqs.length?`${phaseEqs.length} equipment`:`${totalFiltered} dari ${equipments.length}`;
 
   tbody.innerHTML=paginated.map((eq,pageIdx)=>{
     const i=startIdx+pageIdx;
@@ -3063,13 +3879,14 @@ function renderRanking(){
     const mttr    = eq._mttr;
     const avail   = calcAvailability(mtbf,mttr);
 
-    // Event breakdown from allEventsCache
-    const eqEvs = allEventsCache.filter(e=>e.equipment_id===eq.id);
-    const fC  = eqEvs.filter(e=>e.type==='failure').length;
-    const aC  = eqEvs.filter(e=>e.type==='action').length;
-    const rC  = eqEvs.filter(e=>e.type==='repair').length;
+    // Event breakdown — phase-filtered
+    const _rowAllowedTypes = currentPhase==='startup' ? startupTypes_global : operationalTypes_global;
+    const eqEvs = allEventsCache.filter(e=>e.equipment_id===eq.id && _rowAllowedTypes.includes(e.type));
+    const fC  = eqEvs.filter(e=>e.type==='failure'||e.type==='defect').length;
+    const aC  = eqEvs.filter(e=>e.type==='action'||e.type==='corrective').length;
+    const rC  = eqEvs.filter(e=>e.type==='repair'||e.type==='closed').length;
     const sC  = eqEvs.filter(e=>e.type==='resolved').length;
-    const osC = eqEvs.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
+    const osC = currentPhase==='startup' ? 0 : eqEvs.filter(e=>e.outstanding&&String(e.outstanding).trim()).length;
 
     // Risk tier berdasarkan score pct DAN bad actor flag
     let tierCls, tierLbl;
@@ -3128,11 +3945,17 @@ function renderRanking(){
       </td>
       <td style="text-align:center;">
         <div class="ev-type-pills">
-          ${fC?`<span class="ev-pill ev-pill-f">${fC}F</span>`:''}
-          ${aC?`<span class="ev-pill ev-pill-a">${aC}A</span>`:''}
-          ${rC?`<span class="ev-pill ev-pill-r">${rC}R</span>`:''}
-          ${sC?`<span class="ev-pill ev-pill-s">${sC}✓</span>`:''}
-          ${!fC&&!aC&&!rC&&!sC?'<span style="color:var(--muted);font-size:10px;">—</span>':''}
+          ${currentPhase==='startup'
+            ? `${fC?`<span class="ev-pill ev-pill-f">${fC}D</span>`:''}
+               ${aC?`<span class="ev-pill ev-pill-a">${aC}C</span>`:''}
+               ${rC?`<span class="ev-pill ev-pill-s">${rC}✓</span>`:''}
+               ${!fC&&!aC&&!rC?'<span style="color:var(--muted);font-size:10px;">—</span>':''}`
+            : `${fC?`<span class="ev-pill ev-pill-f">${fC}F</span>`:''}
+               ${aC?`<span class="ev-pill ev-pill-a">${aC}A</span>`:''}
+               ${rC?`<span class="ev-pill ev-pill-r">${rC}R</span>`:''}
+               ${sC?`<span class="ev-pill ev-pill-s">${sC}✓</span>`:''}
+               ${!fC&&!aC&&!rC&&!sC?'<span style="color:var(--muted);font-size:10px;">—</span>':''}`
+          }
         </div>
       </td>
       <td style="text-align:center;">
@@ -3337,6 +4160,12 @@ function renderTrendChart(){
   const kpiRow   = g('trend-kpi-row');
   const statsDiv = g('trend-stats-table');
   if(!wrap) return;
+
+  // ── In startup mode: render defect trend instead of failure trend ──
+  if(currentPhase === 'startup'){
+    renderStartupTrend(wrap, kpiRow, statsDiv);
+    return;
+  }
 
   const eqSelect = g('trend-eq-select');
   const monthsN  = parseInt(g('trend-months-select')?.value||'12');
@@ -3579,15 +4408,17 @@ async function generateReport(){
   const incDetail = g('rpt-detail')?.checked!==false;
   const incOpen = g('rpt-open')?.checked!==false;
 
-  if(fmt==='pdf') await generateReportPDF(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen);
-  else await generateReportPPT(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen);
+  // Pass current phase to report generators
+  const reportPhase = typeof currentPhase !== 'undefined' ? currentPhase : 'operational';
+  if(fmt==='pdf') await generateReportPDF(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen, reportPhase);
+  else await generateReportPPT(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen, reportPhase);
   hideX();
 }
 
 // ══════════════════════════════════════
 // REPORT PDF
 // ══════════════════════════════════════
-async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen){
+async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen, reportPhase='operational'){
   showX('Membuat PDF Report...'); await sl(150);
   try{
     const jspdfNs=window.jspdf||{};
@@ -3609,7 +4440,7 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
       doc.setFillColor(...C.navy); doc.rect(0,0,W,16,'F');
       doc.setFillColor(...C.amber); doc.rect(0,0,W,2,'F');
       doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.amber);
-      doc.text('BAD ACTOR HISTORY RECORD — MONTHLY REPORT',12,10);
+      doc.text(isStartupReport ? 'COMMISSIONING DEFECT TRACKER — MONTHLY REPORT' : 'BAD ACTOR HISTORY RECORD — MONTHLY REPORT',12,10);
       doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
       doc.text(sub||'PT Kilang Pertamina Balikpapan',W-12,10,{align:'right'});
       if(title){doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...C.muted);doc.text(title,12,14.5);}
@@ -3630,13 +4461,24 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
       return y+7;
     };
 
-    const allFails=evData.filter(e=>e.type==='failure');
-    const allChildren=evData.filter(e=>e.type!=='failure');
-    const totalFail=allFails.length;
-    const totDown=calcDowntimeFromEvents(evData);
-    const openFails=calcOpenFailures(evData);
-    const badActorEqs=equipments.filter(eq=>eq._isBadActor);
-    const outItems=evData.filter(e=>e.outstanding&&String(e.outstanding).trim());
+    // Phase-aware data filtering
+    const isStartupReport = reportPhase === 'startup';
+    const rptEqs = equipments.filter(eq => (eq.phase||'operational') === reportPhase);
+    const allowedRptTypes = isStartupReport ? startupTypes_global : operationalTypes_global;
+    const phaseEvData = evData.filter(e => allowedRptTypes.includes(e.type));
+    const allFails    = isStartupReport
+      ? phaseEvData.filter(e=>e.type==='defect')
+      : phaseEvData.filter(e=>e.type==='failure');
+    const allChildren = isStartupReport
+      ? phaseEvData.filter(e=>e.type!=='defect')
+      : phaseEvData.filter(e=>e.type!=='failure');
+    const totalFail   = allFails.length;
+    const totDown     = isStartupReport ? 0 : calcDowntimeFromEvents(phaseEvData);
+    const openFails   = isStartupReport
+      ? allFails.filter(e=>e.status!=='CLOSED').length
+      : calcOpenFailures(phaseEvData);
+    const badActorEqs = rptEqs.filter(eq=>eq._isBadActor);
+    const outItems    = isStartupReport ? [] : phaseEvData.filter(e=>e.outstanding&&String(e.outstanding).trim());
     let pageN=1;
 
     // ══════════════════════════════════════
@@ -3655,16 +4497,29 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
     doc.setFont('helvetica','bold'); doc.setFontSize(40); doc.setTextColor(...C.white);
     doc.text('Monthly', 14, 65);
     doc.setFontSize(26); doc.setTextColor(...C.amber);
-    doc.text('Failure Report', 14, 80);
+    doc.text(isStartupReport ? 'Commissioning Defect Report' : 'Failure Report', 14, 80);
 
     doc.setFont('helvetica','normal'); doc.setFontSize(12); doc.setTextColor(...C.muted);
     doc.text(`Periode: ${fromStr}  —  ${toStr}`, 14, 95);
     doc.setFontSize(9); doc.setTextColor(100,120,150);
-    doc.text(`Diterbitkan: ${fmtD(new Date().toISOString()).full}`, 14, 103);
+    doc.text(`Diterbitkan: ${fmtD(new Date().toISOString()).full} | Fase: ${isStartupReport?'STARTUP / COMMISSIONING':'OPERATIONAL'}`, 14, 103);
 
-    // KPI boxes at bottom
-    const covKpis=[
-      {v:equipments.length,l:'Total Equipment',c:C.teal},
+    // KPI boxes at bottom — phase-aware
+    const allDefects = isStartupReport ? allFails : [];
+    const catAOpen   = isStartupReport ? allDefects.filter(e=>e.category==='A'&&e.status!=='CLOSED').length : 0;
+    const closureRate= isStartupReport && allDefects.length>0
+      ? Math.round(allDefects.filter(e=>e.status==='CLOSED').length/allDefects.length*100) : 0;
+    const repeatDefs = isStartupReport ? allDefects.filter(e=>e.is_repeat).length : 0;
+
+    const covKpis= isStartupReport ? [
+      {v:rptEqs.length,l:'Equipment Startup',c:C.teal},
+      {v:badActorEqs.length,l:'Startup Bad Actor',c:badActorEqs.length?C.red:C.green},
+      {v:totalFail+'×',l:'Total Defect',c:C.red},
+      {v:catAOpen,l:'Cat A Open',c:catAOpen?C.red:C.green},
+      {v:closureRate+'%',l:'Closure Rate',c:closureRate>=80?C.green:closureRate>=50?C.amber:C.red},
+      {v:repeatDefs||'—',l:'Repeat Defect',c:repeatDefs?C.red:C.green}
+    ] : [
+      {v:rptEqs.length,l:'Total Equipment',c:C.teal},
       {v:badActorEqs.length,l:'Bad Actor',c:badActorEqs.length?C.red:C.green},
       {v:totalFail+'×',l:'Total Failure',c:C.red},
       {v:totDown+' Jam',l:'Total Downtime',c:C.amber},
@@ -3699,12 +4554,23 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
       doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...C.text);
       doc.text(`${fromStr}  →  ${toStr}`, 15, y+11);
       doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
-      doc.text(`${equipments.length} equipment dipantau  |  Data per ${fmtD(new Date().toISOString()).full}`, W-14, y+8, {align:'right'});
+      doc.text(`${rptEqs.length} equipment dipantau | ${isStartupReport?'Fase Startup/Commissioning':'Fase Operasional'} | Data per ${fmtD(new Date().toISOString()).full}`, W-14, y+8, {align:'right'});
       y+=20;
 
       // 6 KPI cards
       y=sectionBar('KEY PERFORMANCE INDICATORS', y+4)+4;
-      const sumKpis=[
+      // Startup-specific closure rate
+      const _sumClosed  = isStartupReport ? allFails.filter(e=>e.status==='CLOSED').length : 0;
+      const _sumClosure = isStartupReport && totalFail>0 ? Math.round(_sumClosed/totalFail*100) : 0;
+      const _sumRepeat  = isStartupReport ? allFails.filter(e=>e.is_repeat).length : 0;
+      const sumKpis = isStartupReport ? [
+        {v:totalFail+'×',  l:'Total Defect',       sub:'teridentifikasi dalam periode',c:C.red},
+        {v:catAOpen,        l:'Cat A Open',          sub:'critical, belum closed',       c:catAOpen?C.red:C.green},
+        {v:openFails,       l:'Defect Open',         sub:'belum closed',                 c:openFails?C.red:C.green},
+        {v:badActorEqs.length, l:'Startup Bad Actor',sub:'kriteria: ≥2 Cat A defect',   c:badActorEqs.length?C.red:C.green},
+        {v:_sumClosure+'%', l:'Closure Rate',        sub:`${_sumClosed}/${totalFail} defect closed`, c:_sumClosure>=80?C.green:_sumClosure>=50?C.amber:C.red},
+        {v:_sumRepeat||'0', l:'Repeat Defect',       sub:'masalah recurring',            c:_sumRepeat?C.red:C.green}
+      ] : [
         {v:totalFail+'×',l:'Total Failure',sub:'kejadian dalam periode',c:C.red},
         {v:totDown+' Jam',l:'Total Downtime',sub:'F→Resolved kumulatif',c:C.amber},
         {v:openFails,l:'Failure Open',sub:'belum resolved',c:openFails?C.red:C.green},
@@ -3817,9 +4683,11 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
     // ══════════════════════════════════════
     if(incRanking){
       doc.addPage();
-      pageHeader('EQUIPMENT RISK RANKING', `Periode: ${fromStr} — ${toStr}`);
+      pageHeader(isStartupReport ? 'COMMISSIONING DEFECT RANKING' : 'EQUIPMENT RISK RANKING', `Periode: ${fromStr} — ${toStr}`);
       let y=24;
-      const rCols=['#','Equipment','Tag No','Unit','Failure','Downtime','MTBF','MTTR','Avail%','Open','O/S','Risk Score','Tier'];
+      const rCols = isStartupReport
+        ? ['#','Equipment','Tag No','Unit','Defect','Cat A','Cat B','Cat C','Open','Repeat','Closure%','Status','BA']
+        : ['#','Equipment','Tag No','Unit','Failure','Downtime','MTBF','MTTR','Avail%','Open','O/S','Risk Score','Tier'];
       const rCw=[8,50,24,40,14,18,16,16,14,12,10,22,16];
       doc.setFillColor(...C.navy); doc.rect(10,y-4,W-20,8,'F');
       let rx=10;
@@ -3828,7 +4696,7 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
         doc.text(c,rx+1.5,y,{maxWidth:rCw[i]-3}); rx+=rCw[i];
       });
       y+=6;
-      const sortedEqs=[...equipments].sort((a,b)=>calcScore(b)-calcScore(a));
+      const sortedEqs=[...rptEqs].sort((a,b)=>calcScore(b)-calcScore(a));
       const maxSc=calcScore(sortedEqs[0])||1;
       sortedEqs.slice(0,20).forEach((eq,i)=>{
         if(y>H-14){addFooter(pageN++);doc.addPage();pageHeader('EQUIPMENT RISK RANKING (lanjutan)',`Periode: ${fromStr} — ${toStr}`);y=24;}
@@ -3845,11 +4713,23 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
         doc.setFillColor(...rBg); doc.rect(10,y-4,8,7,'F');
         doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.white);
         doc.text(String(i+1),14,y,{align:'center'});
-        const rRow=['',eq.name||'—',eq.tag_no||'—',eq.unit||'—',
-          eq._failures||0,eq._downtime||0,eq._mtbf||'—',eq._mttr||'—',
-          avail?avail+'%':'—',eq._open||0,
-          allEventsCache.filter(e=>e.equipment_id===eq.id&&e.outstanding&&String(e.outstanding).trim()).length||'—',
-          sc, tier];
+        const _rEqDefs = isStartupReport ? allEventsCache.filter(e=>e.equipment_id===eq.id&&e.type==='defect') : [];
+        const _rCatA = isStartupReport ? _rEqDefs.filter(e=>e.category==='A').length : 0;
+        const _rCatB = isStartupReport ? _rEqDefs.filter(e=>e.category==='B').length : 0;
+        const _rCatC = isStartupReport ? _rEqDefs.filter(e=>e.category==='C').length : 0;
+        const _rRepeat = isStartupReport ? _rEqDefs.filter(e=>e.is_repeat).length : 0;
+        const _rClosed = isStartupReport ? _rEqDefs.filter(e=>e.status==='CLOSED').length : 0;
+        const _rClosure = isStartupReport && _rEqDefs.length>0 ? Math.round(_rClosed/_rEqDefs.length*100)+'%' : (isStartupReport ? '100%' : null);
+        const rRow = isStartupReport
+          ? ['',eq.name||'—',eq.tag_no||'—',eq.unit||'—',
+              eq._failures||0, _rCatA||'—', _rCatB||'—', _rCatC||'—',
+              eq._open||0, _rRepeat||'—', _rClosure||'—',
+              eq._isBadActor?'BA':'OK', eq._isBadActor?'YES':'—']
+          : ['',eq.name||'—',eq.tag_no||'—',eq.unit||'—',
+              eq._failures||0,eq._downtime||0,eq._mtbf||'—',eq._mttr||'—',
+              avail?avail+'%':'—',eq._open||0,
+              allEventsCache.filter(e=>e.equipment_id===eq.id&&operationalTypes_global.includes(e.type)&&e.outstanding&&String(e.outstanding).trim()).length||'—',
+              sc, tier];
         let rx2=10;
         rRow.forEach((cell,ci)=>{
           const isTier=ci===12,isScore=ci===11,isFail=ci===4,isDown=ci===5,isOpen=ci===9;
@@ -3867,10 +4747,12 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
     // DETAIL PER EQUIPMENT
     // ══════════════════════════════════════
     if(incDetail){
-      const eqsWithEvents=equipments.filter(eq=>evData.some(e=>e.equipment_id===eq.id));
+      const eqsWithEvents=rptEqs.filter(eq=>phaseEvData.some(e=>e.equipment_id===eq.id));
       eqsWithEvents.forEach(eq=>{
-        const eqEvs=evData.filter(e=>e.equipment_id===eq.id);
-        const eqFails=eqEvs.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const eqEvs=phaseEvData.filter(e=>e.equipment_id===eq.id);
+        const eqFails=isStartupReport
+          ? eqEvs.filter(e=>e.type==='defect').sort((a,b)=>new Date(a.date)-new Date(b.date))
+          : eqEvs.filter(e=>e.type==='failure').sort((a,b)=>new Date(a.date)-new Date(b.date));
         if(!eqFails.length) return;
         doc.addPage();
         pageHeader(`DETAIL — ${eq.name}`, `${eq.tag_no||'—'} | ${eq.unit||'—'}`);
@@ -3880,12 +4762,22 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
         doc.setFillColor(...C.navyMid); doc.rect(10,y,3,10,'F');
         doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...C.text);
         doc.text(eq.name, 15, y+7);
-        const eqDown=calcDowntimeFromEvents(eqEvs);
-        const eqOpen=calcOpenFailures(eqEvs);
+        const eqDown = isStartupReport ? 0 : calcDowntimeFromEvents(eqEvs);
+        const eqOpen = isStartupReport
+          ? eqFails.filter(e=>e.status!=='CLOSED').length
+          : calcOpenFailures(eqEvs);
+        const _dEqCatA = isStartupReport ? eqFails.filter(e=>e.category==='A').length : 0;
+        const _dEqClosure = isStartupReport && eqFails.length>0
+          ? Math.round(eqFails.filter(e=>e.status==='CLOSED').length/eqFails.length*100) : null;
         doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.dim);
-        doc.text(`Tag: ${eq.tag_no||'—'} | Failure: ${eqFails.length}× | Downtime: ${eqDown} jam | Open: ${eqOpen}`, W-14, y+7, {align:'right'});
+        doc.text(isStartupReport
+          ? `Tag: ${eq.tag_no||'—'} | Defect: ${eqFails.length}× | Cat A: ${_dEqCatA} | Closure: ${_dEqClosure??100}% | Open: ${eqOpen}`
+          : `Tag: ${eq.tag_no||'—'} | Failure: ${eqFails.length}× | Downtime: ${eqDown} jam | Open: ${eqOpen}`,
+          W-14, y+7, {align:'right'});
         y+=16;
-        const eqChildren=eqEvs.filter(e=>e.type!=='failure');
+        const eqChildren=isStartupReport
+          ? eqEvs.filter(e=>e.type!=='defect')
+          : eqEvs.filter(e=>e.type!=='failure');
         const autoMap4=new Map();
         eqFails.forEach((f,fi)=>{
           eqChildren.forEach(c=>{
@@ -3968,7 +4860,7 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
 // ══════════════════════════════════════
 // REPORT PPT (simplified - key slides)
 // ══════════════════════════════════════
-async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen){
+async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, incRanking, incDetail, incOpen, reportPhase='operational'){
   showX('Membuat PowerPoint Report...'); await sl(200);
   try{
     const pres=new PptxGenJS(); pres.layout='LAYOUT_WIDE';
@@ -3983,13 +4875,30 @@ async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, i
     const W=13.3, H=7.5;
     const sh=()=>({type:'outer',color:'000000',blur:6,offset:2,angle:135,opacity:.15});
 
-    const allFails=evData.filter(e=>e.type==='failure');
-    const allChildren=evData.filter(e=>e.type!=='failure');
-    const totalFail=allFails.length;
-    const totDown=calcDowntimeFromEvents(evData);
-    const openFails=calcOpenFailures(evData);
-    const badActors=equipments.filter(eq=>eq._isBadActor);
-    const outItems=evData.filter(e=>e.outstanding&&String(e.outstanding).trim());
+    // Phase-aware data for monthly PPT
+    const _mpIsStartup = reportPhase === 'startup';
+    const _mpRptEqs    = equipments.filter(eq=>(eq.phase||'operational')===reportPhase);
+    const _mpAllowedTypes = _mpIsStartup ? startupTypes_global : operationalTypes_global;
+    const _mpPhaseEvData  = evData.filter(e=>_mpAllowedTypes.includes(e.type));
+    const allFails    = _mpIsStartup
+      ? _mpPhaseEvData.filter(e=>e.type==='defect')
+      : _mpPhaseEvData.filter(e=>e.type==='failure');
+    const allChildren = _mpIsStartup
+      ? _mpPhaseEvData.filter(e=>e.type!=='defect')
+      : _mpPhaseEvData.filter(e=>e.type!=='failure');
+    const totalFail   = allFails.length;
+    const totDown     = _mpIsStartup ? 0 : calcDowntimeFromEvents(_mpPhaseEvData);
+    const openFails   = _mpIsStartup
+      ? allFails.filter(e=>e.status!=='CLOSED').length
+      : calcOpenFailures(_mpPhaseEvData);
+    const badActors   = _mpRptEqs.filter(eq=>eq._isBadActor);
+    const outItems    = _mpIsStartup ? [] : _mpPhaseEvData.filter(e=>e.outstanding&&String(e.outstanding).trim());
+    // Startup-specific monthly metrics
+    const _mpCatA  = _mpIsStartup ? allFails.filter(e=>e.category==='A').length : 0;
+    const _mpCatAOpen = _mpIsStartup ? allFails.filter(e=>e.category==='A'&&e.status!=='CLOSED').length : 0;
+    const _mpRepeat = _mpIsStartup ? allFails.filter(e=>e.is_repeat).length : 0;
+    const _mpClosed = _mpIsStartup ? allFails.filter(e=>e.status==='CLOSED').length : 0;
+    const _mpClosure= _mpIsStartup && totalFail>0 ? Math.round(_mpClosed/totalFail*100) : null;
     const resolvedFails=allFails.filter(f=>{
       const hasRes=allChildren.some(c=>(c.parent_failure_id===f.id)&&c.type==='resolved');
       return hasRes||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
@@ -4030,18 +4939,25 @@ async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, i
     s1.addText('PT KILANG PERTAMINA BALIKPAPAN',{x:.35,y:.35,w:10,h:.3,fontSize:8,fontFace:'Calibri',bold:true,color:C.amber,charSpacing:2,margin:0});
     s1.addText('Technical Support | Equipment Reliability Management',{x:.35,y:.68,w:10,h:.25,fontSize:8,fontFace:'Calibri',color:C.muted,margin:0});
     s1.addText('Monthly',{x:.35,y:1.5,w:10,h:1.1,fontSize:52,fontFace:'Calibri',bold:false,color:C.white,margin:0});
-    s1.addText('Failure Report',{x:.35,y:2.5,w:10,h:.8,fontSize:30,fontFace:'Calibri',bold:true,color:C.amber,margin:0});
+    s1.addText(_mpIsStartup?'Commissioning Defect Report':'Failure Report',{x:.35,y:2.5,w:10,h:.8,fontSize:30,fontFace:'Calibri',bold:true,color:C.amber,margin:0});
     s1.addShape(pres.shapes.RECTANGLE,{x:.35,y:3.5,w:3,h:.05,fill:{color:C.amber},line:{color:C.amber,width:0}});
     s1.addText(`Periode: ${fromStr}  —  ${toStr}`,{x:.35,y:3.65,w:8,h:.35,fontSize:13,fontFace:'Calibri',color:C.muted,margin:0});
     s1.addText(`Diterbitkan: ${fmtD(new Date().toISOString()).full}`,{x:.35,y:4.05,w:8,h:.3,fontSize:9,fontFace:'Calibri',color:'4A6080',margin:0});
-    // Bottom KPI strip
-    const covKpis=[
-      {v:equipments.length,l:'Equipment',c:C.teal},
-      {v:badActors.length,l:'Bad Actor',c:badActors.length?C.red:C.green},
-      {v:totalFail+'×',l:'Total Failure',c:C.red},
-      {v:totDown+' Jam',l:'Downtime',c:C.amber},
-      {v:openFails,l:'Open Issues',c:openFails?C.red:C.green},
-      {v:resolvedFails.length,l:'Resolved',c:C.green}
+    // Bottom KPI strip — phase-aware
+    const covKpis = _mpIsStartup ? [
+      {v:_mpRptEqs.length,     l:'Equipment Startup',  c:C.teal},
+      {v:badActors.length,     l:'Startup Bad Actor',  c:badActors.length?C.red:C.green},
+      {v:totalFail+'×',        l:'Total Defect',       c:C.red},
+      {v:_mpCatAOpen,          l:'Cat A Open',         c:_mpCatAOpen?C.red:C.green},
+      {v:_mpClosure!==null?_mpClosure+'%':'N/A', l:'Closure Rate', c:_mpClosure>=80?C.green:_mpClosure>=50?C.amber:C.red},
+      {v:_mpRepeat||'—',       l:'Repeat Defect',      c:_mpRepeat?C.red:C.green}
+    ] : [
+      {v:equipments.length,    l:'Equipment',          c:C.teal},
+      {v:badActors.length,     l:'Bad Actor',          c:badActors.length?C.red:C.green},
+      {v:totalFail+'×',        l:'Total Failure',      c:C.red},
+      {v:totDown+' Jam',       l:'Downtime',           c:C.amber},
+      {v:openFails,            l:'Open Issues',        c:openFails?C.red:C.green},
+      {v:resolvedFails?.length||0, l:'Resolved',       c:C.green}
     ];
     const bW2=(W-.7)/6;
     covKpis.forEach((k,i)=>{
@@ -4059,7 +4975,16 @@ async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, i
     if(incSummary){
       const s2=pres.addSlide(); s2.background={color:C.bg};
       addHeader(s2,'EXECUTIVE SUMMARY — KPI UTAMA',`Periode: ${fromStr} — ${toStr}`);
-      const sumKpis=[
+      const _pptSumClosed = _mpIsStartup ? allFails.filter(e=>e.status==='CLOSED').length : 0;
+      const _pptSumClosure = _mpIsStartup && totalFail>0 ? Math.round(_pptSumClosed/totalFail*100) : 0;
+      const sumKpis = _mpIsStartup ? [
+        {v:totalFail+'×',      l:'Total Defect',      sub:'teridentifikasi dalam periode', c:C.red,   bg:'FEF2F2'},
+        {v:_mpCatAOpen,        l:'Cat A Open',        sub:'critical, belum closed',        c:_mpCatAOpen?C.red:C.green, bg:_mpCatAOpen?'FEF2F2':C.greenL},
+        {v:openFails,          l:'Defect Open',       sub:'belum closed',                  c:openFails?C.red:C.green, bg:openFails?'FEF2F2':C.greenL},
+        {v:badActors.length,   l:'Startup Bad Actor', sub:'kriteria: ≥2 Cat A defect',     c:badActors.length?C.red:C.green, bg:badActors.length?'FEF2F2':C.greenL},
+        {v:_pptSumClosure+'%', l:'Closure Rate',      sub:`${_pptSumClosed}/${totalFail} closed`, c:_pptSumClosure>=80?C.green:_pptSumClosure>=50?C.amber:C.red, bg:_pptSumClosure>=80?C.greenL:'FFFBEB'},
+        {v:_mpRepeat||'0',     l:'Repeat Defect',     sub:'masalah recurring',              c:_mpRepeat?C.red:C.green, bg:_mpRepeat?'FEF2F2':C.greenL}
+      ] : [
         {v:totalFail+'×',l:'Total Failure',sub:'kejadian tercatat',c:C.red,bg:C.navyL},
         {v:totDown+' Jam',l:'Total Downtime',sub:'F → Resolved',c:C.amber,bg:'FFFBEB'},
         {v:openFails,l:'Failure Open',sub:'belum resolved',c:openFails?C.red:C.green,bg:openFails?'FEF2F2':C.greenL},
@@ -4177,25 +5102,49 @@ async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, i
     // ══════════════════════════════════════
     if(incRanking){
       const s4=pres.addSlide(); s4.background={color:C.bg};
-      addHeader(s4,'EQUIPMENT RISK RANKING',`Periode: ${fromStr} — ${toStr}`);
-      const sortedEqs=[...equipments].sort((a,b)=>calcScore(b)-calcScore(a)).slice(0,10);
+      addHeader(s4,_mpIsStartup?'COMMISSIONING DEFECT RANKING':'EQUIPMENT RISK RANKING',`Periode: ${fromStr} — ${toStr}`);
+      const sortedEqs=[..._mpRptEqs].sort((a,b)=>calcScore(b)-calcScore(a)).slice(0,10);
       const maxSc=calcScore(sortedEqs[0])||1;
+      const _pptRHdr = _mpIsStartup
+        ? [{text:'#',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Equipment',options:{bold:true,color:C.white,fill:C.navy}},
+           {text:'Tag No',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Defect',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Cat A',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Open',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Closure%',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Status',options:{bold:true,color:C.white,fill:C.navy,align:'center'}}]
+        : [{text:'#',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Equipment',options:{bold:true,color:C.white,fill:C.navy}},
+           {text:'Tag No',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Failure',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Downtime',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Open',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Risk Score',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:'Tier',options:{bold:true,color:C.white,fill:C.navy,align:'center'}}];
       const rTbl=[
-        [{text:'#',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
-         {text:'Equipment',options:{bold:true,color:C.white,fill:C.navy}},
-         {text:'Tag No',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
-         {text:'Failure',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
-         {text:'Downtime',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
-         {text:'Open',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
-         {text:'Risk Score',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
-         {text:'Tier',options:{bold:true,color:C.white,fill:C.navy,align:'center'}}],
+        _pptRHdr,
         ...sortedEqs.map((eq,i)=>{
           const sc=calcScore(eq),pct=Math.round(sc/maxSc*100);
           const tier=eq._isBadActor||pct>=70?'CRITICAL':pct>=40?'HIGH':pct>=15?'MEDIUM':'LOW';
           const tierC={CRITICAL:C.red,HIGH:'B45309',MEDIUM:'92400E',LOW:C.green}[tier];
           const bg=eq._isBadActor?'FEF2F2':i%2===0?'F8FAFC':'EFF6FF';
           const rankC=i===0?C.red:i===1?'B45309':i===2?C.green:C.dim;
-          return [
+          // Startup row data
+          const _rqDefs = _mpIsStartup ? allFails.filter(e=>e.equipment_id===eq.id) : [];
+          const _rqCatA = _mpIsStartup ? _rqDefs.filter(e=>e.category==='A').length : 0;
+          const _rqClosed = _mpIsStartup ? _rqDefs.filter(e=>e.status==='CLOSED').length : 0;
+          const _rqClosure = _mpIsStartup && _rqDefs.length>0 ? Math.round(_rqClosed/_rqDefs.length*100)+'%' : '100%';
+          return _mpIsStartup ? [
+            {text:String(i+1),options:{bold:true,color:rankC,fill:bg,align:'center'}},
+            {text:eq.name||'—',options:{bold:eq._isBadActor,color:C.text,fill:bg}},
+            {text:eq.tag_no||'—',options:{color:C.amber,fill:bg,align:'center'}},
+            {text:String(_rqDefs.length)+'×',options:{bold:true,color:_rqDefs.length>0?C.red:C.muted,fill:bg,align:'center'}},
+            {text:String(_rqCatA),options:{bold:true,color:_rqCatA>0?C.red:C.green,fill:bg,align:'center'}},
+            {text:String(eq._open||0),options:{bold:true,color:(eq._open||0)>0?C.red:C.green,fill:bg,align:'center'}},
+            {text:_rqClosure,options:{bold:true,color:_rqClosed===_rqDefs.length?C.green:C.amber,fill:bg,align:'center'}},
+            {text:eq._isBadActor?'BAD ACTOR':'NORMAL',options:{bold:eq._isBadActor,color:eq._isBadActor?C.red:C.green,fill:bg,align:'center'}}
+          ] : [
             {text:String(i+1),options:{bold:true,color:rankC,fill:bg,align:'center'}},
             {text:eq.name||'—',options:{bold:eq._isBadActor,color:C.text,fill:bg}},
             {text:eq.tag_no||'—',options:{color:C.amber,fill:bg,align:'center'}},
@@ -4215,9 +5164,12 @@ async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, i
     // ══════════════════════════════════════
     // OUTSTANDING SLIDE
     // ══════════════════════════════════════
-    if(incOpen&&outItems.length){
+    // Startup: show open defects slide; Operational: show outstanding
+    const _pptOpenDefs = _mpIsStartup ? allFails.filter(e=>e.status!=='CLOSED') : [];
+    if(incOpen&&(_mpIsStartup ? _pptOpenDefs.length>0 : outItems.length>0)){
       const s5=pres.addSlide(); s5.background={color:C.bg};
-      addHeader(s5,`OPEN ITEMS & OUTSTANDING — ${outItems.length} ITEM`,`Periode: ${fromStr} — ${toStr}`);
+      addHeader(s5,_mpIsStartup?`OPEN DEFECTS — ${_pptOpenDefs.length} ITEM`:`OPEN ITEMS & OUTSTANDING — ${outItems.length} ITEM`,`Periode: ${fromStr} — ${toStr}`);
+      const _pptOpenItems = _mpIsStartup ? _pptOpenDefs : outItems;
       const oTbl=[
         [{text:'No',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
          {text:'Equipment',options:{bold:true,color:C.white,fill:C.navy}},
@@ -4225,7 +5177,7 @@ async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, i
          {text:'Outstanding Item',options:{bold:true,color:C.white,fill:C.navy}},
          {text:'PIC',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
          {text:'Target',options:{bold:true,color:C.white,fill:C.navy,align:'center'}}],
-        ...outItems.slice(0,10).map((ev,i)=>{
+        ..._pptOpenItems.slice(0,10).map((ev,i)=>{
           const eq2=equipments.find(e=>e.id===ev.equipment_id);
           const bg=i%2===0?'FFFBEB':C.amberL;
           return [
@@ -4590,6 +5542,11 @@ window.addEventListener('resize',()=>{
   // Listener hanya untuk SIGNED_OUT cleanup
   // SIGNED_IN ditangani langsung oleh doLogin() dan getSession() di bawah
   sb.auth.onAuthStateChange(async(event, session)=>{
+    if(event==='TOKEN_REFRESHED'){
+      // Token silently refreshed by SDK — no action needed, data stays in memory
+      console.log('[Auth] Token refreshed silently');
+      return;
+    }
     if(event==='SIGNED_OUT'){
       if(realtimeCh){try{sb.removeChannel(realtimeCh);}catch(e){}realtimeCh=null;}
       currentUser=null; currentRole=null; currentEqId=null;
@@ -4631,14 +5588,730 @@ async function deleteUser(userId, email, name){
   }
 }
 
-  // Page reload: cek session yang sudah ada
-  const{data:{session}}=await sb.auth.getSession();
+  // Page reload: cek session yang sudah ada (SDK auto-refresh token di background)
+  const { data: { session } } = await sb.auth.getSession();
   if(session?.user){
     await initApp(session.user);
   } else {
     g('login-screen').style.display='flex';
   }
 })();
+
+
+
+
+
+// ══════════════════════════════════════════════════════════════════
+// STARTUP PHASE — Core Logic
+// ══════════════════════════════════════════════════════════════════
+
+let currentPhase = 'operational'; // global phase state
+
+// ── setPhase: switch between operational and startup mode ──
+function setPhase(phase){
+  currentPhase = phase;
+  // Toggle button styles
+  const btnOp = g('btn-phase-op');
+  const btnSu = g('btn-phase-su');
+  if(phase === 'startup'){
+    btnOp.style.background = 'transparent'; btnOp.style.color = 'var(--muted)'; btnOp.style.fontWeight = '600'; btnOp.style.boxShadow = 'none';
+    btnSu.style.background = 'var(--teal)'; btnSu.style.color = '#fff'; btnSu.style.fontWeight = '700'; btnSu.style.boxShadow = '0 1px 4px rgba(0,0,0,.18)';
+  } else {
+    btnOp.style.background = 'var(--amber)'; btnOp.style.color = '#fff'; btnOp.style.fontWeight = '700'; btnOp.style.boxShadow = '0 1px 4px rgba(0,0,0,.18)';
+    btnSu.style.background = 'transparent'; btnSu.style.color = 'var(--muted)'; btnSu.style.fontWeight = '600'; btnSu.style.boxShadow = 'none';
+  }
+  // Toggle KPI strips
+  g('kpi-operational').style.display = phase === 'operational' ? '' : 'none';
+  g('kpi-startup').style.display     = phase === 'startup'     ? '' : 'none';
+  // Update title
+  g('dash-title-text').textContent = phase === 'startup'
+    ? 'Startup / Commissioning Phase — Equipment Monitoring'
+    : 'Bad Actor Equipment Management';
+  g('dash-subtitle-text').textContent = phase === 'startup'
+    ? 'Startup / Commissioning Phase — Defect Tracker'
+    : 'Operational Phase — Summary';
+  // Update toggle hint label
+  const _phLbl = g('phase-toggle-hint-label');
+  if(_phLbl){ _phLbl.textContent = phase==='startup'?'Startup / Commissioning':'Operational Phase'; _phLbl.style.color=phase==='startup'?'var(--teal)':'var(--amber)'; }
+  // Update equipment count in toggle bar
+  const _phEqCnt = g('phase-eq-count');
+  if(_phEqCnt){ const cnt=equipments.filter(eq=>(eq.phase||'operational')===phase).length; _phEqCnt.textContent=cnt+' equipment'; }
+  // Update toggle hint label
+  const _hint = g('phase-toggle-hint-label');
+  if(_hint){
+    _hint.textContent = phase === 'startup' ? 'Startup / Commissioning Phase' : 'Operational Phase';
+    _hint.style.color = phase === 'startup' ? 'var(--teal)' : 'var(--amber)';
+  }
+  // Re-render dashboard + ranking + trend with new phase
+  renderDashboard();
+  // Immediately refresh ranking & trend (regardless of which tab is active)
+  if(typeof renderRanking === 'function') setTimeout(renderRanking, 50);
+  if(typeof renderTrendChart === 'function') setTimeout(renderTrendChart, 80);
+}
+
+// ── isStartupBadActor: determine if startup equipment qualifies as bad actor ──
+function isStartupBadActor(eq, defects){
+  if(!defects || defects.length === 0) return false;
+  const myDefects = defects.filter(d => d.equipment_id === eq.id && d.type === 'defect');
+  // Rule 1: Any Cat A defect still OPEN
+  const openCatA = myDefects.filter(d => d.category === 'A' && d.status !== 'CLOSED');
+  if(openCatA.length > 0) return true;
+  // Rule 2: Total defects >= 3
+  if(myDefects.length >= 3) return true;
+  // Rule 3: Any repeat defect
+  const hasRepeat = myDefects.some(d => d.is_repeat === true);
+  if(hasRepeat) return true;
+  return false;
+}
+
+// ── calcInheritedRisk: auto-calculate inherited risk on graduate ──
+function calcInheritedRisk(eq, defects){
+  const myDefects = defects.filter(d => d.equipment_id === eq.id && d.type === 'defect');
+  if(myDefects.length === 0) return 'none';
+  // High: was startup bad actor OR has repeat defect
+  const hasRepeat   = myDefects.some(d => d.is_repeat === true);
+  const hadCatAOpen = myDefects.some(d => d.category === 'A');
+  if(hasRepeat || hadCatAOpen || myDefects.length >= 3) return 'high';
+  // Medium: >= 3 defects, all closed
+  if(myDefects.length >= 3) return 'medium';
+  // Low: 1-2 defects, all closed
+  return 'low';
+}
+
+// ── onPhaseRadioChange: show/hide startup fields in equipment modal ──
+function onPhaseRadioChange(){
+  const isStartup = g('eq-phase-startup')?.checked;
+  // Highlight selected radio label only
+  const lblOp = g('phase-lbl-op');
+  const lblSu = g('phase-lbl-su');
+  if(lblOp) lblOp.style.borderColor = isStartup ? 'var(--border)' : 'var(--amber)';
+  if(lblSu) lblSu.style.borderColor = isStartup ? 'var(--teal)' : 'var(--border)';
+}
+
+// ── Graduate equipment: startup → operational ──
+async function graduateEquipment(eqId){
+  const eq = equipments.find(e => e.id === eqId);
+  if(!eq) return;
+  const confirmMsg = `Graduate "${eq.name}" dari Startup ke Operational?
+
+Inherited risk akan dihitung otomatis dari history commissioning.`;
+  if(!confirm(confirmMsg)) return;
+  const risk = calcInheritedRisk(eq, allEventsCache);
+  const today = new Date().toISOString().split('T')[0];
+  const payload = {
+    phase: 'operational',
+    graduated_date: today,
+    inherited_risk: risk
+  };
+  const {error} = await sb.from('equipments').update(payload).eq('id', eqId);
+  if(error){ toast('Gagal graduate: ' + error.message, 'error'); return; }
+  // Update local
+  const i = equipments.findIndex(e => e.id === eqId);
+  if(i > -1) equipments[i] = {...equipments[i], ...payload};
+  const riskLabel = {high:'HIGH 🔴', medium:'MEDIUM 🟡', low:'LOW 🟢', none:'NONE ✓'}[risk] || risk;
+  toast(`✓ ${eq.name} graduated ke Operational. Inherited Risk: ${riskLabel}`);
+  renderDashboard();
+}
+
+// ── Patch renderDashboard to filter by phase ──
+// We wrap the existing renderDashboard to inject phase filtering
+const _origRenderDashboard = renderDashboard;
+renderDashboard = function(){
+  // Phase-filter equipments before passing to original render
+  const _allEq = equipments;
+  const phaseFiltered = _allEq.filter(eq => (eq.phase || 'operational') === currentPhase);
+
+  // Temporarily swap so _origRenderDashboard uses phase-filtered list
+  equipments = phaseFiltered;
+  _origRenderDashboard();   // reads g('eq-search') + eqFilter internally → correct result
+  equipments = _allEq;      // always restore
+
+  // Update KPI strips for current phase
+  if(currentPhase === 'startup'){
+    updateStartupKPI(phaseFiltered);
+  } else {
+    updateOperationalKPI(phaseFiltered);
+  }
+};
+
+function updateOperationalKPI(eqs){
+  g('ds-total').textContent     = eqs.length;
+  g('ds-bad-actor').textContent = eqs.filter(e => e._isBadActor).length;
+  g('ds-failures').textContent  = eqs.reduce((s,e) => s+(e._failures||0), 0);
+  g('ds-open').textContent      = eqs.reduce((s,e) => s+(e._open||0), 0);
+  g('ds-downtime').textContent  = eqs.reduce((s,e) => s+(e._downtime||0), 0);
+}
+
+function updateStartupKPI(eqs){
+  const allDefects = allEventsCache.filter(e => e.type === 'defect');
+  const myDefects  = allDefects.filter(d => eqs.some(eq => eq.id === d.equipment_id));
+  const catAOpen   = myDefects.filter(d => d.category === 'A' && d.status !== 'CLOSED');
+  const closed     = myDefects.filter(d => d.status === 'CLOSED');
+  const closureRate = myDefects.length > 0
+    ? Math.round(closed.length / myDefects.length * 100) : 0;
+  const badActors  = eqs.filter(eq => isStartupBadActor(eq, allEventsCache));
+
+  g('su-total').textContent     = eqs.length;
+  g('su-bad-actor').textContent = badActors.length;
+  g('su-defects').textContent   = myDefects.length;
+  g('su-cat-a').textContent     = catAOpen.length;
+  g('su-closure').textContent   = closureRate + '%';
+}
+
+// ── Patch saveEquipment to include phase fields ──
+const _origSaveEquipment = saveEquipment;
+saveEquipment = async function(){
+  // Inject phase into payload (startup_date / cod_target_date removed from UI)
+  const phase = document.querySelector('input[name="eq-phase"]:checked')?.value || 'operational';
+  const origFrom = sb.from;
+  sb.from = function(table){
+    const chain = origFrom.call(sb, table);
+    if(table === 'equipments'){
+      const origInsert = chain.insert.bind(chain);
+      const origUpdate = chain.update.bind(chain);
+      chain.insert = function(payload){ return origInsert({...payload, phase}); };
+      chain.update = function(payload){ return origUpdate({...payload, phase}); };
+    }
+    return chain;
+  };
+  await _origSaveEquipment();
+  sb.from = origFrom;
+};
+
+// ── Patch openEditEquipment to populate phase fields ──
+const _origOpenEditEq2 = openEditEquipment;
+openEditEquipment = function(eqId){
+  _origOpenEditEq2(eqId);
+  const eq = equipments.find(e => e.id === eqId);
+  if(eq) setTimeout(() => populateEquipmentPhaseFields(eq), 50);
+};
+
+function populateEquipmentPhaseFields(eq){
+  const phase = eq.phase || 'operational';
+  const radioOp = g('eq-phase-operational');
+  const radioSu = g('eq-phase-startup');
+  if(radioOp && radioSu){
+    radioOp.checked = phase === 'operational';
+    radioSu.checked = phase === 'startup';
+    onPhaseRadioChange();
+  }
+  // startup_date and cod_target_date fields removed from UI
+}
+
+// ── Patch onTypeChange to handle startup types ──
+const _origOnTypeChange = onTypeChange;
+onTypeChange = function(){
+  const t = g('f-type').value;
+  const isStartupType = ['defect','corrective','closed'].includes(t);
+
+  // Show/hide startup meta fields
+  const metaEl = g('f-startup-meta');
+  if(metaEl) metaEl.style.display = isStartupType ? 'block' : 'none';
+
+  // Show/hide startup blocks
+  const startupBlocks = ['f-defect-block','f-corrective-block','f-closed-block'];
+  startupBlocks.forEach(id => { const el=g(id); if(el) el.style.display='none'; });
+
+  if(isStartupType){
+    // Hide operational blocks
+    ['f-fail-block','f-action-block','f-repair-block','f-resolved-block'].forEach(id => {
+      const el = g(id); if(el) el.style.display = 'none';
+    });
+    if(t==='defect')     { const el=g('f-defect-block');     if(el) el.style.display='block'; }
+    if(t==='corrective') { const el=g('f-corrective-block'); if(el) el.style.display='block'; }
+    if(t==='closed')     { const el=g('f-closed-block');     if(el) el.style.display='block'; }
+  } else {
+    // Call original for operational types
+    _origOnTypeChange();
+  }
+};
+
+// ── Patch submitForm to include startup fields ──
+const _origSubmitForm = submitForm;
+submitForm = async function(){
+  const typeVal = g('f-type').value;
+  const isStartupType = ['defect','corrective','closed'].includes(typeVal);
+
+  if(!isStartupType){
+    return _origSubmitForm();
+  }
+
+  // Startup form submission
+  if(!window._canEdit){ toast('Tidak memiliki akses edit.','error'); return; }
+  const date  = g('f-date').value;
+  const title = g('f-title').value.trim();
+  if(!date || !title){ toast('Tanggal dan Judul wajib diisi!','error'); return; }
+
+  // Gather startup-specific fields
+  const category  = g('f-category')?.value   || null;
+  const isRepeat  = g('f-is-repeat')?.checked || false;
+
+  let actions = '', impact = '', mode = '', cause = '';
+  if(typeVal === 'defect'){
+    mode    = g('f-defect-source')?.value || '';
+    cause   = g('f-defect-desc')?.value  || '';
+    impact  = g('f-defect-impact')?.value || '';
+  } else if(typeVal === 'corrective'){
+    actions = [
+      g('f-corr-act')?.value,
+      g('f-corr-pic')?.value  ? 'Pelaksana: '+g('f-corr-pic').value : '',
+      g('f-corr-progress')?.value
+    ].filter(Boolean).join('\n');
+  } else if(typeVal === 'closed'){
+    actions = [
+      g('f-close-confirm')?.value,
+      g('f-close-verify')?.value
+    ].filter(Boolean).join('\n');
+  }
+
+  if(typeVal === 'defect' && !category){
+    toast('Pilih kategori defect (A/B/C)!','error'); return;
+  }
+
+  const ev = {
+    equipment_id: currentEqId,
+    date, time: g('f-time')?.value || null,
+    type: typeVal, title,
+    mode: mode || null,
+    cause: cause || null,
+    actions: actions || null,
+    impact: impact || null,
+    outstanding: g('f-out')?.value?.trim() || null,
+    pic: g('f-pic')?.value?.trim() || null,
+    target_date: g('f-tgt')?.value || null,
+    wo: g('f-wo')?.value?.trim() || null,
+    status: g('f-status')?.value || 'OPEN',
+    ref: g('f-ref')?.value?.trim() || null,
+    category: category,
+    is_repeat: isRepeat,
+    parent_failure_id: currentParentFailureId || null,
+    modified_by: currentUser?.email || null,
+    downtime: 0, fail_no: null,
+  };
+
+  setConn('sync');
+  let error;
+  if(editEvId){
+    const res = await sb.from('events').update(ev).eq('id', editEvId); error = res.error;
+    if(!error) toast('Event diupdate ✓');
+  } else {
+    const res = await sb.from('events').insert(ev); error = res.error;
+    if(!error) toast('Defect ditambahkan ✓');
+  }
+  if(error){ toast('Error: '+error.message,'error'); setConn('ok'); return; }
+  setConn('ok');
+  resetForm();
+  // Reload events + refresh equipment summary (for dashboard counters)
+  const {data} = await sb.from('events').select('*').eq('equipment_id', currentEqId)
+    .order('date',{ascending:true}).order('created_at',{ascending:true});
+  if(data){ events = data; }
+  await refreshEqSummary(currentEqId);
+  render();
+};
+
+// ── Patch openEquipment to show/hide startup-specific UI ──
+const _origOpenEquipment = openEquipment;
+openEquipment = async function(eqId){
+  // MUST await so resetForm() inside completes BEFORE we set startup-specific form state
+  await _origOpenEquipment(eqId);
+  const eq = equipments.find(e => e.id === eqId);
+  if(!eq) return;
+  const isStartup = (eq.phase || 'operational') === 'startup';
+
+  // Show/hide correct optgroup in type select
+  const grpOp = g('optgrp-operational');
+  const grpSu = g('optgrp-startup');
+  if(grpOp) grpOp.style.display = isStartup ? 'none' : '';
+  if(grpSu) grpSu.style.display = isStartup ? '' : 'none';
+
+  // Set default type for startup AFTER resetForm has completed
+  const typeEl = g('f-type');
+  if(typeEl){
+    typeEl.value = isStartup ? 'defect' : 'failure';
+    onTypeChange(); // shows correct block + updates parent selector
+  }
+
+  // Toggle legend and filter chips
+  document.querySelectorAll('.op-legend').forEach(el => el.style.display = isStartup ? 'none' : '');
+  document.querySelectorAll('.su-legend').forEach(el => el.style.display = isStartup ? '' : 'none');
+  document.querySelectorAll('.op-filter').forEach(el => el.style.display = isStartup ? 'none' : '');
+  document.querySelectorAll('.su-filter').forEach(el => el.style.display = isStartup ? '' : 'none');
+
+  // Reset filter chips to 'all'
+  document.querySelectorAll('.toolbar .fchip').forEach((c,i)=>c.classList.toggle('active',i===0));
+  curFilter='all';
+};
+
+// ── Patch buildEqCard to show startup badges + graduate button ──
+const _origBuildEqCard = buildEqCard;
+buildEqCard = function(eq){
+  const card = _origBuildEqCard(eq);
+  if(!card) return card;
+
+  const isStartup = (eq.phase || 'operational') === 'startup';
+
+  // Add startup badge to card
+  if(isStartup){
+    // Find badge area in card
+    const badgeArea = card.querySelector('.eq-badges') || card.querySelector('.eq-meta');
+    if(badgeArea){
+      const suBadge = document.createElement('span');
+      suBadge.className = 'phase-startup-badge';
+      suBadge.textContent = '🔧 STARTUP';
+      badgeArea.appendChild(suBadge);
+    }
+
+    // Startup bad actor
+    const myDefects = allEventsCache.filter(d => d.equipment_id === eq.id && d.type === 'defect');
+    const suBadActor = isStartupBadActor(eq, allEventsCache);
+    if(suBadActor){
+      const ba = document.createElement('span');
+      ba.className = 'startup-bad-actor-badge';
+      ba.textContent = '⚠ STARTUP BAD ACTOR';
+      if(badgeArea) badgeArea.appendChild(ba);
+    }
+
+    // Defect stats
+    const catAOpen  = myDefects.filter(d => d.category==='A' && d.status!=='CLOSED').length;
+    const totalDef  = myDefects.length;
+    const closedDef = myDefects.filter(d => d.status==='CLOSED').length;
+    const closureP  = totalDef > 0 ? Math.round(closedDef/totalDef*100) : 0;
+    const hasRepeat = myDefects.some(d => d.is_repeat);
+
+    // Find stats area (eq-stats) and replace/add startup stats
+    const statsArea = card.querySelector('.eq-stats');
+    if(statsArea){
+      const suStats = document.createElement('div');
+      suStats.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);';
+      suStats.innerHTML = `
+        <span style="font-size:10px;color:var(--muted);">Defect: <b style="color:${totalDef>0?'var(--red)':'var(--green)'};">${totalDef}</b></span>
+        ${catAOpen>0?`<span style="font-size:10px;font-weight:700;color:var(--red);">⚠ Cat A: ${catAOpen}</span>`:''}
+        <span style="font-size:10px;color:var(--muted);">Closure: <b style="color:${closureP>=80?'var(--green)':closureP>=50?'var(--amber)':'var(--red)'};">${closureP}%</b></span>
+        ${hasRepeat?'<span class="repeat-defect-badge">↺ Repeat</span>':''}
+      `;
+      statsArea.appendChild(suStats);
+    }
+
+    // Add graduate button to card footer if editor/admin
+    if(window._canEdit){
+      const footer = card.querySelector('.eq-foot') || card;
+      const gradBtn = document.createElement('button');
+      gradBtn.className = 'btn-graduate';
+      gradBtn.textContent = '⬆ Graduate ke Operational';
+      gradBtn.onclick = (e) => { e.stopPropagation(); graduateEquipment(eq.id); };
+      gradBtn.style.cssText = 'margin-top:8px;width:100%;display:block;';
+      footer.appendChild(gradBtn);
+    }
+  }
+
+  // Show inherited risk for operational equipment that came from startup
+  if(!isStartup && eq.inherited_risk && eq.inherited_risk !== 'none'){
+    const riskClass = `inherited-${eq.inherited_risk}`;
+    const riskLabel = {high:'HIGH',medium:'MEDIUM',low:'LOW'}[eq.inherited_risk]||eq.inherited_risk;
+    const riskBadge = document.createElement('div');
+    riskBadge.style.cssText = 'margin-top:6px;padding-top:6px;border-top:1px solid var(--border);';
+    riskBadge.innerHTML = `<span class="defect-category-badge ${riskClass}" style="font-size:9px;">
+      📋 Inherited Risk: ${riskLabel}</span>
+      <span style="font-size:9px;color:var(--muted);margin-left:4px;">dari startup history</span>`;
+    card.appendChild(riskBadge);
+  }
+
+  return card;
+};
+
+// ── Patch render() timeline to show startup event categories ──
+// Override renderTimelineItem to add category badge
+const _origRender = render;
+render = function(){
+  _origRender();
+  const eq = equipments.find(e => e.id === currentEqId);
+  const isStartup = eq && (eq.phase || 'operational') === 'startup';
+
+  // Always remove old bar first — ensures it disappears when switching to operational equipment
+  const oldBar = g('startup-detail-bar');
+  if(oldBar) oldBar.remove();
+
+  // Only rebuild bar for startup equipment
+  if(!isStartup) return;
+
+  const detailMain = document.querySelector('.main .stats-strip');
+  if(!detailMain) return;
+
+  const bar = document.createElement('div');
+  bar.id = 'startup-detail-bar';
+  bar.style.cssText = `padding:8px 14px;background:rgba(2,132,199,.08);
+    border:1px solid rgba(2,132,199,.2);border-radius:8px;margin-bottom:10px;
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;`;
+  const myDefs = allEventsCache.filter(d => d.equipment_id === currentEqId && d.type === 'defect');
+  const catAOp = myDefs.filter(d => d.category==='A' && d.status!=='CLOSED').length;
+  const closed = myDefs.filter(d => d.status==='CLOSED').length;
+  const total  = myDefs.length;
+  const pct    = total > 0 ? Math.round(closed/total*100) : 0;
+  bar.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span class="phase-startup-badge">🔧 STARTUP / COMMISSIONING PHASE</span>
+      <span style="font-size:11px;color:var(--muted);">Total defect: <b>${total}</b></span>
+      ${catAOp>0?`<span style="font-size:11px;font-weight:700;color:var(--red);">⚠ Cat A Open: ${catAOp}</span>`:''}
+      <span style="font-size:11px;color:var(--muted);">Closure: <b style="color:${pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)'};">${pct}%</b></span>
+    </div>
+    ${window._canEdit ? `<button class="btn-graduate" onclick="graduateEquipment('${currentEqId}')">↑ Move to Operational Phase</button>` : ''}
+  `;
+  detailMain.parentNode.insertBefore(bar, detailMain);
+};
+
+// ── Patch openAddEquipment to pre-select phase based on current mode ──
+const _origOpenAddEquipment = openAddEquipment;
+openAddEquipment = function(){
+  _origOpenAddEquipment();
+  // Pre-select phase radio based on current mode
+  const radioOp = g('eq-phase-operational');
+  const radioSu = g('eq-phase-startup');
+  if(radioOp && radioSu){
+    radioOp.checked = currentPhase === 'operational';
+    radioSu.checked = currentPhase === 'startup';
+    onPhaseRadioChange();
+  }
+};
+
+
+
+
+
+
+
+// ── renderStartupRanking: replace operational ranking table with startup defect ranking ──
+function renderStartupRanking(phaseEqs){
+  const tbody = g('rank-tbody');
+  const kpiRow = g('rank-kpi-row');
+  const resultInfo = g('rank-result-info');
+  const pagination = g('rank-pagination');
+
+  // Clear pagination
+  if(pagination) pagination.innerHTML = '';
+
+  // KPI strip for startup
+  const totalDef  = phaseEqs.reduce((s,e)=>s+(e._su_defects||0),0);
+  const catAOpen  = phaseEqs.reduce((s,e)=>s+(e._su_cat_a||0),0);
+  const baCount   = phaseEqs.filter(e=>e._isBadActor).length;
+  const avgClosure= phaseEqs.length>0
+    ? Math.round(phaseEqs.reduce((s,e)=>s+(e._su_closure||0),0)/phaseEqs.length) : 0;
+
+  if(kpiRow) kpiRow.innerHTML = `
+    <div class="rank-kpi-card" style="border-top:3px solid var(--text);">
+      <div class="rk-val" style="color:var(--text);">${phaseEqs.length}</div>
+      <div class="rk-lbl">Equipment Startup</div>
+    </div>
+    <div class="rank-kpi-card" style="border-top:3px solid var(--red);">
+      <div class="rk-val c-red">${baCount}</div>
+      <div class="rk-lbl">Startup Bad Actor</div>
+    </div>
+    <div class="rank-kpi-card" style="border-top:3px solid var(--red);">
+      <div class="rk-val c-red">${totalDef}</div>
+      <div class="rk-lbl">Total Defect</div>
+    </div>
+    <div class="rank-kpi-card" style="border-top:3px solid var(--red);">
+      <div class="rk-val c-red">${catAOpen}</div>
+      <div class="rk-lbl">Cat A Open</div>
+    </div>
+    <div class="rank-kpi-card" style="border-top:3px solid var(--green);">
+      <div class="rk-val" style="color:var(--green);">${avgClosure}%</div>
+      <div class="rk-lbl">Avg Closure Rate</div>
+    </div>`;
+
+  // Update table headers for startup context
+  const thead = tbody?.closest('table')?.querySelector('thead tr');
+  if(thead) thead.innerHTML = `
+    <th onclick="rankSort('name')" style="cursor:pointer;min-width:180px;">Equipment ${rankSortCol==='name'?(rankSortDir==='asc'?'↑':'↓'):'↕'}</th>
+    <th style="text-align:center;">Startup Bad Actor</th>
+    <th onclick="rankSort('failures')" style="cursor:pointer;text-align:center;">Total Defect ${rankSortCol==='failures'?(rankSortDir==='asc'?'↑':'↓'):'↕'}</th>
+    <th style="text-align:center;">Cat A Open</th>
+    <th style="text-align:center;">Repeat</th>
+    <th style="text-align:center;">Closure %</th>`;
+
+  // Sort
+  let sorted = [...phaseEqs].sort((a,b) => b._su_defects - a._su_defects || b._su_cat_a - a._su_cat_a);
+
+  // Search filter
+  const srch = (g('rank-search')?.value||'').toLowerCase().trim();
+  if(srch) sorted = sorted.filter(eq =>
+    (eq.name||'').toLowerCase().includes(srch) ||
+    (eq.tag_no||'').toLowerCase().includes(srch) ||
+    (eq.unit||'').toLowerCase().includes(srch));
+
+  if(resultInfo) resultInfo.textContent = sorted.length + ' equipment';
+
+  if(!sorted.length){
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">
+      Tidak ada equipment startup${srch?' yang cocok dengan pencarian':''}.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = sorted.map((eq,i) => {
+    const isBa  = eq._isBadActor;
+    const catA  = eq._su_cat_a || 0;
+    const total = eq._su_defects || 0;
+    const rep   = eq._su_repeat || 0;
+    const cls   = eq._su_closure ?? 100;
+    const rowBg = isBa ? 'background:rgba(220,38,38,.04);' : i%2===0?'background:var(--bg);':'';
+    const clsColor = cls>=80?'var(--green)':cls>=50?'var(--amber)':'var(--red)';
+    return `<tr style="${rowBg}cursor:pointer;" onclick="openEquipment('${eq.id}')">
+      <td>
+        <div style="font-weight:700;font-size:13px;">${esc(eq.name||'')}</div>
+        <div style="font-size:10px;color:var(--muted);">${esc(eq.tag_no||'')} · ${esc(eq.unit||'')}</div>
+        ${eq.inherited_risk&&eq.inherited_risk!=='none'?`<span style="font-size:9px;padding:1px 5px;border-radius:3px;" class="defect-category-badge inherited-${eq.inherited_risk}">Risk: ${eq.inherited_risk.toUpperCase()}</span>`:''}
+      </td>
+      <td style="text-align:center;">
+        ${isBa ? '<span class="startup-bad-actor-badge">⚠ BAD ACTOR</span>' : '<span style="color:var(--muted);font-size:11px;">—</span>'}
+      </td>
+      <td style="text-align:center;font-weight:700;color:${total>0?'var(--red)':'var(--green)'};">${total}</td>
+      <td style="text-align:center;font-weight:700;color:${catA>0?'var(--red)':'var(--green)'};">${catA>0?`<span style="background:rgba(220,38,38,.1);padding:2px 8px;border-radius:4px;">${catA}</span>`:catA}</td>
+      <td style="text-align:center;color:${rep>0?'var(--red)':'var(--muted)'};">${rep>0?`<span class="repeat-defect-badge">↺ ${rep}</span>`:'—'}</td>
+      <td style="text-align:center;">
+        <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+          <div style="width:60px;height:6px;background:var(--border);border-radius:3px;">
+            <div style="width:${cls}%;height:100%;background:${clsColor};border-radius:3px;transition:width .3s;"></div>
+          </div>
+          <span style="font-weight:700;color:${clsColor};font-size:12px;">${cls}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+
+
+// ── renderStartupTrend: show defect count by equipment for startup mode ──
+function renderStartupTrend(wrap, kpiRow, statsDiv){
+  const phaseEqs = equipments.filter(eq => (eq.phase||'operational') === 'startup');
+  const allDefs  = allEventsCache.filter(e => e.type==='defect');
+
+  // Update eq select to show only startup equipment
+  const eqSelect = g('trend-eq-select');
+  if(eqSelect){
+    eqSelect.innerHTML = '<option value="all">Semua Equipment Startup</option>';
+    phaseEqs.forEach(eq => {
+      const o = document.createElement('option');
+      o.value = eq.id; o.textContent = eq.tag_no + ' — ' + eq.name;
+      eqSelect.appendChild(o);
+    });
+  }
+
+  const selEqId = eqSelect?.value || 'all';
+  const targetEqs = selEqId==='all' ? phaseEqs : phaseEqs.filter(e=>e.id===selEqId);
+
+  // KPI
+  const totalDef  = allDefs.filter(d=>targetEqs.some(e=>e.id===d.equipment_id)).length;
+  const catAOpen  = allDefs.filter(d=>d.category==='A'&&d.status!=='CLOSED'&&targetEqs.some(e=>e.id===d.equipment_id)).length;
+  const closedDef = allDefs.filter(d=>d.status==='CLOSED'&&targetEqs.some(e=>e.id===d.equipment_id)).length;
+  const repeatDef = allDefs.filter(d=>d.is_repeat&&targetEqs.some(e=>e.id===d.equipment_id)).length;
+
+  if(kpiRow) kpiRow.innerHTML = `
+    <div class="trend-kpi-card"><div class="tk-val c-red">${totalDef}</div><div class="tk-lbl">Total Defect</div></div>
+    <div class="trend-kpi-card"><div class="tk-val c-red">${catAOpen}</div><div class="tk-lbl">Cat A Open</div></div>
+    <div class="trend-kpi-card"><div class="tk-val c-green">${closedDef}</div><div class="tk-lbl">Closed</div></div>
+    <div class="trend-kpi-card"><div class="tk-val c-amber">${repeatDef}</div><div class="tk-lbl">Repeat Defect</div></div>`;
+
+  // Chart: horizontal bar per equipment — defect count
+  if(!wrap) return;
+  wrap.innerHTML = '';
+
+  if(!targetEqs.length){
+    wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Tidak ada equipment startup.</div>';
+    return;
+  }
+
+  const chartData = targetEqs.map(eq => {
+    const myDefs = allDefs.filter(d=>d.equipment_id===eq.id);
+    return {
+      eq,
+      total:  myDefs.length,
+      catA:   myDefs.filter(d=>d.category==='A').length,
+      catB:   myDefs.filter(d=>d.category==='B').length,
+      catC:   myDefs.filter(d=>d.category==='C').length,
+      open:   myDefs.filter(d=>d.status!=='CLOSED').length,
+      closed: myDefs.filter(d=>d.status==='CLOSED').length,
+      repeat: myDefs.filter(d=>d.is_repeat).length,
+    };
+  }).sort((a,b) => b.total - a.total);
+
+  const maxVal = Math.max(...chartData.map(d=>d.total), 1);
+
+  const svg_h  = Math.max(200, chartData.length * 46 + 40);
+  const bar_h  = 28;
+  const margin = {left:160, right:60, top:20, bottom:20};
+  const chart_w = wrap.clientWidth || 600;
+  const inner_w = chart_w - margin.left - margin.right;
+
+  let svgRows = '';
+  chartData.forEach((d, i) => {
+    const y = margin.top + i * 46;
+    const wClosed = d.closed > 0 ? Math.round(d.closed/maxVal * inner_w) : 0;
+    const wOpen   = d.open   > 0 ? Math.round(d.open/maxVal   * inner_w) : 0;
+    const isBa    = isStartupBadActor(d.eq, allEventsCache);
+    const nameColor = isBa ? '#dc2626' : 'var(--text)';
+
+    svgRows += `
+      <text x="${margin.left-8}" y="${y+bar_h/2+4}" text-anchor="end" font-size="11" fill="${nameColor}" font-weight="${isBa?'700':'400'}">
+        ${esc(d.eq.tag_no||d.eq.name).substring(0,18)}${isBa?' ⚠':''}
+      </text>
+      <rect x="${margin.left}" y="${y}" width="${wClosed}" height="${bar_h}" fill="var(--green)" opacity=".85" rx="3"/>
+      <rect x="${margin.left+wClosed}" y="${y}" width="${wOpen}" height="${bar_h}" fill="${d.catA>0?'var(--red)':'var(--amber)'}" opacity=".85" rx="3"/>
+      ${d.total>0?`<text x="${margin.left+wClosed+wOpen+6}" y="${y+bar_h/2+4}" font-size="11" fill="var(--text)" font-weight="700">${d.total}${d.catA?` (${d.catA}A)`:''}</text>`:''}
+    `;
+  });
+
+  wrap.innerHTML = `
+    <svg width="100%" height="${svg_h}" style="overflow:visible;">
+      <text x="${margin.left}" y="14" font-size="10" fill="var(--muted)">● Closed</text>
+      <text x="${margin.left+55}" y="14" font-size="10" fill="var(--amber)">● Open</text>
+      <text x="${margin.left+95}" y="14" font-size="10" fill="var(--red)">● Cat A Open</text>
+      ${svgRows}
+    </svg>`;
+
+  // Stats table below
+  if(statsDiv){
+    statsDiv.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="border-bottom:2px solid var(--border);">
+          <th style="text-align:left;padding:6px 8px;">Equipment</th>
+          <th style="text-align:center;padding:6px;">Total</th>
+          <th style="text-align:center;padding:6px;color:var(--red);">Cat A</th>
+          <th style="text-align:center;padding:6px;color:var(--amber);">Cat B</th>
+          <th style="text-align:center;padding:6px;color:var(--teal);">Cat C</th>
+          <th style="text-align:center;padding:6px;color:var(--red);">↺ Repeat</th>
+          <th style="text-align:center;padding:6px;">Closure %</th>
+          <th style="text-align:center;padding:6px;">Status</th>
+        </tr></thead>
+        <tbody>
+          ${chartData.map((d,i) => {
+            const cls = d.total>0 ? Math.round(d.closed/d.total*100) : 100;
+            const isBa = isStartupBadActor(d.eq, allEventsCache);
+            return `<tr style="border-bottom:1px solid var(--border);${i%2===0?'background:var(--bg);':''}cursor:pointer;" onclick="openEquipment('${d.eq.id}')">
+              <td style="padding:6px 8px;font-weight:${isBa?'700':'400'};color:${isBa?'var(--red)':'var(--text)'};">
+                ${esc(d.eq.name)} ${isBa?'<span class="startup-bad-actor-badge" style="font-size:9px;">⚠</span>':''}
+                <div style="font-size:10px;color:var(--muted);">${esc(d.eq.tag_no||'')} · ${esc(d.eq.unit||'')}</div>
+              </td>
+              <td style="text-align:center;font-weight:700;">${d.total}</td>
+              <td style="text-align:center;color:var(--red);font-weight:${d.catA?'700':'400'};">${d.catA||'—'}</td>
+              <td style="text-align:center;color:var(--amber);">${d.catB||'—'}</td>
+              <td style="text-align:center;color:var(--teal);">${d.catC||'—'}</td>
+              <td style="text-align:center;color:${d.repeat?'var(--red)':'var(--muted)'};">${d.repeat?'↺ '+d.repeat:'—'}</td>
+              <td style="text-align:center;">
+                <span style="font-weight:700;color:${cls>=80?'var(--green)':cls>=50?'var(--amber)':'var(--red)'};">${cls}%</span>
+              </td>
+              <td style="text-align:center;">
+                <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${d.open>0?'rgba(220,38,38,.1)':'rgba(22,163,74,.1)'};color:${d.open>0?'var(--red)':'var(--green)'};">
+                  ${d.open>0?d.open+' OPEN':'CLEAR'}
+                </span>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+  }
+}
+
+
 </script>
 </body>
 </html>
