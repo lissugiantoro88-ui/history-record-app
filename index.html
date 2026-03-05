@@ -3180,28 +3180,21 @@ async function exportPDF(){
     });
 
     const cols=['No','Tanggal & Waktu','Tipe','Judul / Deskripsi Event','Failure Mode','Root Cause','Downtime','PIC','Status'];
-    const cw=[8,24,18,62,30,32,16,24,18]; // total ~232, margin 10+10=20 → 252 on 297
+    // ── Card-style event rendering with full text wrap ──
+    const PW2 = W-20;
 
     let firstChronoPage=true;
     const startChronoPage=()=>{
       if(!firstChronoPage) doc.addPage();
       firstChronoPage=false;
-      pageHeader(_pIsStartup ? 'KRONOLOGIS — COMMISSIONING DEFECT HISTORY' : 'KRONOLOGIS EVENT — FAILURE HISTORY', `${eqName} — ${tag}`);
-      let rx=10, ry=22;
-      doc.setFillColor(...C.navy); doc.rect(10,ry-5,W-20,8,'F');
-      cols.forEach((c,i)=>{
-        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.white);
-        doc.text(c, rx+1.5, ry, {maxWidth:cw[i]-3});
-        rx+=cw[i];
-      });
-      return 30;
+      pageHeader(_pIsStartup ? 'KRONOLOGIS - COMMISSIONING DEFECT HISTORY' : 'KRONOLOGIS EVENT - FAILURE HISTORY', `${eqName} - ${tag}`);
+      return 24;
     };
 
     let ry=startChronoPage();
     let rowNum=0;
 
     _pdfFails.forEach(f=>{
-      if(ry>H-14){addFooter(pageN++,totalPages);ry=startChronoPage();}
       rowNum++;
       const myChildren=sortChildEvents(_pdfChildren.filter(c=>
         c.parent_failure_id===f.id || autoMap2.get(c.id)===f.id
@@ -3209,50 +3202,121 @@ async function exportPDF(){
       const myRes=myChildren.filter(c=>c.type==='resolved');
       const isClosed=myRes.length>0||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
       const fDown=myRes.length?
-        Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600))+'j':
+        Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600))+' j':
         (f.downtime?f.downtime+' j':'—');
 
-      // Failure header row (dark)
-      doc.setFillColor(...C.navy); doc.rect(10,ry-4,W-20,8,'F');
-      doc.setFillColor(...C.red); doc.rect(10,ry-4,3,8,'F');
-      const fRow=[String(rowNum),fmtD(f.date).full,'FAILURE',
-        (f.title||'').substring(0,40),(f.mode||'—').substring(0,22),(f.cause||'—').substring(0,24),
-        fDown,(f.pic||'—').substring(0,16),isClosed?'RESOLVED':'OPEN'];
-      let cx=10;
-      fRow.forEach((cell,i)=>{
-        const isType=i===2, isStatus=i===8;
-        const col=isType?C.red:isStatus?(isClosed?C.green:C.red):C.white;
-        doc.setFont('helvetica',isType||isStatus?'bold':'normal');
-        doc.setFontSize(6.5); doc.setTextColor(...col);
-        doc.text(String(cell), cx+1.5, ry, {maxWidth:cw[i]-3});
-        cx+=cw[i];
-      });
-      ry+=9;
+      // Compute header height (dynamic)
+      const titleLines2 = doc.splitTextToSize(f.title||'Failure Event', PW2-46);
+      const modeLines2  = f.mode  ? doc.splitTextToSize(f.mode,  PW2/2-6) : [];
+      const causeLines2 = f.cause ? doc.splitTextToSize(f.cause, PW2/2-6) : [];
+      const hasInfo2    = !!(f.mode||f.cause);
+      const infoLines2  = Math.max(modeLines2.length, causeLines2.length);
+      const fHdrH2  = 5 + titleLines2.length*4.5;
+      const fInfoH2 = hasInfo2 ? 4 + infoLines2*4 + 1 : 0;
+      const fTot2   = fHdrH2 + fInfoH2 + 2;
 
-      // Child rows
-      myChildren.forEach(ev=>{
-        if(ry>H-14){addFooter(pageN++,totalPages);ry=startChronoPage();}
-        const cColor={action:C.teal,repair:[180,120,0],resolved:C.green}[ev.type]||C.dim;
-        const cLabel={action:'↳ ACTION',repair:'↳ REPAIR',resolved:'↳ RESOLVED'}[ev.type]||('↳ '+ev.type.toUpperCase());
-        const cStatus=ev.status||'—';
-        doc.setFillColor(...C.bg); doc.rect(10,ry-4,W-20,7,'F');
-        doc.setFillColor(...C.border); doc.rect(10,ry-4,W-20,7);
-        doc.setFillColor(...cColor); doc.rect(13,ry-4,2,7,'F');
-        const cRow=['',fmtD(ev.date).full,cLabel,
-          (ev.title||'').substring(0,40),(ev.mode||'—').substring(0,22),(ev.cause||ev.actions||'—').substring(0,24),
-          ev.downtime?ev.downtime+' j':'—',(ev.pic||'—').substring(0,16),cStatus.substring(0,12)];
-        let cx2=10;
-        cRow.forEach((cell,i)=>{
-          const isType=i===2;
-          const col=isType?cColor:(i===0?C.muted:C.dim);
-          doc.setFont('helvetica',isType?'bold':'normal');
-          doc.setFontSize(i===2?6.5:6); doc.setTextColor(...col);
-          doc.text(String(cell), cx2+(i===3?4:1.5), ry, {maxWidth:cw[i]-3});
-          cx2+=cw[i];
-        });
-        ry+=7.5;
+      if(ry+fTot2>H-16){addFooter(pageN++,totalPages);ry=startChronoPage();}
+
+      // Header band
+      doc.setFillColor(...C.navy); doc.rect(10,ry-4,PW2,fHdrH2,'F');
+      doc.setFillColor(...(_pIsStartup?C.amber:C.red)); doc.rect(10,ry-4,3,fHdrH2,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...C.amber);
+      doc.text(String(rowNum), 15, ry);
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.muted);
+      doc.text(fmtD(f.date).full, 22, ry);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...(_pIsStartup?C.amber:C.red));
+      doc.text(_pIsStartup?'DEFECT':'FAILURE', 22, ry+4.5);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.white);
+      titleLines2.forEach((ln,li)=>doc.text(ln, 56, ry+li*4.5));
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.muted);
+      doc.text(fDown, W-14, ry, {align:'right'});
+      doc.setFont('helvetica','bold'); doc.setFontSize(7);
+      doc.setTextColor(...(isClosed?C.green:C.red));
+      doc.text(isClosed?'RESOLVED':'OPEN', W-14, ry+4.5, {align:'right'});
+      ry += fHdrH2;
+
+      // Mode + Cause info band
+      if(hasInfo2){
+        doc.setFillColor(240,246,255); doc.rect(10,ry,PW2,fInfoH2,'F');
+        doc.setFillColor(...C.navyMid); doc.rect(10,ry,2,fInfoH2,'F');
+        doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,ry,PW2,fInfoH2);
+        const cW2b = PW2/2-4;
+        if(f.mode){
+          doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...C.navyMid);
+          doc.text('Mode Kegagalan:', 14, ry+3.5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.text);
+          modeLines2.forEach((ln,li)=>doc.text(ln, 14+doc.getTextWidth('Mode Kegagalan: '), ry+3.5+li*4));
+        }
+        if(f.cause){
+          const cx3b = 14+cW2b+4;
+          doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...C.navyMid);
+          doc.text('Root Cause:', cx3b, ry+3.5);
+          doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.text);
+          causeLines2.forEach((ln,li)=>doc.text(ln, cx3b+doc.getTextWidth('Root Cause: '), ry+3.5+li*4));
+        }
+        if(f.pic){
+          doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
+          doc.text('PIC: '+f.pic, W-14, ry+fInfoH2-2, {align:'right'});
+        }
+        ry += fInfoH2;
+      }
+      ry += 2;
+
+      // ── Child rows ──
+      myChildren.forEach((ev,ci)=>{
+        const cColor2={action:C.teal,repair:[180,120,0],resolved:C.green,corrective:C.teal,closed:C.green}[ev.type]||C.dim;
+        const cLabel2={action:'ACTION',repair:'REPAIR',resolved:'RESOLVED',corrective:'CORRECTIVE',closed:'CLOSED'}[ev.type]||(ev.type||'').toUpperCase();
+        const chTL = doc.splitTextToSize(ev.title||'', PW2-60);
+        const chML = (ev.mode||ev.actions) ? doc.splitTextToSize(ev.mode||ev.actions, PW2/2-8) : [];
+        const chCL = ev.cause ? doc.splitTextToSize(ev.cause, PW2/2-8) : [];
+        const hasChI2 = !!(ev.mode||ev.actions||ev.cause);
+        const chH2   = 4 + chTL.length*4;
+        const chIH2  = hasChI2 ? 3 + Math.max(chML.length,chCL.length)*3.8 + 1 : 0;
+        const chTot2 = chH2 + chIH2 + 1;
+        if(ry+chTot2>H-14){addFooter(pageN++,totalPages);ry=startChronoPage();}
+
+        doc.setFillColor(...(ci%2===0?C.white:C.navyLight)); doc.rect(10,ry,PW2,chH2,'F');
+        doc.setDrawColor(...C.border); doc.setLineWidth(0.12); doc.rect(10,ry,PW2,chH2);
+        doc.setFillColor(...cColor2); doc.rect(13,ry,2,chH2,'F');
+        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
+        doc.text(fmtD(ev.date).full, 22, ry+3.5);
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...cColor2);
+        doc.text(cLabel2, 22, ry+chH2-2);
+        doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...C.text);
+        chTL.forEach((ln,li)=>doc.text(ln, 56, ry+3.5+li*4));
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+        doc.setTextColor(...(ev.status==='CLOSED'?C.green:C.dim));
+        doc.text(ev.status||'', W-14, ry+3.5, {align:'right'});
+        doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
+        doc.text('PIC: '+(ev.pic||'-'), W-14, ry+3.5+4, {align:'right'});
+        ry += chH2;
+
+        if(hasChI2){
+          doc.setFillColor(248,252,248); doc.rect(10,ry,PW2,chIH2,'F');
+          doc.setFillColor(...cColor2); doc.rect(13,ry,2,chIH2,'F');
+          doc.setDrawColor(...C.border); doc.setLineWidth(0.12); doc.rect(10,ry,PW2,chIH2);
+          const cW3 = PW2/2-4;
+          if(ev.mode||ev.actions){
+            const t3=ev.mode||ev.actions;
+            doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(...C.navyMid);
+            doc.text('Mode/Tindakan:', 17, ry+3);
+            doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(...C.text);
+            const mL3 = doc.splitTextToSize(t3, cW3-20);
+            mL3.forEach((ln,li)=>doc.text(ln, 17+doc.getTextWidth('Mode/Tindakan: '), ry+3+li*3.8));
+          }
+          if(ev.cause){
+            const cx4b = 14+cW3+4;
+            doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(...C.navyMid);
+            doc.text('Root Cause:', cx4b, ry+3);
+            doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(...C.text);
+            const cL3 = doc.splitTextToSize(ev.cause, cW3-16);
+            cL3.forEach((ln,li)=>doc.text(ln, cx4b+doc.getTextWidth('Root Cause: '), ry+3+li*3.8));
+          }
+          ry += chIH2;
+        }
+        ry += 1;
       });
-      ry+=2; // gap between failure groups
+      ry += 3;
     });
 
     // Outstanding section
@@ -3521,7 +3585,7 @@ async function exportPPT(){
       sl.addText('🔴 FAILURE',{x:.55,y:1.02,w:1.8,h:.25,fontSize:8,fontFace:'Calibri',bold:true,color:C.red,margin:0});
       sl.addText(`${df.full}${f.time?' | '+f.time+' WIB':''}`,{x:2.4,y:1.02,w:4,h:.25,fontSize:8,fontFace:'Calibri',color:C.dim,margin:0});
       sl.addText(`PIC: ${f.pic||'—'}`,{x:W-3,y:1.02,w:2.8,h:.25,fontSize:8,fontFace:'Calibri',color:C.dim,align:'right',margin:0});
-      sl.addText((f.title||'Failure Event').substring(0,90),{x:.55,y:1.29,w:W-1.1,h:.32,fontSize:12,fontFace:'Calibri',bold:true,color:C.text,margin:0});
+      sl.addText((f.title||'Failure Event'),{x:.55,y:1.29,w:W-1.1,h:.5,fontSize:11,fontFace:'Calibri',bold:true,color:C.text,margin:.05,wrap:true,valign:'top'});
 
       // Failure detail grid (2 col)
       const fDets=[
@@ -3534,9 +3598,9 @@ async function exportPPT(){
         const gx=.35+(gi%2)*((W-.7)/2+.05);
         const gy=1.78+Math.floor(gi/2)*.52;
         const gw=(W-.85)/2;
-        sl.addShape(pres.shapes.RECTANGLE,{x:gx,y:gy,w:gw,h:.46,fill:{color:C.navyL},line:{color:C.steel,width:.4}});
+        sl.addShape(pres.shapes.RECTANGLE,{x:gx,y:gy,w:gw,h:.58,fill:{color:C.navyL},line:{color:C.steel,width:.4}});
         sl.addText(k.toUpperCase(),{x:gx+.1,y:gy+.04,w:gw-.15,h:.16,fontSize:6,fontFace:'Calibri',color:C.amber,bold:true,charSpacing:.5,margin:0});
-        sl.addText(v.substring(0,62),{x:gx+.1,y:gy+.22,w:gw-.15,h:.2,fontSize:8.5,fontFace:'Calibri',color:C.text,bold:gi===3,margin:0});
+        sl.addText(v,{x:gx+.1,y:gy+.2,w:gw-.15,h:.32,fontSize:8,fontFace:'Calibri',color:C.text,bold:gi===3,margin:.02,wrap:true,valign:'top',shrinkText:true});
       });
 
       // ── Children timeline ──
@@ -3560,7 +3624,7 @@ async function exportPPT(){
           sl.addText(lbl,{x:.52,y:cy+.04,w:1.9,h:.2,fontSize:8,fontFace:'Calibri',bold:true,color:tc,margin:0});
           sl.addText(cdf.full+(ev.time?' | '+ev.time+' WIB':''),{x:2.48,y:cy+.04,w:3.5,h:.2,fontSize:7.5,fontFace:'Calibri',color:C.dim,margin:0});
           sl.addText(`PIC: ${ev.pic||'—'}`,{x:W-2.6,y:cy+.04,w:2.45,h:.2,fontSize:7.5,fontFace:'Calibri',color:C.dim,align:'right',margin:0});
-          sl.addText((ev.title||'').substring(0,80),{x:.52,y:cy+.27,w:W-1.1,h:.2,fontSize:9,fontFace:'Calibri',bold:true,color:C.text,margin:0});
+          sl.addText((ev.title||''),{x:.52,y:cy+.27,w:W-1.1,h:.2,fontSize:9,fontFace:'Calibri',bold:true,color:C.text,margin:0});
           // Status badge
           if(ev.status){
             const stC=ev.status==='CLOSED'||ev.status==='RESOLVED'?C.green:ev.status==='ON PROGRESS'?C.amber:C.dim;
@@ -3594,9 +3658,9 @@ async function exportPPT(){
           return [
             {text:String(i+1),options:{bold:true,color:C.amber,fill:bg,align:'center'}},
             {text:fmtD(ev.date).full,options:{color:C.dim,fill:bg,fontSize:8}},
-            {text:(ev.title||'—').substring(0,40),options:{bold:true,color:C.text,fill:bg,fontSize:8.5}},
-            {text:(ev.outstanding||'—').substring(0,70),options:{color:C.text,fill:bg,fontSize:8}},
-            {text:(ev.pic||'—').substring(0,16),options:{color:C.teal,fill:bg,align:'center',fontSize:8}},
+            {text:(ev.title||'—'),options:{bold:true,wrap:true,valign:'top',color:C.text,fill:bg,fontSize:8.5}},
+            {text:(ev.outstanding||'—'),options:{color:C.text,wrap:true,valign:'top',fill:bg,fontSize:8}},
+            {text:(ev.pic||'—'),options:{color:C.teal,fill:bg,align:'center',fontSize:8}},
             {text:ev.target_date?fmtD(ev.target_date).full:'—',options:{color:ev.target_date&&new Date(ev.target_date)<new Date()?C.red:C.dim,fill:bg,align:'center',fontSize:8}}
           ];
         })
@@ -4172,9 +4236,12 @@ function renderTrendChart(){
   const selEqId  = eqSelect?.value||'all';
   const viewType = g('trend-type-select')?.value||'event';
 
-  // Populate equipment select if needed
-  if(eqSelect && eqSelect.options.length<=1){
-    equipments.forEach(eq=>{
+  // Populate equipment select — operational phase only
+  const opEqs = equipments.filter(eq=>(eq.phase||'operational')==='operational');
+  if(eqSelect){
+    // Rebuild to ensure only operational equipment listed
+    while(eqSelect.options.length>1) eqSelect.remove(1);
+    opEqs.forEach(eq=>{
       const o=document.createElement('option');
       o.value=eq.id; o.textContent=eq.tag_no+' — '+eq.name;
       eqSelect.appendChild(o);
@@ -4191,8 +4258,14 @@ function renderTrendChart(){
         wrap.innerHTML='<div style="height:240px;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:12px;">Gagal memuat: '+fetchErr.message+'</div>';
         return;
       }
-      const filtered = !evData||!evData.length ? [] :
-        (selEqId==='all' ? evData : evData.filter(e=>e.equipment_id===selEqId));
+      // Only show operational-type events in operational trend chart
+      const opTypes = ['failure','action','repair','resolved'];
+      const opEvData = (evData||[]).filter(e=>opTypes.includes(e.type));
+      // Further filter by selected equipment (operational only)
+      const opEqIds = opEqs.map(eq=>eq.id);
+      const filtered = selEqId==='all'
+        ? opEvData.filter(e=>opEqIds.includes(e.equipment_id))
+        : opEvData.filter(e=>e.equipment_id===selEqId);
 
       if(!filtered.length){
         wrap.innerHTML='<div style="height:240px;display:flex;align-items:center;justify-content:center;color:var(--textDim);font-size:12px;">Belum ada event untuk ditampilkan.</div>';
@@ -4282,6 +4355,7 @@ function renderTrendChart(){
 
       // ── Stats table ──
       if(statsDiv){
+        // ── OPERATIONAL: Monthly Failure Recap Table ──
         const rows=monthKeys.map((mk,i)=>({
           label:labels[i],fail:mFail[i],action:mAction[i],repair:mRepair[i],
           resolved:mResolved[i],downtime:mDowntime[i],
@@ -4290,48 +4364,56 @@ function renderTrendChart(){
 
         if(!rows.length){statsDiv.innerHTML='';return;}
         const rowNote=r=>{
-          if(r.fail>=2&&r.downtime>72)return'<span style="color:var(--red);">⚠ Multiple failure + downtime kritis</span>';
-          if(r.fail>=2)               return'<span style="color:var(--red);">⚠ Multiple failure event</span>';
-          if(r.fail&&r.downtime>72)   return'<span style="color:var(--amber);">⚠ Downtime >72 jam</span>';
-          if(r.fail&&r.repair)        return'<span style="color:var(--amber);">Failure + repair berjalan</span>';
-          if(r.fail)                  return'<span style="color:var(--textDim);">1 failure event</span>';
-          if(r.repair&&r.action)      return'<span style="color:var(--teal);">Investigasi + repair aktif</span>';
-          if(r.repair)                return'<span style="color:var(--amber);">Pekerjaan repair</span>';
-          if(r.action)                return'<span style="color:var(--teal);">Investigasi / action</span>';
-          if(r.resolved)              return'<span style="color:var(--green);">✓ Issue diselesaikan</span>';
-          return'—';
+          if(r.fail>=2&&r.downtime>72)return'<span style="color:var(--red);font-size:11px;">&#x26A0; Multiple failure + downtime kritis</span>';
+          if(r.fail>=2)               return'<span style="color:var(--red);font-size:11px;">&#x26A0; Multiple failure event</span>';
+          if(r.fail&&r.downtime>72)   return'<span style="color:var(--amber);font-size:11px;">&#x26A0; Downtime &gt;72 jam</span>';
+          if(r.fail&&r.repair)        return'<span style="color:var(--amber);font-size:11px;">Failure + repair berjalan</span>';
+          if(r.fail)                  return'<span style="color:var(--textDim);font-size:11px;">1 failure event</span>';
+          if(r.repair&&r.action)      return'<span style="color:var(--teal);font-size:11px;">Investigasi + repair aktif</span>';
+          if(r.repair)                return'<span style="color:var(--amber);font-size:11px;">Pekerjaan repair</span>';
+          if(r.action)                return'<span style="color:var(--teal);font-size:11px;">Investigasi / action</span>';
+          if(r.resolved)              return'<span style="color:var(--green);font-size:11px;">&#x2713; Issue diselesaikan</span>';
+          return'<span style="color:var(--muted);">—</span>';
         };
         statsDiv.innerHTML=`
-          <div style="padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:10px;font-weight:700;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;">Rekap Bulanan — ${monthsN} Bulan Terakhir</span>
-            <span style="font-size:10px;color:var(--muted);">${rows.length} bulan aktif dari ${monthsN}</span>
+          <div style="padding:9px 14px 9px 14px;background:var(--bg2);border-bottom:2px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:3px;height:16px;background:var(--teal);border-radius:2px;"></div>
+              <span style="font-size:10px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.8px;">Rekap Bulanan — ${monthsN} Bulan Terakhir</span>
+            </div>
+            <span style="font-size:10px;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:10px;border:1px solid var(--border);">${rows.length} bulan aktif dari ${monthsN}</span>
           </div>
-          <table class="trend-stats-tbl">
-            <thead><tr>
-              <th style="text-align:left;padding-left:14px;">Bulan</th>
-              <th>Failure</th><th>Action</th><th>Repair</th><th>Resolved</th>
-              <th>Total</th><th>Downtime</th><th style="text-align:left;padding-left:10px;">Keterangan</th>
+          <table class="trend-stats-tbl" style="width:100%;border-collapse:collapse;font-size:11.5px;">
+            <thead><tr style="background:var(--bg2);">
+              <th style="text-align:left;padding:8px 8px 8px 14px;font-size:9px;font-weight:700;color:var(--textDim);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);">Bulan</th>
+              <th style="font-size:9px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);">Failure</th>
+              <th style="font-size:9px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);">Action</th>
+              <th style="font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);">Repair</th>
+              <th style="font-size:9px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);">Resolved</th>
+              <th style="font-size:9px;font-weight:700;color:var(--textDim);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);">Total</th>
+              <th style="font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);">Downtime</th>
+              <th style="text-align:left;padding-left:10px;font-size:9px;font-weight:700;color:var(--textDim);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);">Keterangan</th>
             </tr></thead>
             <tbody>
-              ${rows.map(r=>`<tr>
-                <td style="text-align:left;padding-left:14px;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11px;">${r.label}</td>
-                <td>${r.fail?'<b style="color:var(--red);">'+r.fail+'×</b>':'<span style="color:var(--muted);">—</span>'}</td>
-                <td>${r.action?'<span style="color:var(--teal);font-weight:600;">'+r.action+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
-                <td>${r.repair?'<span style="color:var(--amber);font-weight:600;">'+r.repair+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
-                <td>${r.resolved?'<span style="color:var(--green);font-weight:600;">'+r.resolved+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
-                <td><b>${r.total}</b></td>
-                <td>${r.downtime?'<span style="color:var(--amber);font-weight:600;">'+r.downtime+' jam</span>':'<span style="color:var(--muted);">—</span>'}</td>
-                <td style="text-align:left;padding-left:10px;font-size:11px;">${rowNote(r)}</td>
+              ${rows.map((r,ri)=>`<tr style="${ri%2===0?'background:var(--bg);':'background:var(--bg2);'}">
+                <td style="text-align:left;padding:9px 8px 9px 14px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:var(--text);">${r.label}</td>
+                <td style="text-align:center;">${r.fail?'<span style="font-weight:700;color:var(--red);font-size:13px;">'+r.fail+'</span><span style="color:var(--red);font-size:10px;"> F</span>':'<span style="color:var(--muted);">—</span>'}</td>
+                <td style="text-align:center;">${r.action?'<span style="font-weight:600;color:var(--teal);font-size:12px;">'+r.action+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
+                <td style="text-align:center;">${r.repair?'<span style="font-weight:600;color:var(--amber);font-size:12px;">'+r.repair+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
+                <td style="text-align:center;">${r.resolved?'<span style="font-weight:600;color:var(--green);font-size:12px;">'+r.resolved+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
+                <td style="text-align:center;"><span style="font-weight:700;font-size:12px;color:var(--text);">${r.total}</span></td>
+                <td style="text-align:center;">${r.downtime?'<span style="font-weight:700;color:var(--amber);font-size:12px;">'+r.downtime+'</span><span style="color:var(--amber);font-size:10px;"> jam</span>':'<span style="color:var(--muted);">—</span>'}</td>
+                <td style="text-align:left;padding-left:10px;">${rowNote(r)}</td>
               </tr>`).join('')}
-              <tr style="background:var(--bg2);">
-                <td style="text-align:left;padding-left:14px;font-size:11px;font-weight:700;">TOTAL</td>
-                <td><b style="color:var(--red);">${tFail}×</b></td>
-                <td><span style="color:var(--teal);font-weight:700;">${tAction}</span></td>
-                <td><span style="color:var(--amber);font-weight:700;">${tRepair}</span></td>
-                <td><span style="color:var(--green);font-weight:700;">${tResolved}</span></td>
-                <td><b>${filtered.length}</b></td>
-                <td><b style="color:var(--amber);">${tDowntime} jam</b></td>
-                <td style="text-align:left;padding-left:10px;font-size:10px;color:var(--muted);">Periode ${monthsN} bulan</td>
+              <tr style="background:var(--navy,#0f1e35);border-top:2px solid var(--border);">
+                <td style="text-align:left;padding:9px 8px 9px 14px;font-size:11px;font-weight:800;color:#fff;letter-spacing:.5px;">TOTAL</td>
+                <td style="text-align:center;"><span style="font-weight:800;color:#f87171;font-size:13px;">${tFail}</span><span style="color:#f87171;font-size:10px;"> F</span></td>
+                <td style="text-align:center;"><span style="font-weight:700;color:#7dd3fc;font-size:12px;">${tAction}</span></td>
+                <td style="text-align:center;"><span style="font-weight:700;color:#fcd34d;font-size:12px;">${tRepair}</span></td>
+                <td style="text-align:center;"><span style="font-weight:700;color:#86efac;font-size:12px;">${tResolved}</span></td>
+                <td style="text-align:center;"><span style="font-weight:800;color:#e2e8f0;font-size:12px;">${tFail+tAction+tRepair+tResolved}</span></td>
+                <td style="text-align:center;"><span style="font-weight:800;color:#fcd34d;font-size:12px;">${tDowntime}</span><span style="color:#fcd34d;font-size:10px;"> jam</span></td>
+                <td style="text-align:left;padding-left:10px;font-size:10px;color:#94a3b8;">Periode ${monthsN} bulan</td>
               </tr>
             </tbody>
           </table>`;
@@ -4346,34 +4428,57 @@ function renderMiniTrendChart(eqId, evData){
   const wrap = g('mini-trend-chart-wrap');
   if(!wrap) return;
 
-  // Hard filter — only events for this equipment
-  const myEvs = evData.filter(e=>e.equipment_id===eqId);
+  // Determine equipment phase
+  const eq = equipments.find(e=>e.id===eqId);
+  const eqPhase = eq ? (eq.phase||'operational') : 'operational';
+  const isStartup = eqPhase === 'startup';
 
-  const monthKeys    = buildMonthKeys(12);
-  const labels       = getMonthLabels(12);
-  const failCounts   = monthKeys.map(mk=>myEvs.filter(e=>e.type==='failure'  &&getMonthKey(e.date)===mk).length);
-  const actionCounts = monthKeys.map(mk=>myEvs.filter(e=>e.type==='action'   &&getMonthKey(e.date)===mk).length);
-  const repairCounts = monthKeys.map(mk=>myEvs.filter(e=>e.type==='repair'   &&getMonthKey(e.date)===mk).length);
-  const resolvedCounts=monthKeys.map(mk=>myEvs.filter(e=>e.type==='resolved' &&getMonthKey(e.date)===mk).length);
-  const hasData=[...failCounts,...actionCounts,...repairCounts,...resolvedCounts].some(v=>v>0);
+  // Hard filter — only events for this equipment, only phase-appropriate types
+  const phaseTypes = isStartup ? ['defect','corrective','closed'] : ['failure','action','repair','resolved'];
+  const myEvs = evData.filter(e=>e.equipment_id===eqId && phaseTypes.includes(e.type));
 
-  if(!hasData){
-    wrap.innerHTML='<div style="height:80px;display:flex;align-items:center;justify-content:center;color:var(--textDim);font-size:11px;font-style:italic;">Belum ada event recorded</div>';
-    return;
+  const monthKeys = buildMonthKeys(12);
+  const labels    = getMonthLabels(12);
+
+  if(isStartup){
+    const defCounts  = monthKeys.map(mk=>myEvs.filter(e=>e.type==='defect'    &&getMonthKey(e.date)===mk).length);
+    const corrCounts = monthKeys.map(mk=>myEvs.filter(e=>e.type==='corrective'&&getMonthKey(e.date)===mk).length);
+    const clCounts   = monthKeys.map(mk=>myEvs.filter(e=>e.type==='closed'    &&getMonthKey(e.date)===mk).length);
+    const hasData    = [...defCounts,...corrCounts,...clCounts].some(v=>v>0);
+    if(!hasData){
+      wrap.innerHTML='<div style="height:80px;display:flex;align-items:center;justify-content:center;color:var(--textDim);font-size:11px;font-style:italic;">Belum ada defect recorded</div>';
+      return;
+    }
+    svgBarChart('mini-trend-chart-wrap', {
+      labels,
+      series:[
+        {label:'Defect',     color:'#ef4444',values:defCounts},
+        {label:'Corrective', color:'#0ea5e9',values:corrCounts},
+        {label:'Closed',     color:'#22c55e',values:clCounts},
+      ],
+      height: 80, stacked: true, showLegend: false
+    });
+  } else {
+    const failCounts    = monthKeys.map(mk=>myEvs.filter(e=>e.type==='failure'  &&getMonthKey(e.date)===mk).length);
+    const actionCounts  = monthKeys.map(mk=>myEvs.filter(e=>e.type==='action'   &&getMonthKey(e.date)===mk).length);
+    const repairCounts  = monthKeys.map(mk=>myEvs.filter(e=>e.type==='repair'   &&getMonthKey(e.date)===mk).length);
+    const resolvedCounts= monthKeys.map(mk=>myEvs.filter(e=>e.type==='resolved' &&getMonthKey(e.date)===mk).length);
+    const hasData=[...failCounts,...actionCounts,...repairCounts,...resolvedCounts].some(v=>v>0);
+    if(!hasData){
+      wrap.innerHTML='<div style="height:80px;display:flex;align-items:center;justify-content:center;color:var(--textDim);font-size:11px;font-style:italic;">Belum ada event recorded</div>';
+      return;
+    }
+    svgBarChart('mini-trend-chart-wrap', {
+      labels,
+      series:[
+        {label:'Failure', color:'#E84040',values:failCounts},
+        {label:'Action',  color:'#0EA5E9',values:actionCounts},
+        {label:'Repair',  color:'#E8A217',values:repairCounts},
+        {label:'Resolved',color:'#22C55E',values:resolvedCounts},
+      ],
+      height: 80, stacked: true, showLegend: false
+    });
   }
-
-  svgBarChart('mini-trend-chart-wrap', {
-    labels,
-    series:[
-      {label:'Failure', color:'#E84040',values:failCounts},
-      {label:'Action',  color:'#0EA5E9',values:actionCounts},
-      {label:'Repair',  color:'#E8A217',values:repairCounts},
-      {label:'Resolved',color:'#22C55E',values:resolvedCounts},
-    ],
-    height: 80,
-    stacked: true,
-    showLegend: false
-  });
 }
 
 
@@ -4610,19 +4715,15 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
 
       // Monthly trend table — PHASE-AWARE
       if(isStartupReport){
-        // ══ STARTUP / COMMISSIONING: Defect Tracker ══
-        y=sectionBar('REKAP BULANAN — COMMISSIONING DEFECT TRACKER',y+4,[2,80,120])+4;
-
-        // Sub-context note
+        // ══ STARTUP: Commissioning Defect Tracker ══
+        y = sectionBar('COMMISSIONING DEFECT TRACKER - REKAP BULANAN', y+4, [2,80,120]) + 4;
         doc.setFont('helvetica','italic'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
-        doc.text(`Rekap defect per bulan periode komisioning. Total ${totalFail} defect tercatat dalam range laporan.`,12,y);
-        y+=6;
+        doc.text('Rekap defect per bulan selama periode komisioning. Total '+totalFail+' defect tercatat.', 12, y);
+        y += 6;
 
-        // Column definitions
-        const suCols=['BULAN','DEFECT','CAT A','CAT B','CAT C','CORRECTIVE','CLOSED','CLOSURE %','STATUS / KETERANGAN'];
+        // Column headers
+        const suCols=['BULAN','DEFECT','CAT A','CAT B','CAT C','CORRECTIVE','CLOSED','CLOSURE%','STATUS / KETERANGAN'];
         const suCw  =[36,20,16,16,16,26,22,26,99];
-
-        // Header row
         let sux=10;
         doc.setFillColor(2,80,120); doc.rect(10,y-4,W-20,7,'F');
         suCols.forEach((c,i)=>{
@@ -4631,111 +4732,102 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
         });
         y+=5;
 
-        // Build 12-month list
-        const suNow=new Date(), suMonths=[];
+        // 12-month list
+        const suNow3=new Date(), suMoKeys=[];
         for(let m=11;m>=0;m--){
-          const d=new Date(suNow.getFullYear(),suNow.getMonth()-m,1);
-          suMonths.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+          const d=new Date(suNow3.getFullYear(),suNow3.getMonth()-m,1);
+          suMoKeys.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
         }
-        const suMonLabel=mk=>{
-          const[y2,m2]=mk.split('-');
-          return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(m2)-1]+' '+y2.slice(2);
+        const suMoLbl=mk=>{
+          const p=mk.split('-');
+          return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(p[1])-1]+' '+p[0].slice(2);
         };
 
-        let suActiveMos=0,suTotDef=0,suTotA=0,suTotB=0,suTotC=0,suTotCorr=0,suTotClosed=0;
+        let su3Active=0,su3Def=0,su3A=0,su3B=0,su3C=0,su3Cor=0,su3Cl=0;
+        const allCorr3  = allChildren.filter(e=>e.type==='corrective');
+        const allClosed3= allChildren.filter(e=>e.type==='closed');
 
-        suMonths.forEach((mk,mi)=>{
-          const mDefs   = allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
-          const mCatA   = mDefs.filter(e=>e.category==='A').length;
-          const mCatB   = mDefs.filter(e=>e.category==='B').length;
-          const mCatC   = mDefs.filter(e=>e.category==='C').length;
-          const mCorr   = allChildren.filter(e=>e.type==='corrective'&&e.date&&e.date.slice(0,7)===mk).length;
-          const mClosedN= allChildren.filter(e=>e.type==='closed'&&e.date&&e.date.slice(0,7)===mk).length;
-          const mDefCl  = mDefs.filter(d=>d.status==='CLOSED').length;
-          const mPct    = mDefs.length>0?Math.round(mDefCl/mDefs.length*100):null;
+        suMoKeys.forEach((mk,mi)=>{
+          const mDefs  = (allFails||[]).filter(e=>e.date&&e.date.slice(0,7)===mk);
+          const mCatA  = mDefs.filter(e=>e.category==='A').length;
+          const mCatB  = mDefs.filter(e=>e.category==='B').length;
+          const mCatC  = mDefs.filter(e=>e.category==='C').length;
+          const mCorr  = allCorr3.filter(e=>e.date&&e.date.slice(0,7)===mk).length;
+          const mCl    = allClosed3.filter(e=>e.date&&e.date.slice(0,7)===mk).length;
+          const mDefCl = mDefs.filter(d=>d.status==='CLOSED').length;
+          const mPct   = mDefs.length>0 ? Math.round(mDefCl/mDefs.length*100) : null;
 
-          // Skip empty months (not the current month)
-          if(mDefs.length===0&&mCorr===0&&mClosedN===0&&mk!==suMonths[suMonths.length-1]) return;
+          if(mDefs.length===0&&mCorr===0&&mCl===0&&mk!==suMoKeys[suMoKeys.length-1]) return;
 
-          suActiveMos++; suTotDef+=mDefs.length; suTotA+=mCatA; suTotB+=mCatB; suTotC+=mCatC;
-          suTotCorr+=mCorr; suTotClosed+=mClosedN;
+          su3Active++; su3Def+=mDefs.length; su3A+=mCatA; su3B+=mCatB; su3C+=mCatC;
+          su3Cor+=mCorr; su3Cl+=mCl;
 
-          // Note & color
-          let suNote='', suNoteC=C.dim;
-          if(mDefs.length===0&&mCorr===0&&mClosedN===0){
-            suNote='Tidak ada aktivitas'; suNoteC=C.muted;
-          } else if(mCatA>0&&mDefCl<mDefs.length){
-            suNote=`\u26A0 ${mCatA} Cat A belum closed \u2014 eskalasi segera`; suNoteC=C.red;
-          } else if(mDefs.length>0&&mDefCl>=mDefs.length){
-            suNote='\u2713 Semua defect bulan ini closed'; suNoteC=C.green;
-          } else if(mDefs.length>3){
-            suNote=`\u25B3 ${mDefs.length} defect \u2014 monitoring intensif`; suNoteC=[180,90,0];
-          } else if(mCorr>0&&mClosedN===0){
-            suNote='Corrective action in progress'; suNoteC=C.teal;
-          } else if(mClosedN>0){
-            suNote=`${mClosedN} defect closed bulan ini`; suNoteC=C.green;
-          } else if(mDefs.length>0){
-            suNote='Defect recorded \u2014 corrective pending'; suNoteC=C.dim;
-          }
+          // Note text
+          const hasOpenA = mCatA>0 && mDefCl<mDefs.length;
+          let suNote='', suNoteRGB=C.dim;
+          if(mDefs.length===0&&mCorr===0&&mCl===0){suNote='Tidak ada aktivitas';suNoteRGB=C.muted;}
+          else if(hasOpenA){suNote='Cat A open - eskalasi segera';suNoteRGB=C.red;}
+          else if(mDefs.length>0&&mDefCl>=mDefs.length){suNote='Semua defect closed';suNoteRGB=C.green;}
+          else if(mDefs.length>3){suNote=mDefs.length+' defect - monitoring';suNoteRGB=[180,90,0];}
+          else if(mCorr>0&&mCl===0){suNote='Corrective in progress';suNoteRGB=C.teal;}
+          else if(mCl>0){suNote=mCl+' defect closed';suNoteRGB=C.green;}
+          else if(mDefs.length>0){suNote='Corrective pending';suNoteRGB=C.dim;}
 
           // Row background
-          const hasOpenCatA = mCatA>0 && mDefCl<mDefs.length;
-          const bg = hasOpenCatA ? [255,245,245] : (mi%2===0?C.white:C.navyLight);
-          doc.setFillColor(...bg); doc.rect(10,y-4,W-20,7,'F');
-          if(hasOpenCatA){ doc.setFillColor(...C.red); doc.rect(10,y-4,2.5,7,'F'); }
+          const bg3 = hasOpenA ? [255,245,245] : (mi%2===0?C.white:C.navyLight);
+          doc.setFillColor(...bg3); doc.rect(10,y-4,W-20,7,'F');
+          if(hasOpenA){ doc.setFillColor(...C.red); doc.rect(10,y-4,2.5,7,'F'); }
           doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,y-4,W-20,7);
 
-          const suRow=[suMonLabel(mk), mDefs.length||'\u2014', mCatA||'\u2014', mCatB||'\u2014',
-            mCatC||'\u2014', mCorr||'\u2014', mClosedN||'\u2014',
-            mPct!==null?`${mPct}%`:'\u2014', suNote];
-
-          let sux2=10;
-          suRow.forEach((cell,i)=>{
+          // Row data
+          const suRow3=[suMoLbl(mk), mDefs.length||'-', mCatA||'-', mCatB||'-', mCatC||'-',
+            mCorr||'-', mCl||'-', mPct!==null?(mPct+'%'):'-', suNote];
+          let sx3=10;
+          suRow3.forEach((cell,i)=>{
             doc.setFont('helvetica',(i===0||i===1)?'bold':'normal');
             doc.setFontSize(i===0?7.5:6.8);
-            let col=C.text;
-            if(i===1&&cell!=='\u2014') col=C.red;
-            else if(i===2&&cell!=='\u2014') col=C.red;
-            else if(i===7&&cell!=='\u2014'){
-              const pv=parseInt(cell); col=pv>=80?C.green:pv>=50?[180,90,0]:C.red;
-            } else if(i===8) col=suNoteC;
-            doc.setTextColor(...col);
-            doc.text(String(cell), sux2+1.5, y, {maxWidth:suCw[i]-3});
-            sux2+=suCw[i];
+            let col3=C.text;
+            if(i===1&&cell!=='-') col3=C.red;
+            else if(i===2&&cell!=='-') col3=C.red;
+            else if(i===7&&cell!=='-'){
+              const pv3=parseInt(cell); col3=pv3>=80?C.green:pv3>=50?[180,90,0]:C.red;
+            } else if(i===8) col3=suNoteRGB;
+            doc.setTextColor(...col3);
+            doc.text(String(cell), sx3+1.5, y, {maxWidth:suCw[i]-3});
+            sx3+=suCw[i];
           });
           y+=7;
-          if(y>H-22){ addFooter(pageN++); doc.addPage(); pageHeader('REKAP BULANAN (LANJUTAN)',`Periode: ${fromStr} \u2014 ${toStr}`); y=24; }
+          if(y>H-22){ addFooter(pageN++); doc.addPage(); pageHeader('REKAP BULANAN (LANJUTAN)','Periode: '+fromStr+' - '+toStr); y=24; }
         });
 
         // Total row
-        const suTotPct=suTotDef>0?Math.round(suTotClosed/suTotDef*100):0;
+        const su3TotPct = su3Def>0 ? Math.round(su3Cl/su3Def*100) : 0;
         doc.setFillColor(2,80,120); doc.rect(10,y-4,W-20,7,'F');
-        const suTotRow=['TOTAL',suTotDef,suTotA,suTotB,suTotC,suTotCorr,suTotClosed,
-          `${suTotPct}%`,`${suActiveMos} bulan aktif dari 12`];
-        let sux3=10;
-        suTotRow.forEach((cell,i)=>{
+        const su3TotRow=['TOTAL',su3Def,su3A,su3B,su3C,su3Cor,su3Cl,su3TotPct+'%',su3Active+' bulan aktif dari 12'];
+        let sx4=10;
+        su3TotRow.forEach((cell,i)=>{
           doc.setFont('helvetica','bold'); doc.setFontSize(7);
-          const col=i===1?C.red:i===7?(suTotPct>=80?C.green:suTotPct>=50?C.amber:C.red):C.white;
-          doc.setTextColor(...col);
-          doc.text(String(cell), sux3+1.5, y, {maxWidth:suCw[i]-3}); sux3+=suCw[i];
+          const col4=i===1?C.red:i===7?(su3TotPct>=80?C.green:su3TotPct>=50?C.amber:C.red):C.white;
+          doc.setTextColor(...col4);
+          doc.text(String(cell), sx4+1.5, y, {maxWidth:suCw[i]-3}); sx4+=suCw[i];
         });
         y+=10;
 
-        // Category legend box
+        // Legend box
         if(y<H-20){
           doc.setFillColor(...C.navyLight); doc.rect(10,y-3,W-20,16,'F');
           doc.setDrawColor(2,80,120); doc.setLineWidth(0.3); doc.rect(10,y-3,W-20,16);
           doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(2,80,120);
           doc.text('KETERANGAN KATEGORI DEFECT:', 14, y+2);
           doc.setFont('helvetica','normal'); doc.setTextColor(...C.text);
-          doc.text('Cat A (Critical): Safety / Lingkungan / Production loss major \u2014 Eskalasi segera, target penyelesaian < 7 hari', 14, y+7);
-          doc.text('Cat B (Major): Reliability / Availability \u2014 Target < 30 hari  |  Cat C (Minor): Cosmetic / Non-critical \u2014 Scheduled maintenance', 14, y+11.5);
+          doc.text('Cat A (Critical): Safety/Lingkungan/Production loss - Eskalasi segera, target penyelesaian < 7 hari', 14, y+7);
+          doc.text('Cat B (Major): Reliability/Availability - Target < 30 hari  |  Cat C (Minor): Cosmetic/Non-critical - Scheduled maintenance', 14, y+11.5);
         }
         addFooter(pageN++);
 
       } else {
-        // ══ OPERATIONAL PHASE: Failure Trend (unchanged) ══
-        y=sectionBar('REKAP BULANAN \u2014 12 BULAN TERAKHIR',y+4)+4;
+        // ══ OPERATIONAL: Failure Trend ══
+        y = sectionBar('REKAP BULANAN - 12 BULAN TERAKHIR', y+4) + 4;
         const monthCols=['Bulan','Failure','Action','Repair','Resolved','Downtime (Jam)','Keterangan'];
         const mCw=[40,22,22,22,22,30,90];
         let mx=10;
@@ -4745,56 +4837,56 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
           doc.text(c, mx+1.5, y, {maxWidth:mCw[i]-3}); mx+=mCw[i];
         });
         y+=5;
-        const now=new Date(), months=[];
-        for(let m=0;m<6;m++){
-          const d=new Date(now.getFullYear(),now.getMonth()-m,1);
-          months.unshift(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+        const now4=new Date(), months4=[];
+        for(let m=0;m<12;m++){
+          const d=new Date(now4.getFullYear(),now4.getMonth()-m,1);
+          months4.unshift(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
         }
-        const monthLabel=mk=>{const[y2,m2]=mk.split('-');const mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(m2)-1];return `${mn} ${y2}`;};
-        const sortedFails2=[...allFails].sort((a,b)=>new Date(a.date)-new Date(b.date));
-        const autoMap3=new Map();
+        const mo4Lbl=mk=>{const p=mk.split('-');return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(p[1])-1]+' '+p[0];};
+        const sF4=[...allFails].sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const autoM4=new Map();
         allChildren.forEach(c=>{
           if(c.parent_failure_id) return;
-          const cDate=new Date(c.date); let best=null;
-          sortedFails2.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
-          if(!best&&sortedFails2.length) best=sortedFails2[0];
-          if(best) autoMap3.set(c.id, best.id);
+          const cDate=new Date(c.date); let best4=null;
+          sF4.forEach(f=>{if(new Date(f.date)<=cDate) best4=f;});
+          if(!best4&&sF4.length) best4=sF4[0];
+          if(best4) autoM4.set(c.id, best4.id);
         });
-        months.forEach((mk,mi)=>{
-          const mFails=allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
-          const mAct=allChildren.filter(e=>e.type==='action'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
-          const mRep=allChildren.filter(e=>e.type==='repair'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
-          const mRes=allChildren.filter(e=>e.type==='resolved'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
-          const mResStat=mFails.filter(f=>!allChildren.some(c=>(c.parent_failure_id===f.id||autoMap3.get(c.id)===f.id)&&c.type==='resolved')&&['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()));
-          const mDown=mFails.reduce((s,f)=>{
-            const r=allChildren.filter(c=>(c.parent_failure_id===f.id||autoMap3.get(c.id)===f.id)&&c.type==='resolved').sort((a,b)=>new Date(a.date)-new Date(b.date));
-            if(r.length){const dh=Math.round((new Date(r[r.length-1].date)-new Date(f.date))/(1000*3600));return s+(dh>0?dh:0);}
+        months4.forEach((mk,mi)=>{
+          const mF4=allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
+          const mAc4=allChildren.filter(e=>e.type==='action'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM4.get(e.id)));
+          const mRp4=allChildren.filter(e=>e.type==='repair'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM4.get(e.id)));
+          const mRs4=allChildren.filter(e=>e.type==='resolved'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM4.get(e.id)));
+          const mRsSt4=mF4.filter(f=>!allChildren.some(c=>(c.parent_failure_id===f.id||autoM4.get(c.id)===f.id)&&c.type==='resolved')&&['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()));
+          const mDn4=mF4.reduce((s,f)=>{
+            const r4=allChildren.filter(c=>(c.parent_failure_id===f.id||autoM4.get(c.id)===f.id)&&c.type==='resolved').sort((a,b)=>new Date(a.date)-new Date(b.date));
+            if(r4.length){const dh4=Math.round((new Date(r4[r4.length-1].date)-new Date(f.date))/(1000*3600));return s+(dh4>0?dh4:0);}
             return s+(parseInt(f.downtime||0)||0);
           },0);
-          const tot=mFails.length+mAct.length+mRep.length+mRes.length+mResStat.length;
-          if(tot===0&&mi<months.length-1) return;
-          const note=mFails.length>=2?'\u26A0 Multiple failure event':mDown>72?'\u26A0 Downtime >72 jam':mFails.length&&mRes.length+mResStat.length>=mFails.length?'\u2713 Issue diselesaikan':mFails.length?'Dalam penanganan':'';
-          const noteColor=mFails.length>=2||mDown>72?C.red:(mRes.length+mResStat.length>=mFails.length&&mFails.length)?C.green:C.dim;
-          const bg=mi%2===0?C.white:C.navyLight;
-          doc.setFillColor(...bg); doc.rect(10,y-4,W-20,7,'F');
+          const tot4=mF4.length+mAc4.length+mRp4.length+mRs4.length+mRsSt4.length;
+          if(tot4===0&&mi<months4.length-1) return;
+          const note4=mF4.length>=2?'Multiple failure event':mDn4>72?'Downtime >72 jam':mF4.length&&mRs4.length+mRsSt4.length>=mF4.length?'Issue diselesaikan':mF4.length?'Dalam penanganan':'';
+          const noteC4=mF4.length>=2||mDn4>72?C.red:(mRs4.length+mRsSt4.length>=mF4.length&&mF4.length)?C.green:C.dim;
+          const bg4=mi%2===0?C.white:C.navyLight;
+          doc.setFillColor(...bg4); doc.rect(10,y-4,W-20,7,'F');
           doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,y-4,W-20,7);
-          const mRow=[monthLabel(mk),mFails.length||'\u2014',mAct.length||'\u2014',mRep.length||'\u2014',mRes.length+mResStat.length||'\u2014',mDown||'\u2014',note];
-          let mx2=10;
-          mRow.forEach((cell,i)=>{
+          const mRow4=[mo4Lbl(mk),mF4.length||'-',mAc4.length||'-',mRp4.length||'-',mRs4.length+mRsSt4.length||'-',mDn4||'-',note4];
+          let mx4=10;
+          mRow4.forEach((cell,i)=>{
             doc.setFont('helvetica',i===0||i===1?'bold':'normal');
             doc.setFontSize(i===0?7.5:7);
-            doc.setTextColor(...(i===1&&cell!=='\u2014'?C.red:i===5&&cell!=='\u2014'?C.amber:i===6?noteColor:C.text));
-            doc.text(String(cell), mx2+1.5, y, {maxWidth:mCw[i]-3});
-            mx2+=mCw[i];
+            doc.setTextColor(...(i===1&&cell!=='-'?C.red:i===5&&cell!=='-'?C.amber:i===6?noteC4:C.text));
+            doc.text(String(cell), mx4+1.5, y, {maxWidth:mCw[i]-3});
+            mx4+=mCw[i];
           });
           y+=7;
         });
         doc.setFillColor(...C.navyMid); doc.rect(10,y-4,W-20,7,'F');
-        const totRow=['TOTAL',totalFail,allChildren.filter(e=>e.type==='action').length,allChildren.filter(e=>e.type==='repair').length,allChildren.filter(e=>e.type==='resolved').length,totDown,'Periode laporan'];
-        let mx3=10;
-        totRow.forEach((cell,i)=>{
+        const totRow4=['TOTAL',totalFail,allChildren.filter(e=>e.type==='action').length,allChildren.filter(e=>e.type==='repair').length,allChildren.filter(e=>e.type==='resolved').length,totDown,'Periode laporan'];
+        let mx5=10;
+        totRow4.forEach((cell,i)=>{
           doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...(i===1?C.red:i===5?C.amber:C.white));
-          doc.text(String(cell), mx3+1.5, y, {maxWidth:mCw[i]-3}); mx3+=mCw[i];
+          doc.text(String(cell), mx5+1.5, y, {maxWidth:mCw[i]-3}); mx5+=mCw[i];
         });
         addFooter(pageN++);
       }
@@ -4911,38 +5003,123 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
           const myRes=myChildren.filter(c=>c.type==='resolved');
           const isClosed=myRes.length>0||['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase());
           const fDown=myRes.length?Math.round((new Date(myRes[myRes.length-1].date)-new Date(f.date))/(1000*3600))+'j':(f.downtime?f.downtime+'j':'—');
-          // Failure group header
-          doc.setFillColor(...C.navy); doc.rect(10,y-4,W-20,8,'F');
-          doc.setFillColor(...C.red); doc.rect(10,y-4,3,8,'F');
-          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.amber);
-          doc.text(`${fi+1}. ${(f.title||'Failure Event').substring(0,50)}`,15,y);
-          doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.muted);
-          doc.text(`${fmtD(f.date).full} | Down: ${fDown} | ${isClosed?'✓ RESOLVED':'⚠ OPEN'}`,W-14,y,{align:'right'});
-          y+=10;
-          // Detail info
+          // ── Parent event (Failure / Defect) header ──
+          // Compute dynamic height based on content
+          const fTitleLines = doc.splitTextToSize(`${fi+1}. ${f.title||'Failure Event'}`, W-80);
+          const fModeLines  = f.mode  ? doc.splitTextToSize(f.mode,  (W-22)/2-4) : [];
+          const fCauseLines = f.cause ? doc.splitTextToSize(f.cause, (W-22)/2-4) : [];
+          const fInfoLines  = Math.max(fModeLines.length, fCauseLines.length);
+          const fHdr        = 4 + fTitleLines.length*4.5;
+          const fInfo       = (f.mode||f.cause) ? 4 + fInfoLines*4 + 2 : 0;
+          const fNotes      = f.notes ? doc.splitTextToSize(f.notes, W-24) : [];
+          const fNotesH     = f.notes ? 4 + fNotes.length*4 : 0;
+          const fTotalH     = fHdr + fInfo + fNotesH + 2;
+
+          if(y+fTotalH>H-16){addFooter(pageN++);doc.addPage();pageHeader(`DETAIL - ${eq.name} (lanjutan)`,`${eq.tag_no||'?'}`);y=24;}
+
+          // Header background
+          doc.setFillColor(...C.navy); doc.rect(10,y-4,W-20,fHdr,'F');
+          doc.setFillColor(...C.red); doc.rect(10,y-4,3,fHdr,'F');
+          // Failure/Defect number + title (wrapped)
+          doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...C.amber);
+          fTitleLines.forEach((ln,li)=>doc.text(ln, 15, y+li*4.5));
+          // Right: date + status + downtime
+          doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.muted);
+          doc.text(`${fmtD(f.date).full}  |  ${fDown}  |  ${isClosed?'RESOLVED':'OPEN'}`, W-14, y, {align:'right'});
+          doc.text(`PIC: ${f.pic||'TS'}`, W-14, y+4.5, {align:'right'});
+          y += fHdr;
+
+          // Mode + Cause row (2-column, fully wrapped)
           if(f.mode||f.cause){
-            doc.setFillColor(...C.amberLight); doc.rect(10,y-3,W-20,7,'F');
-            doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
-            if(f.mode){doc.setFont('helvetica','bold');doc.text('Mode: ',14,y+1);doc.setFont('helvetica','normal');doc.text(f.mode.substring(0,50),30,y+1);}
-            if(f.cause){doc.setFont('helvetica','bold');doc.text('Cause: ',W/2,y+1);doc.setFont('helvetica','normal');doc.text(f.cause.substring(0,50),W/2+16,y+1);}
-            y+=9;
+            const mcH = 5 + fInfoLines*4;
+            doc.setFillColor(240,248,255); doc.rect(10,y,W-20,mcH,'F');
+            doc.setDrawColor(...C.border); doc.setLineWidth(0.2); doc.rect(10,y,W-20,mcH);
+            doc.setFillColor(...C.amber); doc.rect(10,y,2,mcH,'F');
+            const colW = (W-24)/2;
+            if(f.mode){
+              doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...C.navyMid);
+              doc.text('MODE KEGAGALAN:', 14, y+4);
+              doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(...C.text);
+              fModeLines.forEach((ln,li)=>doc.text(ln, 14, y+8+li*4));
+            }
+            if(f.cause){
+              const cx = 14+colW;
+              doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...C.navyMid);
+              doc.text('ROOT CAUSE:', cx, y+4);
+              doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(...C.text);
+              fCauseLines.forEach((ln,li)=>doc.text(ln, cx, y+8+li*4));
+            }
+            y += mcH + 1;
           }
+
+          // Notes/description (if present)
+          if(f.notes){
+            const nH = 4 + fNotes.length*4;
+            doc.setFillColor(248,252,248); doc.rect(10,y,W-20,nH,'F');
+            doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,y,W-20,nH);
+            doc.setFillColor(...C.green); doc.rect(10,y,2,nH,'F');
+            doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...C.dim);
+            doc.text('KRONOLOGI / CATATAN:', 14, y+4);
+            doc.setFont('helvetica','normal'); doc.setFontSize(6.8); doc.setTextColor(...C.text);
+            fNotes.forEach((ln,li)=>doc.text(ln, 14, y+8+li*4));
+            y += nH + 1;
+          }
+          y += 1;
+
+          // ── Child events ──
           myChildren.forEach(ev=>{
-            if(y>H-14){addFooter(pageN++);doc.addPage();pageHeader(`DETAIL — ${eq.name} (lanjutan)`,`${eq.tag_no||'—'}`);y=24;}
-            const cC={action:C.teal,repair:[180,120,0],resolved:C.green}[ev.type]||C.dim;
-            const cL={action:'↳ ACTION',repair:'↳ REPAIR',resolved:'↳ RESOLVED'}[ev.type]||'↳ '+ev.type.toUpperCase();
-            doc.setFillColor(...C.bg); doc.rect(10,y-3,W-20,7,'F');
-            doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,y-3,W-20,7);
-            doc.setFillColor(...cC); doc.rect(13,y-3,2,7,'F');
+            // Compute dynamic child row height
+            const cTitleLines = doc.splitTextToSize(ev.title||'', W-60);
+            const cModeLines  = ev.mode  ? doc.splitTextToSize(ev.mode,  (W-60)/2) : [];
+            const cCauseLines = ev.cause ? doc.splitTextToSize(ev.cause, (W-60)/2) : [];
+            const cInfoLines  = Math.max(cModeLines.length, cCauseLines.length);
+            const cBaseH      = 3 + cTitleLines.length*4;
+            const cInfoH      = (ev.mode||ev.cause) ? 2 + cInfoLines*3.5 : 0;
+            const cTotalH     = cBaseH + cInfoH + 1;
+            if(y+cTotalH>H-14){addFooter(pageN++);doc.addPage();pageHeader(`DETAIL - ${eq.name} (lanjutan)`,`${eq.tag_no||'?'}`);y=24;}
+
+            const cC={action:C.teal,repair:[180,120,0],resolved:C.green,corrective:C.teal,closed:C.green}[ev.type]||C.dim;
+            const cLabel={action:'ACTION',repair:'REPAIR',resolved:'RESOLVED',corrective:'CORRECTIVE',closed:'CLOSED'}[ev.type]||(ev.type||'').toUpperCase();
+
+            // Row bg
+            doc.setFillColor(250,252,255); doc.rect(10,y,W-20,cTotalH,'F');
+            doc.setDrawColor(...C.border); doc.setLineWidth(0.12); doc.rect(10,y,W-20,cTotalH);
+            doc.setFillColor(...cC); doc.rect(13,y,2,cTotalH,'F');
+
+            // Type badge
             doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...cC);
-            doc.text(cL,16,y+1);
+            doc.text(cLabel, 17, y+cBaseH/2+1.5);
+
+            // Title (wrapped)
             doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.text);
-            doc.text((ev.title||'').substring(0,55),38,y+1);
+            const titleX = 17 + doc.getTextWidth(cLabel) + 4;
+            cTitleLines.forEach((ln,li)=>doc.text(ln, titleX, y+3+li*4));
+
+            // Date + PIC + status right
             doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
-            doc.text(`${fmtD(ev.date).full} | PIC: ${ev.pic||'—'} | ${ev.status||'—'}`,W-14,y+1,{align:'right'});
-            y+=8;
+            doc.text(`${fmtD(ev.date).full}  |  PIC: ${ev.pic||'-'}  |  ${ev.status||'-'}`, W-14, y+3, {align:'right'});
+
+            // Mode / Cause sub-row
+            if(ev.mode||ev.cause){
+              const subY = y + cBaseH + 0.5;
+              const subColW = (W-20)/2 - 5;
+              if(ev.mode){
+                doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(...C.navyMid);
+                doc.text('Mode: ', 17, subY+3);
+                doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.text);
+                cModeLines.forEach((ln,li)=>doc.text(ln, 17+doc.getTextWidth('Mode: '), subY+3+li*3.5));
+              }
+              if(ev.cause){
+                const subCX = 17+subColW+4;
+                doc.setFont('helvetica','bold'); doc.setFontSize(5.5); doc.setTextColor(...C.navyMid);
+                doc.text('Cause: ', subCX, subY+3);
+                doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.text);
+                cCauseLines.forEach((ln,li)=>doc.text(ln, subCX+doc.getTextWidth('Cause: '), subY+3+li*3.5));
+              }
+            }
+            y += cTotalH + 1;
           });
-          y+=4;
+          y += 3;
         });
         addFooter(pageN++);
       });
@@ -4957,18 +5134,29 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
       let y=24;
       y=sectionBar(`${outItems.length} ITEM OUTSTANDING YANG PERLU PERHATIAN`,y+2)+4;
       outItems.forEach((ev,i)=>{
-        if(y>H-16){addFooter(pageN++);doc.addPage();pageHeader('OPEN ITEMS (lanjutan)',`${fromStr} — ${toStr}`);y=24;}
-        const eq2=equipments.find(e=>e.id===ev.equipment_id);
-        doc.setFillColor(i%2===0?C.amberLight:C.white); doc.rect(10,y-3,W-20,14,'F');
-        doc.setFillColor(...C.amber); doc.rect(10,y-3,3,14,'F');
-        doc.setDrawColor(...C.border); doc.setLineWidth(0.2); doc.rect(10,y-3,W-20,14);
-        doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...C.text);
-        doc.text(`${i+1}. ${(ev.title||'').substring(0,65)}`,15,y+2);
-        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.dim);
-        doc.text(doc.splitTextToSize((ev.outstanding||'').substring(0,150),W-40)[0],15,y+8);
-        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.navyMid);
-        doc.text(`Equipment: ${eq2?.name||'—'} | PIC: ${ev.pic||'—'} | Target: ${ev.target_date?fmtD(ev.target_date).full:'—'}`,W-14,y+8,{align:'right'});
-        y+=16;
+        const eq2     = equipments.find(e=>e.id===ev.equipment_id);
+        // Dynamic height: title (wrapped) + outstanding (wrapped) + meta row
+        const oiTitle = doc.splitTextToSize(`${i+1}. ${ev.title||''}`, W-26);
+        const oiDesc  = ev.outstanding ? doc.splitTextToSize(ev.outstanding, W-26) : [];
+        const oiH     = 4 + oiTitle.length*4.5 + (oiDesc.length>0?1+oiDesc.length*4:0) + 6;
+        if(y+oiH>H-14){addFooter(pageN++);doc.addPage();pageHeader('OPEN ITEMS (lanjutan)',`${fromStr} - ${toStr}`);y=24;}
+        const bg5 = i%2===0?C.amberLight:C.white;
+        doc.setFillColor(...bg5); doc.rect(10,y-3,W-20,oiH,'F');
+        doc.setFillColor(...C.amber); doc.rect(10,y-3,3,oiH,'F');
+        doc.setDrawColor(...C.amber); doc.setLineWidth(0.3); doc.rect(10,y-3,W-20,oiH);
+        // Title (wrapped)
+        doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...C.text);
+        oiTitle.forEach((ln,li)=>doc.text(ln, 15, y+2+li*4.5));
+        // Equipment + PIC + target (right aligned)
+        doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...C.navyMid);
+        doc.text(`${eq2?.name||'—'}  |  PIC: ${ev.pic||'—'}  |  Target: ${ev.target_date?fmtD(ev.target_date).full:'—'}`, W-14, y+2, {align:'right'});
+        // Outstanding description (wrapped, full content)
+        if(oiDesc.length){
+          const descY = y + 2 + oiTitle.length*4.5 + 1;
+          doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.dim);
+          oiDesc.forEach((ln,li)=>doc.text(ln, 15, descY+li*4));
+        }
+        y += oiH + 1;
       });
       addFooter(pageN++);
     }
@@ -5386,10 +5574,10 @@ async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, i
           const bg=i%2===0?'FFFBEB':C.amberL;
           return [
             {text:String(i+1),options:{bold:true,color:C.amber,fill:bg,align:'center'}},
-            {text:(eq2?.name||'—').substring(0,22),options:{bold:true,color:C.text,fill:bg,fontSize:8}},
-            {text:(ev.title||'—').substring(0,35),options:{color:C.dim,fill:bg,fontSize:8}},
-            {text:(ev.outstanding||'—').substring(0,60),options:{color:C.text,fill:bg,fontSize:8}},
-            {text:(ev.pic||'—').substring(0,15),options:{color:C.navyM,fill:bg,align:'center',fontSize:8}},
+            {text:(eq2?.name||'—'),options:{bold:true,color:C.text,fill:bg,fontSize:7,wrap:true,valign:'top'}},
+            {text:(ev.title||'—'),options:{color:C.dim,fill:bg,fontSize:7,wrap:true,valign:'top'}},
+            {text:(ev.outstanding||'—'),options:{color:C.text,fill:bg,fontSize:7,wrap:true,valign:'top'}},
+            {text:(ev.pic||'—'),options:{color:C.navyM,fill:bg,align:'center',fontSize:7,valign:'middle'}},
             {text:ev.target_date?fmtD(ev.target_date).full:'—',options:{color:C.dim,fill:bg,align:'center',fontSize:8}}
           ];
         })
@@ -6420,7 +6608,8 @@ function renderStartupTrend(wrap, kpiRow, statsDiv){
   wrap.innerHTML = '';
 
   if(!targetEqs.length){
-    wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Tidak ada equipment startup.</div>';
+    wrap.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Tidak ada equipment startup terdaftar. Tambah equipment dan set phase = Startup/Commissioning.</div>';
+    if(statsDiv) statsDiv.innerHTML = '';
     return;
   }
 
@@ -6439,7 +6628,6 @@ function renderStartupTrend(wrap, kpiRow, statsDiv){
   }).sort((a,b) => b.total - a.total);
 
   const maxVal = Math.max(...chartData.map(d=>d.total), 1);
-
   const svg_h  = Math.max(200, chartData.length * 46 + 40);
   const bar_h  = 28;
   const margin = {left:160, right:60, top:20, bottom:20};
@@ -6451,68 +6639,174 @@ function renderStartupTrend(wrap, kpiRow, statsDiv){
     const y = margin.top + i * 46;
     const wClosed = d.closed > 0 ? Math.round(d.closed/maxVal * inner_w) : 0;
     const wOpen   = d.open   > 0 ? Math.round(d.open/maxVal   * inner_w) : 0;
-    const isBa    = isStartupBadActor(d.eq, allEventsCache);
-    const nameColor = isBa ? '#dc2626' : 'var(--text)';
-
+    const isBa = isStartupBadActor(d.eq, allEventsCache);
     svgRows += `
-      <text x="${margin.left-8}" y="${y+bar_h/2+4}" text-anchor="end" font-size="11" fill="${nameColor}" font-weight="${isBa?'700':'400'}">
-        ${esc(d.eq.tag_no||d.eq.name).substring(0,18)}${isBa?' ⚠':''}
+      <text x="${margin.left-8}" y="${y+bar_h/2+4}" text-anchor="end" font-size="11" fill="${isBa?'#ef4444':'#1e293b'}" font-weight="${isBa?700:500}" font-family="IBM Plex Mono, monospace">
+        ${esc(d.eq.tag_no||d.eq.name)} ${isBa?'⚠':''}
       </text>
-      <rect x="${margin.left}" y="${y}" width="${wClosed}" height="${bar_h}" fill="var(--green)" opacity=".85" rx="3"/>
-      <rect x="${margin.left+wClosed}" y="${y}" width="${wOpen}" height="${bar_h}" fill="${d.catA>0?'var(--red)':'var(--amber)'}" opacity=".85" rx="3"/>
-      ${d.total>0?`<text x="${margin.left+wClosed+wOpen+6}" y="${y+bar_h/2+4}" font-size="11" fill="var(--text)" font-weight="700">${d.total}${d.catA?` (${d.catA}A)`:''}</text>`:''}
-    `;
+      <rect x="${margin.left}" y="${y}" width="${wClosed}" height="${bar_h}" rx="3" fill="#22c55e" opacity="0.85"/>
+      <rect x="${margin.left+wClosed}" y="${y}" width="${wOpen}" height="${bar_h}" rx="3" fill="#ef4444" opacity="0.8"/>
+      <text x="${margin.left+wClosed+wOpen+6}" y="${y+bar_h/2+4}" font-size="12" fill="#1e293b" font-weight="700" font-family="IBM Plex Mono, monospace">
+        ${d.total} (A:${d.catA} B:${d.catB} C:${d.catC})
+      </text>`;
   });
 
-  wrap.innerHTML = `
-    <svg width="100%" height="${svg_h}" style="overflow:visible;">
-      <text x="${margin.left}" y="14" font-size="10" fill="var(--muted)">● Closed</text>
-      <text x="${margin.left+55}" y="14" font-size="10" fill="var(--amber)">● Open</text>
-      <text x="${margin.left+95}" y="14" font-size="10" fill="var(--red)">● Cat A Open</text>
-      ${svgRows}
-    </svg>`;
+  wrap.innerHTML = `<svg width="100%" height="${svg_h}" viewBox="0 0 ${chart_w} ${svg_h}">
+    <text x="${margin.left}" y="14" font-size="9" fill="#64748b" font-family="sans-serif">■ Closed</text>
+    <rect x="${margin.left+44}" y="5" width="10" height="10" fill="#22c55e" rx="2"/>
+    <text x="${margin.left+56}" y="14" font-size="9" fill="#64748b" font-family="sans-serif">Open</text>
+    <rect x="${margin.left+86}" y="5" width="10" height="10" fill="#ef4444" rx="2"/>
+    ${svgRows}
+  </svg>`;
 
-  // Stats table below
-  if(statsDiv){
-    statsDiv.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:12px;">
-        <thead><tr style="border-bottom:2px solid var(--border);">
-          <th style="text-align:left;padding:6px 8px;">Equipment</th>
-          <th style="text-align:center;padding:6px;">Total</th>
-          <th style="text-align:center;padding:6px;color:var(--red);">Cat A</th>
-          <th style="text-align:center;padding:6px;color:var(--amber);">Cat B</th>
-          <th style="text-align:center;padding:6px;color:var(--teal);">Cat C</th>
-          <th style="text-align:center;padding:6px;color:var(--red);">↺ Repeat</th>
-          <th style="text-align:center;padding:6px;">Closure %</th>
-          <th style="text-align:center;padding:6px;">Status</th>
-        </tr></thead>
-        <tbody>
-          ${chartData.map((d,i) => {
-            const cls = d.total>0 ? Math.round(d.closed/d.total*100) : 100;
-            const isBa = isStartupBadActor(d.eq, allEventsCache);
-            return `<tr style="border-bottom:1px solid var(--border);${i%2===0?'background:var(--bg);':''}cursor:pointer;" onclick="openEquipment('${d.eq.id}')">
-              <td style="padding:6px 8px;font-weight:${isBa?'700':'400'};color:${isBa?'var(--red)':'var(--text)'};">
-                ${esc(d.eq.name)} ${isBa?'<span class="startup-bad-actor-badge" style="font-size:9px;">⚠</span>':''}
-                <div style="font-size:10px;color:var(--muted);">${esc(d.eq.tag_no||'')} · ${esc(d.eq.unit||'')}</div>
-              </td>
-              <td style="text-align:center;font-weight:700;">${d.total}</td>
-              <td style="text-align:center;color:var(--red);font-weight:${d.catA?'700':'400'};">${d.catA||'—'}</td>
-              <td style="text-align:center;color:var(--amber);">${d.catB||'—'}</td>
-              <td style="text-align:center;color:var(--teal);">${d.catC||'—'}</td>
-              <td style="text-align:center;color:${d.repeat?'var(--red)':'var(--muted)'};">${d.repeat?'↺ '+d.repeat:'—'}</td>
-              <td style="text-align:center;">
-                <span style="font-weight:700;color:${cls>=80?'var(--green)':cls>=50?'var(--amber)':'var(--red)'};">${cls}%</span>
-              </td>
-              <td style="text-align:center;">
-                <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${d.open>0?'rgba(220,38,38,.1)':'rgba(22,163,74,.1)'};color:${d.open>0?'var(--red)':'var(--green)'};">
-                  ${d.open>0?d.open+' OPEN':'CLEAR'}
-                </span>
-              </td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>`;
-  }
+  if(!statsDiv) return;
+
+  // ── Per-equipment summary table ──
+  const eqTableRows = chartData.map((d,i) => {
+    const cls = d.total>0 ? Math.round(d.closed/d.total*100) : 100;
+    const isBa = isStartupBadActor(d.eq, allEventsCache);
+    const clsColor = cls>=80?'var(--green)':cls>=50?'#d97706':'var(--red)';
+    return `<tr style="border-bottom:1px solid var(--border);${i%2===0?'background:var(--bg);':''}cursor:pointer;" onclick="openEquipment('${d.eq.id}')">
+      <td style="padding:7px 8px 7px 14px;font-weight:${isBa?700:400};color:${isBa?'var(--red)':'var(--text)'};">
+        ${esc(d.eq.name)} ${isBa?'<span class="startup-bad-actor-badge" style="font-size:9px;">&#x26A0;</span>':''}
+        <div style="font-size:10px;color:var(--muted);">${esc(d.eq.tag_no||'')} &middot; ${esc(d.eq.unit||'')}</div>
+      </td>
+      <td style="text-align:center;font-weight:700;font-size:13px;">${d.total||'—'}</td>
+      <td style="text-align:center;color:var(--red);font-weight:${d.catA?700:400};font-size:12px;">${d.catA||'—'}</td>
+      <td style="text-align:center;color:#d97706;font-size:12px;">${d.catB||'—'}</td>
+      <td style="text-align:center;color:var(--teal);font-size:12px;">${d.catC||'—'}</td>
+      <td style="text-align:center;color:${d.repeat?'var(--red)':'var(--muted)'};">${d.repeat?'&#x21BA; '+d.repeat:'—'}</td>
+      <td style="text-align:center;"><span style="font-weight:700;color:${clsColor};">${cls}%</span></td>
+      <td style="text-align:center;"><span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${d.open>0?'rgba(220,38,38,.1)':'rgba(22,163,74,.1)'};color:${d.open>0?'var(--red)':'var(--green)'};">
+        ${d.open>0?d.open+' OPEN':'CLEAR'}
+      </span></td>
+    </tr>`;
+  }).join('');
+
+  // ── Monthly defect recap ──
+  const mkList   = buildMonthKeys(12);
+  const mkLabels = getMonthLabels(12);
+  let suActiveMos=0, suTotDef=0, suTotA=0, suTotB=0, suTotC=0, suTotCorr=0, suTotClosed=0;
+
+  const allCorr2   = allEventsCache.filter(e=>e.type==='corrective'&&targetEqs.some(q=>q.id===e.equipment_id));
+  const allClosed2 = allEventsCache.filter(e=>e.type==='closed'    &&targetEqs.some(q=>q.id===e.equipment_id));
+  const targetDefs = allDefs.filter(d=>targetEqs.some(e=>e.id===d.equipment_id));
+
+  const monthRowsArr = mkList.map((mk,mi)=>{
+    const mDefs  = targetDefs.filter(d=>d.date&&d.date.slice(0,7)===mk);
+    const mCatA  = mDefs.filter(d=>d.category==='A').length;
+    const mCatB  = mDefs.filter(d=>d.category==='B').length;
+    const mCatC  = mDefs.filter(d=>d.category==='C').length;
+    const mCorr  = allCorr2.filter(e=>e.date&&e.date.slice(0,7)===mk).length;
+    const mCl    = allClosed2.filter(e=>e.date&&e.date.slice(0,7)===mk).length;
+    const mDefCl = mDefs.filter(d=>d.status==='CLOSED').length;
+    const mPct   = mDefs.length>0 ? Math.round(mDefCl/mDefs.length*100) : null;
+    if(mDefs.length===0&&mCorr===0&&mCl===0) return null;
+    suActiveMos++; suTotDef+=mDefs.length; suTotA+=mCatA; suTotB+=mCatB; suTotC+=mCatC;
+    suTotCorr+=mCorr; suTotClosed+=mCl;
+
+    let note='', noteStyle='color:var(--muted)';
+    if(mCatA>0&&mDefCl<mDefs.length){
+      note='&#x26A0; '+mCatA+' Cat A open &mdash; eskalasi segera'; noteStyle='color:var(--red);font-weight:600';
+    } else if(mDefs.length>0&&mDefCl>=mDefs.length){
+      note='&#x2713; Semua defect closed'; noteStyle='color:var(--green);font-weight:600';
+    } else if(mDefs.length>3){
+      note='&#x25B3; '+mDefs.length+' defect &mdash; monitoring'; noteStyle='color:#d97706';
+    } else if(mCorr>0&&mCl===0){
+      note='Corrective in progress'; noteStyle='color:var(--teal)';
+    } else if(mCl>0){
+      note=mCl+' defect closed bulan ini'; noteStyle='color:var(--green)';
+    } else if(mDefs.length>0){
+      note='Corrective pending'; noteStyle='color:var(--muted)';
+    }
+
+    const hasOpenA = mCatA>0 && mDefCl<mDefs.length;
+    const rowBg = hasOpenA?'background:#fff5f5;':(mi%2===0?'background:var(--bg);':'background:var(--bg2);');
+    const lBdr  = hasOpenA?'border-left:3px solid var(--red);':'border-left:3px solid transparent;';
+    const pctCol= mPct===null?'color:var(--muted)':mPct>=80?'color:var(--green);font-weight:700':mPct>=50?'color:#d97706;font-weight:700':'color:var(--red);font-weight:700';
+    return `<tr style="${rowBg}${lBdr}border-bottom:1px solid var(--border);">
+      <td style="padding:9px 8px 9px 14px;font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:12px;color:var(--text);">${mkLabels[mi]}</td>
+      <td style="text-align:center;">${mDefs.length?'<span style="font-weight:700;color:var(--red);font-size:13px;">'+mDefs.length+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
+      <td style="text-align:center;">${mCatA?'<span style="font-weight:700;color:var(--red);font-size:12px;">'+mCatA+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
+      <td style="text-align:center;">${mCatB?'<span style="font-weight:600;color:#d97706;font-size:12px;">'+mCatB+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
+      <td style="text-align:center;">${mCatC?'<span style="font-weight:600;color:var(--teal);font-size:12px;">'+mCatC+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
+      <td style="text-align:center;">${mCorr?'<span style="font-weight:600;color:var(--teal);font-size:12px;">'+mCorr+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
+      <td style="text-align:center;">${mCl?'<span style="font-weight:600;color:var(--green);font-size:12px;">'+mCl+'</span>':'<span style="color:var(--muted);">—</span>'}</td>
+      <td style="text-align:center;"><span style="${pctCol};font-size:12px;">${mPct!==null?mPct+'%':'—'}</span></td>
+      <td style="text-align:left;padding-left:10px;font-size:11px;"><span style="${noteStyle}">${note||'—'}</span></td>
+    </tr>`;
+  }).filter(r=>r!==null);
+
+  const suTotPct = suTotDef>0 ? Math.round(suTotClosed/suTotDef*100) : 0;
+  const totPctColor = suTotPct>=80?'#86efac':suTotPct>=50?'#fcd34d':'#f87171';
+
+  statsDiv.innerHTML = `
+    <!-- Equipment Summary Table -->
+    <div style="padding:9px 14px;background:var(--bg2);border-bottom:2px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:3px;height:16px;background:#0284c7;border-radius:2px;"></div>
+        <span style="font-size:10px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.8px;">Commissioning Defect &mdash; Rangkuman per Equipment</span>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+      <thead><tr style="background:var(--bg2);">
+        <th style="text-align:left;padding:8px 8px 8px 14px;font-size:9px;font-weight:700;color:var(--textDim);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);">Equipment</th>
+        <th style="font-size:9px;font-weight:700;color:var(--textDim);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);text-align:center;">Total</th>
+        <th style="font-size:9px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);text-align:center;">Cat A</th>
+        <th style="font-size:9px;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);text-align:center;">Cat B</th>
+        <th style="font-size:9px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);text-align:center;">Cat C</th>
+        <th style="font-size:9px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);text-align:center;">Repeat</th>
+        <th style="font-size:9px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);text-align:center;">Closure%</th>
+        <th style="font-size:9px;font-weight:700;color:var(--textDim);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);text-align:center;">Status</th>
+      </tr></thead>
+      <tbody>${eqTableRows}</tbody>
+    </table>
+
+    <!-- Monthly Defect Recap -->
+    ${monthRowsArr.length>0 ? `
+    <div style="margin-top:16px;">
+      <div style="padding:9px 14px;background:linear-gradient(90deg,#02344a 0%,#024e6a 100%);border-bottom:1px solid #0369a1;display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:3px;height:16px;background:#38bdf8;border-radius:2px;"></div>
+          <span style="font-size:10px;font-weight:700;color:#e2e8f0;text-transform:uppercase;letter-spacing:.8px;">Rekap Bulanan Commissioning Defect &mdash; 12 Bulan Terakhir</span>
+        </div>
+        <span style="font-size:10px;color:#94a3b8;background:rgba(255,255,255,.1);padding:2px 8px;border-radius:10px;">${suActiveMos} bulan aktif dari 12</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+        <thead>
+          <tr style="background:linear-gradient(90deg,#023a54 0%,#02567a 100%);">
+            <th style="text-align:left;padding:8px 8px 8px 14px;font-size:9px;font-weight:700;color:#7dd3fc;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #0369a1;">Bulan</th>
+            <th style="font-size:9px;font-weight:700;color:#fca5a5;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #0369a1;text-align:center;">Defect</th>
+            <th style="font-size:9px;font-weight:700;color:#fca5a5;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #0369a1;text-align:center;">Cat A</th>
+            <th style="font-size:9px;font-weight:700;color:#fed7aa;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #0369a1;text-align:center;">Cat B</th>
+            <th style="font-size:9px;font-weight:700;color:#a5f3fc;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #0369a1;text-align:center;">Cat C</th>
+            <th style="font-size:9px;font-weight:700;color:#7dd3fc;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #0369a1;text-align:center;">Corrective</th>
+            <th style="font-size:9px;font-weight:700;color:#86efac;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #0369a1;text-align:center;">Closed</th>
+            <th style="font-size:9px;font-weight:700;color:#86efac;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #0369a1;text-align:center;">Closure%</th>
+            <th style="text-align:left;padding-left:10px;font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid #0369a1;">Status / Keterangan</th>
+          </tr>
+        </thead>
+        <tbody>${monthRowsArr.join('')}</tbody>
+        <tfoot>
+          <tr style="background:linear-gradient(90deg,#02344a 0%,#024e6a 100%);border-top:2px solid #0369a1;">
+            <td style="padding:9px 8px 9px 14px;font-size:11px;font-weight:800;color:#e2e8f0;letter-spacing:.5px;">TOTAL</td>
+            <td style="text-align:center;"><span style="font-weight:800;color:#f87171;font-size:13px;">${suTotDef}</span></td>
+            <td style="text-align:center;"><span style="font-weight:700;color:#f87171;font-size:12px;">${suTotA}</span></td>
+            <td style="text-align:center;"><span style="font-weight:700;color:#fed7aa;font-size:12px;">${suTotB}</span></td>
+            <td style="text-align:center;"><span style="font-weight:700;color:#a5f3fc;font-size:12px;">${suTotC}</span></td>
+            <td style="text-align:center;"><span style="font-weight:700;color:#7dd3fc;font-size:12px;">${suTotCorr}</span></td>
+            <td style="text-align:center;"><span style="font-weight:700;color:#86efac;font-size:12px;">${suTotClosed}</span></td>
+            <td style="text-align:center;"><span style="font-weight:800;font-size:13px;color:${totPctColor};">${suTotPct}%</span></td>
+            <td style="text-align:left;padding-left:10px;font-size:10px;color:#94a3b8;">${suActiveMos} bulan aktif dari 12</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div style="padding:8px 14px;background:#f0f9ff;border-top:1px solid #bae6fd;display:flex;gap:16px;flex-wrap:wrap;">
+        <span style="font-size:10px;color:#0369a1;"><b style="color:#dc2626;">Cat A</b> Critical/Safety &mdash; target &lt;7 hari</span>
+        <span style="font-size:10px;color:#0369a1;"><b style="color:#d97706;">Cat B</b> Major Reliability &mdash; target &lt;30 hari</span>
+        <span style="font-size:10px;color:#0369a1;"><b style="color:#0891b2;">Cat C</b> Minor/Cosmetic &mdash; scheduled maintenance</span>
+      </div>
+    </div>` : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;">Belum ada data defect dalam 12 bulan terakhir.</div>'}`;
 }
 
 
