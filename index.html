@@ -4608,74 +4608,196 @@ async function generateReportPDF(evData, from, to, fromStr, toStr, incSummary, i
         y+=badActorEqs.slice(0,5).length*baH+6;
       }
 
-      // Monthly trend mini-table
-      y=sectionBar('TREND BULANAN',y+4)+4;
-      const monthCols=['Bulan','Failure','Action','Repair','Resolved','Downtime (Jam)','Keterangan'];
-      const mCw=[40,22,22,22,22,30,90];
-      let mx=10;
-      doc.setFillColor(...C.navyMid); doc.rect(10,y-4,W-20,7,'F');
-      monthCols.forEach((c,i)=>{
-        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.white);
-        doc.text(c, mx+1.5, y, {maxWidth:mCw[i]-3}); mx+=mCw[i];
-      });
-      y+=5;
+      // Monthly trend table — PHASE-AWARE
+      if(isStartupReport){
+        // ══ STARTUP / COMMISSIONING: Defect Tracker ══
+        y=sectionBar('REKAP BULANAN — COMMISSIONING DEFECT TRACKER',y+4,[2,80,120])+4;
 
-      // Build monthly data
-      const now=new Date(), months=[];
-      for(let m=0;m<6;m++){
-        const d=new Date(now.getFullYear(),now.getMonth()-m,1);
-        months.unshift(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
-      }
-      const monthLabel=mk=>{const[y2,m2]=mk.split('-');const mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(m2)-1];return `${mn} ${y2}`;};
-      const sortedFails2=[...allFails].sort((a,b)=>new Date(a.date)-new Date(b.date));
-      const autoMap3=new Map();
-      allChildren.forEach(c=>{
-        if(c.parent_failure_id) return;
-        const cDate=new Date(c.date); let best=null;
-        sortedFails2.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
-        if(!best&&sortedFails2.length) best=sortedFails2[0];
-        if(best) autoMap3.set(c.id, best.id);
-      });
+        // Sub-context note
+        doc.setFont('helvetica','italic'); doc.setFontSize(6.5); doc.setTextColor(...C.dim);
+        doc.text(`Rekap defect per bulan periode komisioning. Total ${totalFail} defect tercatat dalam range laporan.`,12,y);
+        y+=6;
 
-      months.forEach((mk,mi)=>{
-        const mFails=allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
-        const mAct=allChildren.filter(e=>e.type==='action'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
-        const mRep=allChildren.filter(e=>e.type==='repair'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
-        const mRes=allChildren.filter(e=>e.type==='resolved'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
-        const mResStat=mFails.filter(f=>!allChildren.some(c=>(c.parent_failure_id===f.id||autoMap3.get(c.id)===f.id)&&c.type==='resolved')&&['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()));
-        const mDown=mFails.reduce((s,f)=>{
-          const r=allChildren.filter(c=>(c.parent_failure_id===f.id||autoMap3.get(c.id)===f.id)&&c.type==='resolved').sort((a,b)=>new Date(a.date)-new Date(b.date));
-          if(r.length){const dh=Math.round((new Date(r[r.length-1].date)-new Date(f.date))/(1000*3600));return s+(dh>0?dh:0);}
-          return s+(parseInt(f.downtime||0)||0);
-        },0);
-        const tot=mFails.length+mAct.length+mRep.length+mRes.length+mResStat.length;
-        if(tot===0&&mi<months.length-1) return;
-        const note=mFails.length>=2?'⚠ Multiple failure':mDown>72?'⚠ Downtime kritis':mFails.length&&mRes.length+mResStat.length>=mFails.length?'✓ Issue diselesaikan':mFails.length?'Dalam penanganan':'';
-        const noteColor=mFails.length>=2||mDown>72?C.red:(mRes.length+mResStat.length>=mFails.length&&mFails.length)?C.green:C.dim;
-        const bg=mi%2===0?C.white:C.navyLight;
-        doc.setFillColor(...bg); doc.rect(10,y-4,W-20,7,'F');
-        doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,y-4,W-20,7);
-        const mRow=[monthLabel(mk),mFails.length||'—',mAct.length||'—',mRep.length||'—',mRes.length+mResStat.length||'—',mDown||'—',note];
-        let mx2=10;
-        mRow.forEach((cell,i)=>{
-          const isNote=i===6;
-          doc.setFont('helvetica',i===0||i===1?'bold':'normal');
-          doc.setFontSize(i===0?7.5:7);
-          doc.setTextColor(...(i===1&&cell!=='—'?C.red:i===5&&cell!=='—'?C.amber:isNote?noteColor:C.text));
-          doc.text(String(cell), mx2+1.5, y, {maxWidth:mCw[i]-3});
-          mx2+=mCw[i];
+        // Column definitions
+        const suCols=['BULAN','DEFECT','CAT A','CAT B','CAT C','CORRECTIVE','CLOSED','CLOSURE %','STATUS / KETERANGAN'];
+        const suCw  =[36,20,16,16,16,26,22,26,99];
+
+        // Header row
+        let sux=10;
+        doc.setFillColor(2,80,120); doc.rect(10,y-4,W-20,7,'F');
+        suCols.forEach((c,i)=>{
+          doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.white);
+          doc.text(c, sux+1.5, y, {maxWidth:suCw[i]-3}); sux+=suCw[i];
         });
-        y+=7;
-      });
-      // Total row
-      doc.setFillColor(...C.navyMid); doc.rect(10,y-4,W-20,7,'F');
-      const totRow=['TOTAL',totalFail,allChildren.filter(e=>e.type==='action').length,allChildren.filter(e=>e.type==='repair').length,allChildren.filter(e=>e.type==='resolved').length,totDown,'Periode laporan'];
-      let mx3=10;
-      totRow.forEach((cell,i)=>{
-        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...(i===1?C.red:i===5?C.amber:C.white));
-        doc.text(String(cell), mx3+1.5, y, {maxWidth:mCw[i]-3}); mx3+=mCw[i];
-      });
-      addFooter(pageN++);
+        y+=5;
+
+        // Build 12-month list
+        const suNow=new Date(), suMonths=[];
+        for(let m=11;m>=0;m--){
+          const d=new Date(suNow.getFullYear(),suNow.getMonth()-m,1);
+          suMonths.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+        }
+        const suMonLabel=mk=>{
+          const[y2,m2]=mk.split('-');
+          return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(m2)-1]+' '+y2.slice(2);
+        };
+
+        let suActiveMos=0,suTotDef=0,suTotA=0,suTotB=0,suTotC=0,suTotCorr=0,suTotClosed=0;
+
+        suMonths.forEach((mk,mi)=>{
+          const mDefs   = allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
+          const mCatA   = mDefs.filter(e=>e.category==='A').length;
+          const mCatB   = mDefs.filter(e=>e.category==='B').length;
+          const mCatC   = mDefs.filter(e=>e.category==='C').length;
+          const mCorr   = allChildren.filter(e=>e.type==='corrective'&&e.date&&e.date.slice(0,7)===mk).length;
+          const mClosedN= allChildren.filter(e=>e.type==='closed'&&e.date&&e.date.slice(0,7)===mk).length;
+          const mDefCl  = mDefs.filter(d=>d.status==='CLOSED').length;
+          const mPct    = mDefs.length>0?Math.round(mDefCl/mDefs.length*100):null;
+
+          // Skip empty months (not the current month)
+          if(mDefs.length===0&&mCorr===0&&mClosedN===0&&mk!==suMonths[suMonths.length-1]) return;
+
+          suActiveMos++; suTotDef+=mDefs.length; suTotA+=mCatA; suTotB+=mCatB; suTotC+=mCatC;
+          suTotCorr+=mCorr; suTotClosed+=mClosedN;
+
+          // Note & color
+          let suNote='', suNoteC=C.dim;
+          if(mDefs.length===0&&mCorr===0&&mClosedN===0){
+            suNote='Tidak ada aktivitas'; suNoteC=C.muted;
+          } else if(mCatA>0&&mDefCl<mDefs.length){
+            suNote=`\u26A0 ${mCatA} Cat A belum closed \u2014 eskalasi segera`; suNoteC=C.red;
+          } else if(mDefs.length>0&&mDefCl>=mDefs.length){
+            suNote='\u2713 Semua defect bulan ini closed'; suNoteC=C.green;
+          } else if(mDefs.length>3){
+            suNote=`\u25B3 ${mDefs.length} defect \u2014 monitoring intensif`; suNoteC=[180,90,0];
+          } else if(mCorr>0&&mClosedN===0){
+            suNote='Corrective action in progress'; suNoteC=C.teal;
+          } else if(mClosedN>0){
+            suNote=`${mClosedN} defect closed bulan ini`; suNoteC=C.green;
+          } else if(mDefs.length>0){
+            suNote='Defect recorded \u2014 corrective pending'; suNoteC=C.dim;
+          }
+
+          // Row background
+          const hasOpenCatA = mCatA>0 && mDefCl<mDefs.length;
+          const bg = hasOpenCatA ? [255,245,245] : (mi%2===0?C.white:C.navyLight);
+          doc.setFillColor(...bg); doc.rect(10,y-4,W-20,7,'F');
+          if(hasOpenCatA){ doc.setFillColor(...C.red); doc.rect(10,y-4,2.5,7,'F'); }
+          doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,y-4,W-20,7);
+
+          const suRow=[suMonLabel(mk), mDefs.length||'\u2014', mCatA||'\u2014', mCatB||'\u2014',
+            mCatC||'\u2014', mCorr||'\u2014', mClosedN||'\u2014',
+            mPct!==null?`${mPct}%`:'\u2014', suNote];
+
+          let sux2=10;
+          suRow.forEach((cell,i)=>{
+            doc.setFont('helvetica',(i===0||i===1)?'bold':'normal');
+            doc.setFontSize(i===0?7.5:6.8);
+            let col=C.text;
+            if(i===1&&cell!=='\u2014') col=C.red;
+            else if(i===2&&cell!=='\u2014') col=C.red;
+            else if(i===7&&cell!=='\u2014'){
+              const pv=parseInt(cell); col=pv>=80?C.green:pv>=50?[180,90,0]:C.red;
+            } else if(i===8) col=suNoteC;
+            doc.setTextColor(...col);
+            doc.text(String(cell), sux2+1.5, y, {maxWidth:suCw[i]-3});
+            sux2+=suCw[i];
+          });
+          y+=7;
+          if(y>H-22){ addFooter(pageN++); doc.addPage(); pageHeader('REKAP BULANAN (LANJUTAN)',`Periode: ${fromStr} \u2014 ${toStr}`); y=24; }
+        });
+
+        // Total row
+        const suTotPct=suTotDef>0?Math.round(suTotClosed/suTotDef*100):0;
+        doc.setFillColor(2,80,120); doc.rect(10,y-4,W-20,7,'F');
+        const suTotRow=['TOTAL',suTotDef,suTotA,suTotB,suTotC,suTotCorr,suTotClosed,
+          `${suTotPct}%`,`${suActiveMos} bulan aktif dari 12`];
+        let sux3=10;
+        suTotRow.forEach((cell,i)=>{
+          doc.setFont('helvetica','bold'); doc.setFontSize(7);
+          const col=i===1?C.red:i===7?(suTotPct>=80?C.green:suTotPct>=50?C.amber:C.red):C.white;
+          doc.setTextColor(...col);
+          doc.text(String(cell), sux3+1.5, y, {maxWidth:suCw[i]-3}); sux3+=suCw[i];
+        });
+        y+=10;
+
+        // Category legend box
+        if(y<H-20){
+          doc.setFillColor(...C.navyLight); doc.rect(10,y-3,W-20,16,'F');
+          doc.setDrawColor(2,80,120); doc.setLineWidth(0.3); doc.rect(10,y-3,W-20,16);
+          doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(2,80,120);
+          doc.text('KETERANGAN KATEGORI DEFECT:', 14, y+2);
+          doc.setFont('helvetica','normal'); doc.setTextColor(...C.text);
+          doc.text('Cat A (Critical): Safety / Lingkungan / Production loss major \u2014 Eskalasi segera, target penyelesaian < 7 hari', 14, y+7);
+          doc.text('Cat B (Major): Reliability / Availability \u2014 Target < 30 hari  |  Cat C (Minor): Cosmetic / Non-critical \u2014 Scheduled maintenance', 14, y+11.5);
+        }
+        addFooter(pageN++);
+
+      } else {
+        // ══ OPERATIONAL PHASE: Failure Trend (unchanged) ══
+        y=sectionBar('REKAP BULANAN \u2014 12 BULAN TERAKHIR',y+4)+4;
+        const monthCols=['Bulan','Failure','Action','Repair','Resolved','Downtime (Jam)','Keterangan'];
+        const mCw=[40,22,22,22,22,30,90];
+        let mx=10;
+        doc.setFillColor(...C.navyMid); doc.rect(10,y-4,W-20,7,'F');
+        monthCols.forEach((c,i)=>{
+          doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...C.white);
+          doc.text(c, mx+1.5, y, {maxWidth:mCw[i]-3}); mx+=mCw[i];
+        });
+        y+=5;
+        const now=new Date(), months=[];
+        for(let m=0;m<6;m++){
+          const d=new Date(now.getFullYear(),now.getMonth()-m,1);
+          months.unshift(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+        }
+        const monthLabel=mk=>{const[y2,m2]=mk.split('-');const mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(m2)-1];return `${mn} ${y2}`;};
+        const sortedFails2=[...allFails].sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const autoMap3=new Map();
+        allChildren.forEach(c=>{
+          if(c.parent_failure_id) return;
+          const cDate=new Date(c.date); let best=null;
+          sortedFails2.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
+          if(!best&&sortedFails2.length) best=sortedFails2[0];
+          if(best) autoMap3.set(c.id, best.id);
+        });
+        months.forEach((mk,mi)=>{
+          const mFails=allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
+          const mAct=allChildren.filter(e=>e.type==='action'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
+          const mRep=allChildren.filter(e=>e.type==='repair'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
+          const mRes=allChildren.filter(e=>e.type==='resolved'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoMap3.get(e.id)));
+          const mResStat=mFails.filter(f=>!allChildren.some(c=>(c.parent_failure_id===f.id||autoMap3.get(c.id)===f.id)&&c.type==='resolved')&&['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()));
+          const mDown=mFails.reduce((s,f)=>{
+            const r=allChildren.filter(c=>(c.parent_failure_id===f.id||autoMap3.get(c.id)===f.id)&&c.type==='resolved').sort((a,b)=>new Date(a.date)-new Date(b.date));
+            if(r.length){const dh=Math.round((new Date(r[r.length-1].date)-new Date(f.date))/(1000*3600));return s+(dh>0?dh:0);}
+            return s+(parseInt(f.downtime||0)||0);
+          },0);
+          const tot=mFails.length+mAct.length+mRep.length+mRes.length+mResStat.length;
+          if(tot===0&&mi<months.length-1) return;
+          const note=mFails.length>=2?'\u26A0 Multiple failure event':mDown>72?'\u26A0 Downtime >72 jam':mFails.length&&mRes.length+mResStat.length>=mFails.length?'\u2713 Issue diselesaikan':mFails.length?'Dalam penanganan':'';
+          const noteColor=mFails.length>=2||mDown>72?C.red:(mRes.length+mResStat.length>=mFails.length&&mFails.length)?C.green:C.dim;
+          const bg=mi%2===0?C.white:C.navyLight;
+          doc.setFillColor(...bg); doc.rect(10,y-4,W-20,7,'F');
+          doc.setDrawColor(...C.border); doc.setLineWidth(0.15); doc.rect(10,y-4,W-20,7);
+          const mRow=[monthLabel(mk),mFails.length||'\u2014',mAct.length||'\u2014',mRep.length||'\u2014',mRes.length+mResStat.length||'\u2014',mDown||'\u2014',note];
+          let mx2=10;
+          mRow.forEach((cell,i)=>{
+            doc.setFont('helvetica',i===0||i===1?'bold':'normal');
+            doc.setFontSize(i===0?7.5:7);
+            doc.setTextColor(...(i===1&&cell!=='\u2014'?C.red:i===5&&cell!=='\u2014'?C.amber:i===6?noteColor:C.text));
+            doc.text(String(cell), mx2+1.5, y, {maxWidth:mCw[i]-3});
+            mx2+=mCw[i];
+          });
+          y+=7;
+        });
+        doc.setFillColor(...C.navyMid); doc.rect(10,y-4,W-20,7,'F');
+        const totRow=['TOTAL',totalFail,allChildren.filter(e=>e.type==='action').length,allChildren.filter(e=>e.type==='repair').length,allChildren.filter(e=>e.type==='resolved').length,totDown,'Periode laporan'];
+        let mx3=10;
+        totRow.forEach((cell,i)=>{
+          doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...(i===1?C.red:i===5?C.amber:C.white));
+          doc.text(String(cell), mx3+1.5, y, {maxWidth:mCw[i]-3}); mx3+=mCw[i];
+        });
+        addFooter(pageN++);
+      }
     }
 
     // ══════════════════════════════════════
@@ -5032,68 +5154,150 @@ async function generateReportPPT(evData, from, to, fromStr, toStr, incSummary, i
       const s3=pres.addSlide(); s3.background={color:C.bg};
       addHeader(s3,'REKAP BULANAN — FAILURE TREND',`Periode: ${fromStr} — ${toStr}`);
 
-      // Build month data (last 6 months)
-      const now2=new Date(), months2=[];
-      for(let m=5;m>=0;m--){
-        const d=new Date(now2.getFullYear(),now2.getMonth()-m,1);
-        months2.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
-      }
-      const monLabel=mk=>{const[y2,m2]=mk.split('-');return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(m2)-1]+' '+y2;};
-      const sF3=[...allFails].sort((a,b)=>new Date(a.date)-new Date(b.date));
-      const autoM3=new Map();
-      allChildren.forEach(c=>{
-        if(c.parent_failure_id) return;
-        const cDate=new Date(c.date);let best=null;
-        sF3.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
-        if(!best&&sF3.length) best=sF3[0];
-        if(best) autoM3.set(c.id,best.id);
-      });
-      const mData=months2.map(mk=>{
-        const mF=allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
-        const mAc=allChildren.filter(e=>e.type==='action'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM3.get(e.id)));
-        const mRp=allChildren.filter(e=>e.type==='repair'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM3.get(e.id)));
-        const mRs=allChildren.filter(e=>e.type==='resolved'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM3.get(e.id)));
-        const mRsSt=mF.filter(f=>!allChildren.some(c=>(c.parent_failure_id===f.id||autoM3.get(c.id)===f.id)&&c.type==='resolved')&&['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()));
-        const mDn=mF.reduce((s,f)=>{
-          const r=allChildren.filter(c=>(c.parent_failure_id===f.id||autoM3.get(c.id)===f.id)&&c.type==='resolved').sort((a,b)=>new Date(a.date)-new Date(b.date));
-          if(r.length){const dh=Math.round((new Date(r[r.length-1].date)-new Date(f.date))/(1000*3600));return s+(dh>0?dh:0);}
-          return s+(parseInt(f.downtime||0)||0);
-        },0);
-        return {mk,label:monLabel(mk),fail:mF.length,action:mAc.length,repair:mRp.length,resolved:mRs.length+mRsSt.length,downtime:mDn};
-      });
+      // Build month data — PHASE-AWARE
+      if(_mpIsStartup){
+        // ── STARTUP: Commissioning Defect Tracker slide ──
+        s3.addText('REKAP BULANAN — COMMISSIONING DEFECT TRACKER', {
+          x:.35, y:.42, w:W-.7, h:.35, fontSize:11, bold:true, color:C.teal, fontFace:'Calibri'
+        });
+        s3.addText(`Total ${totalFail} defect tercatat | Periode komisioning ${fromStr} — ${toStr}`, {
+          x:.35, y:.72, w:W-.7, h:.25, fontSize:8, color:C.muted, fontFace:'Calibri', italic:true
+        });
 
-      const tblData=[
-        [{text:'BULAN',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
-         {text:'FAILURE',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
-         {text:'ACTION',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
-         {text:'REPAIR',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
-         {text:'RESOLVED',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
-         {text:'DOWNTIME',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
-         {text:'KETERANGAN',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}}],
-        ...mData.map((r,i)=>{
-          const note=r.fail>=2?'⚠ Multiple failure':r.downtime>72?'⚠ Downtime kritis':r.fail&&r.resolved>=r.fail?'✓ Resolved':'';
-          const bg=i%2===0?'F8FAFC':'EFF6FF';
+        // Build 12-month list
+        const suNow2=new Date(), suMos=[];
+        for(let m=11;m>=0;m--){
+          const d=new Date(suNow2.getFullYear(),suNow2.getMonth()-m,1);
+          suMos.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+        }
+        const suML2=mk=>{const[y2,m2]=mk.split('-');return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(m2)-1]+' '+y2.slice(2);};
+
+        let su2ActMos=0,su2TDef=0,su2TA=0,su2TB=0,su2TC=0,su2TCorr=0,su2TCl=0;
+
+        const suPPTRows = suMos.map((mk,mi)=>{
+          const mDefs  = allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
+          const mCatA  = mDefs.filter(e=>e.category==='A').length;
+          const mCatB  = mDefs.filter(e=>e.category==='B').length;
+          const mCatC  = mDefs.filter(e=>e.category==='C').length;
+          const mCorr  = allChildren.filter(e=>e.type==='corrective'&&e.date&&e.date.slice(0,7)===mk).length;
+          const mCl    = allChildren.filter(e=>e.type==='closed'&&e.date&&e.date.slice(0,7)===mk).length;
+          const mDefCl = mDefs.filter(d=>d.status==='CLOSED').length;
+          const mPct   = mDefs.length>0?Math.round(mDefCl/mDefs.length*100):null;
+          if(mDefs.length===0&&mCorr===0&&mCl===0&&mk!==suMos[suMos.length-1]) return null;
+          su2ActMos++; su2TDef+=mDefs.length; su2TA+=mCatA; su2TB+=mCatB; su2TC+=mCatC; su2TCorr+=mCorr; su2TCl+=mCl;
+          let note='', noteCol=C.muted;
+          if(mDefs.length===0&&mCorr===0&&mCl===0){ note='No activity'; noteCol=C.steel; }
+          else if(mCatA>0&&mDefCl<mDefs.length){ note=`⚠ ${mCatA} Cat A open`; noteCol=C.red; }
+          else if(mDefs.length>0&&mDefCl>=mDefs.length){ note='✓ All closed'; noteCol=C.green; }
+          else if(mCl>0){ note=`${mCl} closed`; noteCol=C.green; }
+          else if(mCorr>0){ note='In progress'; noteCol=C.teal; }
+          else { note='Pending corrective'; noteCol=C.muted; }
+          const hasOpenA = mCatA>0&&mDefCl<mDefs.length;
+          const bg = hasOpenA?'FFF5F5':(mi%2===0?'F8FAFC':'EFF6FF');
           return [
-            {text:r.label,options:{bold:true,color:C.text,fill:bg}},
-            {text:r.fail||'—',options:{bold:r.fail>0,color:r.fail?C.red:C.muted,fill:bg,align:'center'}},
-            {text:r.action||'—',options:{color:r.action?C.teal:C.muted,fill:bg,align:'center'}},
-            {text:r.repair||'—',options:{color:r.repair?C.amber:C.muted,fill:bg,align:'center'}},
-            {text:r.resolved||'—',options:{color:r.resolved?C.green:C.muted,fill:bg,align:'center'}},
-            {text:r.downtime?r.downtime+' jam':'—',options:{bold:r.downtime>0,color:r.downtime?C.amber:C.muted,fill:bg,align:'center'}},
-            {text:note,options:{color:note.includes('⚠')?C.red:note.includes('✓')?C.green:C.muted,fill:bg,fontSize:8}}
+            {text:suML2(mk),options:{bold:true,color:C.text,fill:bg}},
+            {text:mDefs.length||'—',options:{bold:mDefs.length>0,color:mDefs.length?C.red:C.muted,fill:bg,align:'center'}},
+            {text:mCatA||'—',options:{bold:mCatA>0,color:mCatA?C.red:C.muted,fill:bg,align:'center'}},
+            {text:mCatB||'—',options:{color:mCatB?'D97706':C.muted,fill:bg,align:'center'}},
+            {text:mCatC||'—',options:{color:mCatC?C.teal:C.muted,fill:bg,align:'center'}},
+            {text:mCorr||'—',options:{color:mCorr?C.teal:C.muted,fill:bg,align:'center'}},
+            {text:mCl||'—',options:{color:mCl?C.green:C.muted,fill:bg,align:'center'}},
+            {text:mPct!==null?`${mPct}%`:'—',options:{bold:mPct!==null,color:mPct===null?C.muted:mPct>=80?C.green:mPct>=50?'D97706':C.red,fill:bg,align:'center'}},
+            {text:note,options:{color:noteCol,fill:bg,fontSize:8}}
           ];
-        }),
-        // Total row
-        [{text:'TOTAL',options:{bold:true,color:C.white,fill:C.navy}},
-         {text:totalFail||'—',options:{bold:true,color:C.amber,fill:C.navy,align:'center'}},
-         {text:allChildren.filter(e=>e.type==='action').length||'—',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
-         {text:allChildren.filter(e=>e.type==='repair').length||'—',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
-         {text:resolvedFails.length||'—',options:{bold:true,color:C.green,fill:C.navy,align:'center'}},
-         {text:totDown?totDown+' jam':'—',options:{bold:true,color:C.amber,fill:C.navy,align:'center'}},
-         {text:'Periode laporan',options:{color:C.muted,fill:C.navy}}]
-      ];
-      s3.addTable(tblData,{x:.35,y:1.05,w:W-.7,h:5.5,fontSize:9,fontFace:'Calibri',
-        border:{pt:.5,color:C.steel},rowH:.55});
+        }).filter(r=>r!==null);
+
+        const su2TotPct=su2TDef>0?Math.round(su2TCl/su2TDef*100):0;
+        const suTblData=[
+          [{text:'BULAN',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:'DEFECT',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:'CAT A',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:'CAT B',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:'CAT C',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:'CORRECTIVE',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:'CLOSED',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:'CLOSURE%',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:'STATUS / KETERANGAN',options:{bold:true,color:C.white,fill:'02507A',align:'center'}}],
+          ...suPPTRows,
+          [{text:'TOTAL',options:{bold:true,color:C.white,fill:'02507A'}},
+           {text:su2TDef||'—',options:{bold:true,color:C.amber,fill:'02507A',align:'center'}},
+           {text:su2TA||'—',options:{bold:true,color:su2TA?C.red:C.muted,fill:'02507A',align:'center'}},
+           {text:su2TB||'—',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:su2TC||'—',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:su2TCorr||'—',options:{bold:true,color:C.white,fill:'02507A',align:'center'}},
+           {text:su2TCl||'—',options:{bold:true,color:C.green,fill:'02507A',align:'center'}},
+           {text:`${su2TotPct}%`,options:{bold:true,color:su2TotPct>=80?C.green:su2TotPct>=50?C.amber:C.red,fill:'02507A',align:'center'}},
+           {text:`${su2ActMos} bulan aktif dari 12`,options:{color:C.muted,fill:'02507A',fontSize:8}}]
+        ];
+        s3.addTable(suTblData,{x:.35,y:1.0,w:W-.7,h:5.6,fontSize:9,fontFace:'Calibri',
+          border:{pt:.5,color:C.steel},rowH:.5});
+        // Legend
+        s3.addText('Cat A: Safety/Critical — Cat B: Major Reliability — Cat C: Minor/Scheduled', {
+          x:.35, y:6.65, w:W-.7, h:.2, fontSize:7.5, color:C.muted, fontFace:'Calibri', italic:true
+        });
+
+      } else {
+        // ── OPERATIONAL PHASE: Failure Trend (unchanged) ──
+        const now2=new Date(), months2=[];
+        for(let m=5;m>=0;m--){
+          const d=new Date(now2.getFullYear(),now2.getMonth()-m,1);
+          months2.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+        }
+        const monLabel=mk=>{const[y2,m2]=mk.split('-');return ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][parseInt(m2)-1]+' '+y2;};
+        const sF3=[...allFails].sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const autoM3=new Map();
+        allChildren.forEach(c=>{
+          if(c.parent_failure_id) return;
+          const cDate=new Date(c.date);let best=null;
+          sF3.forEach(f=>{if(new Date(f.date)<=cDate) best=f;});
+          if(!best&&sF3.length) best=sF3[0];
+          if(best) autoM3.set(c.id,best.id);
+        });
+        const mData=months2.map(mk=>{
+          const mF=allFails.filter(e=>e.date&&e.date.slice(0,7)===mk);
+          const mAc=allChildren.filter(e=>e.type==='action'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM3.get(e.id)));
+          const mRp=allChildren.filter(e=>e.type==='repair'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM3.get(e.id)));
+          const mRs=allChildren.filter(e=>e.type==='resolved'&&e.date&&e.date.slice(0,7)===mk&&(e.parent_failure_id||autoM3.get(e.id)));
+          const mRsSt=mF.filter(f=>!allChildren.some(c=>(c.parent_failure_id===f.id||autoM3.get(c.id)===f.id)&&c.type==='resolved')&&['CLOSED','RESOLVED'].includes((f.status||'').toUpperCase()));
+          const mDn=mF.reduce((s,f)=>{
+            const r=allChildren.filter(c=>(c.parent_failure_id===f.id||autoM3.get(c.id)===f.id)&&c.type==='resolved').sort((a,b)=>new Date(a.date)-new Date(b.date));
+            if(r.length){const dh=Math.round((new Date(r[r.length-1].date)-new Date(f.date))/(1000*3600));return s+(dh>0?dh:0);}
+            return s+(parseInt(f.downtime||0)||0);
+          },0);
+          return {mk,label:monLabel(mk),fail:mF.length,action:mAc.length,repair:mRp.length,resolved:mRs.length+mRsSt.length,downtime:mDn};
+        });
+        const tblData=[
+          [{text:'BULAN',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+           {text:'FAILURE',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+           {text:'ACTION',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+           {text:'REPAIR',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+           {text:'RESOLVED',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+           {text:'DOWNTIME',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}},
+           {text:'KETERANGAN',options:{bold:true,color:C.white,fill:C.navyM,align:'center'}}],
+          ...mData.map((r,i)=>{
+            const note=r.fail>=2?'⚠ Multiple failure':r.downtime>72?'⚠ Downtime kritis':r.fail&&r.resolved>=r.fail?'✓ Resolved':'';
+            const bg=i%2===0?'F8FAFC':'EFF6FF';
+            return [
+              {text:r.label,options:{bold:true,color:C.text,fill:bg}},
+              {text:r.fail||'—',options:{bold:r.fail>0,color:r.fail?C.red:C.muted,fill:bg,align:'center'}},
+              {text:r.action||'—',options:{color:r.action?C.teal:C.muted,fill:bg,align:'center'}},
+              {text:r.repair||'—',options:{color:r.repair?C.amber:C.muted,fill:bg,align:'center'}},
+              {text:r.resolved||'—',options:{color:r.resolved?C.green:C.muted,fill:bg,align:'center'}},
+              {text:r.downtime?r.downtime+' jam':'—',options:{bold:r.downtime>0,color:r.downtime?C.amber:C.muted,fill:bg,align:'center'}},
+              {text:note,options:{color:note.includes('⚠')?C.red:note.includes('✓')?C.green:C.muted,fill:bg,fontSize:8}}
+            ];
+          }),
+          [{text:'TOTAL',options:{bold:true,color:C.white,fill:C.navy}},
+           {text:totalFail||'—',options:{bold:true,color:C.amber,fill:C.navy,align:'center'}},
+           {text:allChildren.filter(e=>e.type==='action').length||'—',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:allChildren.filter(e=>e.type==='repair').length||'—',options:{bold:true,color:C.white,fill:C.navy,align:'center'}},
+           {text:resolvedFails.length||'—',options:{bold:true,color:C.green,fill:C.navy,align:'center'}},
+           {text:totDown?totDown+' jam':'—',options:{bold:true,color:C.amber,fill:C.navy,align:'center'}},
+           {text:'Periode laporan',options:{color:C.muted,fill:C.navy}}]
+        ];
+        s3.addTable(tblData,{x:.35,y:1.05,w:W-.7,h:5.5,fontSize:9,fontFace:'Calibri',
+          border:{pt:.5,color:C.steel},rowH:.55});
+      }
       addFooter(s3, slideN++);
     }
 
