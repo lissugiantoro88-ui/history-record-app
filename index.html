@@ -1,106 +1,3 @@
-function renderDashboard(){
-  const search=(g('eq-search')?.value||'').toLowerCase().trim();
-
-  if(allEventsCache.length>0){
-    equipments.forEach(eq=>{
-      const isStartupEq=(eq.phase||'operational')==='startup';
-      eq._isBadActor=isStartupEq
-        ?isStartupBadActor(eq,allEventsCache)
-        :isBadActor(eq,allEventsCache.filter(e=>e.type==='failure'&&e.equipment_id===eq.id));
-    });
-  }
-
-  // Phase filter
-  const phaseEqs = equipments.filter(eq=>(eq.phase||'operational')===currentPhase);
-
-  let filtered=[...phaseEqs];
-  if(search) filtered=filtered.filter(eq=>(eq.name||'').toLowerCase().includes(search)||(eq.tag_no||'').toLowerCase().includes(search)||(eq.unit||'').toLowerCase().includes(search));
-  if(eqFilter==='critical') filtered=filtered.filter(eq=>eq.criticality==='critical');
-  else if(eqFilter==='major') filtered=filtered.filter(eq=>eq.criticality==='major');
-  else if(eqFilter==='minor') filtered=filtered.filter(eq=>eq.criticality==='minor');
-  else if(eqFilter==='active') filtered=filtered.filter(eq=>eq.status==='active');
-  else if(eqFilter==='standby') filtered=filtered.filter(eq=>eq.status==='standby');
-  else if(eqFilter==='maintenance') filtered=filtered.filter(eq=>eq.status==='maintenance');
-  else if(eqFilter==='badactor') filtered=filtered.filter(eq=>eq._isBadActor);
-  else if(eqFilter==='open') filtered=filtered.filter(eq=>(eq._open||0)>0);
-
-  // KPI update
-  g('ds-total').textContent=phaseEqs.length;
-  g('ds-bad-actor').textContent=phaseEqs.filter(e=>e._isBadActor).length;
-  g('ds-failures').textContent=phaseEqs.reduce((s,e)=>s+(e._failures||0),0);
-  g('ds-open').textContent=phaseEqs.reduce((s,e)=>s+(e._open||0),0);
-  g('ds-downtime').textContent=phaseEqs.reduce((s,e)=>s+(e._downtime||0),0);
-  g('eq-filter-count').textContent=filtered.length+' equipment';
-
-  const grid=g('eq-grid');
-  grid.innerHTML='';
-
-  if(filtered.length===0){
-    grid.innerHTML=`<div class="dash-empty" style="padding:40px 20px;text-align:center;">
-      <div style="font-size:32px;margin-bottom:8px;">${phaseEqs.length===0?'🏭':'🔍'}</div>
-      <div style="font-size:13px;font-weight:600;color:var(--text);">${phaseEqs.length===0?'Belum Ada Equipment':'Tidak Ditemukan'}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:4px;">${phaseEqs.length===0?'Tambah equipment untuk mulai.':'Coba kata kunci lain.'}</div>
-    </div>`;
-    return;
-  }
-
-  // Group by unit
-  const groupMap=new Map();
-  filtered.forEach(eq=>{
-    const unit=(eq.unit||'Tanpa Unit').trim();
-    if(!groupMap.has(unit)) groupMap.set(unit,[]);
-    groupMap.get(unit).push(eq);
-  });
-
-  const sortedGroups=[...groupMap.entries()].sort((a,b)=>{
-    const aOpen=a[1].reduce((s,e)=>s+(e._open||0),0);
-    const bOpen=b[1].reduce((s,e)=>s+(e._open||0),0);
-    if(bOpen!==aOpen) return bOpen-aOpen;
-    return a[0].localeCompare(b[0]);
-  });
-
-  const isSearching=search.length>0;
-
-  sortedGroups.forEach(([unit,eqs])=>{
-    const unitKey=unit.replace(/\s+/g,'_');
-    const isCollapsed=!isSearching&&collapsedGroups.has(unitKey);
-    const groupOpenTotal=eqs.reduce((s,e)=>s+(e._open||0),0);
-
-    // Group header
-    const grpEl=document.createElement('div');
-
-    const hdr=document.createElement('div');
-    hdr.className='master-group-header';
-    hdr.onclick=()=>toggleGroup(unitKey);
-    hdr.innerHTML=`
-      <span class="master-group-chevron${isCollapsed?' collapsed':''}">▾</span>
-      <span class="master-group-title">${esc(unit)}</span>
-      <span style="font-size:10px;color:var(--muted);">${eqs.length} unit</span>
-      ${groupOpenTotal>0?`<span class="mr-pill open">⚠ ${groupOpenTotal} open</span>`:''}`;
-    grpEl.appendChild(hdr);
-
-    // Items wrap (collapse/expand)
-    const itemsWrap=document.createElement('div');
-    itemsWrap.className='master-group-items';
-    itemsWrap.style.maxHeight=isCollapsed?'0':'9999px';
-    itemsWrap.style.overflow='hidden';
-
-    // Sort: open first, then criticality
-    const sortedEqs=[...eqs].sort((a,b)=>{
-      if((b._open||0)!==(a._open||0)) return (b._open||0)-(a._open||0);
-      const co={critical:0,major:1,minor:2};
-      return (co[a.criticality]||1)-(co[b.criticality]||1);
-    });
-
-    sortedEqs.forEach(eq=>itemsWrap.appendChild(buildMasterRow(eq)));
-    grpEl.appendChild(itemsWrap);
-    grid.appendChild(grpEl);
-  });
-
-  // Highlight active row if any
-  if(currentEqId) highlightMasterRow(currentEqId);
-}
-
 <!DOCTYPE html>
 <html lang="id" data-theme="dark">
 <head>
@@ -2035,108 +1932,108 @@ function toggleMasterPanel(){
 function renderDashboard(){
   const search=(g('eq-search')?.value||'').toLowerCase().trim();
 
-  // Recalculate bad actor FIRST — phase-aware (don't overwrite startup with operational logic)
   if(allEventsCache.length>0){
     equipments.forEach(eq=>{
-      const isStartupEq = (eq.phase||'operational')==='startup';
-      eq._isBadActor = isStartupEq
-        ? isStartupBadActor(eq, allEventsCache)
-        : isBadActor(eq, allEventsCache.filter(e=>e.type==='failure'&&e.equipment_id===eq.id));
+      const isStartupEq=(eq.phase||'operational')==='startup';
+      eq._isBadActor=isStartupEq
+        ?isStartupBadActor(eq,allEventsCache)
+        :isBadActor(eq,allEventsCache.filter(e=>e.type==='failure'&&e.equipment_id===eq.id));
     });
   }
 
-  let filtered=equipments;
-  if(search) filtered=filtered.filter(eq=>(eq.name||'').toLowerCase().includes(search)||(eq.tag_no||'').toLowerCase().includes(search)||(eq.unit||'').toLowerCase().includes(search));
-  if(eqFilter==='critical') filtered=filtered.filter(eq=>eq.criticality==='critical');
-  else if(eqFilter==='major') filtered=filtered.filter(eq=>eq.criticality==='major');
-  else if(eqFilter==='minor') filtered=filtered.filter(eq=>eq.criticality==='minor');
-  else if(eqFilter==='active') filtered=filtered.filter(eq=>eq.status==='active');
+  // Phase-aware filter
+  const phaseEqs=equipments.filter(eq=>(eq.phase||'operational')===currentPhase);
+
+  let filtered=[...phaseEqs];
+  if(search) filtered=filtered.filter(eq=>
+    (eq.name||'').toLowerCase().includes(search)||
+    (eq.tag_no||'').toLowerCase().includes(search)||
+    (eq.unit||'').toLowerCase().includes(search));
+  if(eqFilter==='critical')     filtered=filtered.filter(eq=>eq.criticality==='critical');
+  else if(eqFilter==='major')   filtered=filtered.filter(eq=>eq.criticality==='major');
+  else if(eqFilter==='minor')   filtered=filtered.filter(eq=>eq.criticality==='minor');
+  else if(eqFilter==='active')  filtered=filtered.filter(eq=>eq.status==='active');
   else if(eqFilter==='standby') filtered=filtered.filter(eq=>eq.status==='standby');
   else if(eqFilter==='maintenance') filtered=filtered.filter(eq=>eq.status==='maintenance');
   else if(eqFilter==='badactor') filtered=filtered.filter(eq=>eq._isBadActor);
-  else if(eqFilter==='open') filtered=filtered.filter(eq=>(eq._open||0)>0);
-  // Summary stats
-  g('ds-total').textContent=equipments.length;
-  const badActorCount=equipments.filter(e=>e._isBadActor).length;
-  g('ds-bad-actor').textContent=badActorCount;
-  g('ds-failures').textContent=equipments.reduce((s,e)=>s+(e._failures||0),0);
-  g('ds-open').textContent=equipments.reduce((s,e)=>s+(e._open||0),0);
-  g('ds-downtime').textContent=equipments.reduce((s,e)=>s+(e._downtime||0),0);
-  g('eq-filter-count').textContent=filtered.length+' equipment';
+  else if(eqFilter==='open')    filtered=filtered.filter(eq=>(eq._open||0)>0);
+
+  // KPI strip
+  g('ds-total').textContent=phaseEqs.length;
+  g('ds-bad-actor').textContent=phaseEqs.filter(e=>e._isBadActor).length;
+  g('ds-failures').textContent=phaseEqs.reduce((s,e)=>s+(e._failures||0),0);
+  g('ds-open').textContent=phaseEqs.reduce((s,e)=>s+(e._open||0),0);
+  g('ds-downtime').textContent=phaseEqs.reduce((s,e)=>s+(e._downtime||0),0);
+  if(g('eq-filter-count')) g('eq-filter-count').textContent=filtered.length+' equipment';
 
   const grid=g('eq-grid');
+  if(!grid) return;
   grid.innerHTML='';
 
   if(filtered.length===0){
-    const em=document.createElement('div');em.className='dash-empty';
-    em.innerHTML=`<div class="ei">${equipments.length===0?'🏭':'🔍'}</div><h3>${equipments.length===0?'Belum Ada Equipment':'Tidak Ditemukan'}</h3><p>${equipments.length===0?'Klik <strong>Tambah Equipment</strong> untuk mulai mencatat history failure.':'Coba kata kunci lain atau ubah filter.'}</p>`;
-    grid.appendChild(em);return;
+    grid.innerHTML=`<div style="padding:40px 20px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:8px;">${phaseEqs.length===0?'🏭':'🔍'}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);">${phaseEqs.length===0?'Belum Ada Equipment':'Tidak Ditemukan'}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">${phaseEqs.length===0?'Tambah equipment untuk mulai.':'Coba kata kunci lain.'}</div>
+    </div>`;
+    return;
   }
 
-  // Group by unit — preserve insertion order, sort groups by open issues desc
-  const groupMap = new Map();
+  // Group by unit
+  const groupMap=new Map();
   filtered.forEach(eq=>{
-    const unit = (eq.unit||'Tanpa Unit').trim();
+    const unit=(eq.unit||'Tanpa Unit').trim();
     if(!groupMap.has(unit)) groupMap.set(unit,[]);
     groupMap.get(unit).push(eq);
   });
 
-  // Sort groups: groups with open issues first, then by name
-  const sortedGroups = [...groupMap.entries()].sort((a,b)=>{
+  const sortedGroups=[...groupMap.entries()].sort((a,b)=>{
     const aOpen=a[1].reduce((s,e)=>s+(e._open||0),0);
     const bOpen=b[1].reduce((s,e)=>s+(e._open||0),0);
     if(bOpen!==aOpen) return bOpen-aOpen;
     return a[0].localeCompare(b[0]);
   });
 
-  // If searching, expand all groups temporarily
-  const isSearching = search.length > 0;
+  const isSearching=search.length>0;
 
-  sortedGroups.forEach(([unit, eqs])=>{
-    const unitKey = unit.replace(/\s+/g,'_');
-    const isCollapsed = !isSearching && collapsedGroups.has(unitKey);
-    const groupOpenTotal = eqs.reduce((s,e)=>s+(e._open||0),0);
-    const groupFailTotal = eqs.reduce((s,e)=>s+(e._failures||0),0);
-    const hasMaintenance = eqs.some(e=>e.status==='maintenance');
-    const hasCritical = eqs.some(e=>e.criticality==='critical');
+  sortedGroups.forEach(([unit,eqs])=>{
+    const unitKey=unit.replace(/\s+/g,'_');
+    const isCollapsed=!isSearching&&collapsedGroups.has(unitKey);
+    const groupOpenTotal=eqs.reduce((s,e)=>s+(e._open||0),0);
+    const groupFailTotal=eqs.reduce((s,e)=>s+(e._failures||0),0);
 
-    // Group container
-    const group = document.createElement('div');
-    group.className = 'eq-group';
+    const grpEl=document.createElement('div');
 
     // Group header
-    const hdr = document.createElement('div');
-    hdr.className = 'eq-group-header';
-    hdr.onclick = ()=>toggleGroup(unitKey);
-
-    let groupBadges = '';
-    if(groupOpenTotal>0) groupBadges+=`<span class="eq-group-alert">⚠ ${groupOpenTotal} Open</span>`;
-    if(hasMaintenance) groupBadges+=`<span class="eq-group-count" style="color:var(--red);border-color:rgba(232,64,64,.3)">🔧 Maintenance</span>`;
-    if(hasCritical && !groupOpenTotal && !hasMaintenance) groupBadges+=`<span class="eq-group-count" style="color:var(--amber);">Critical</span>`;
-
+    const hdr=document.createElement('div');
+    hdr.className='master-group-header';
+    hdr.onclick=()=>toggleGroup(unitKey);
     hdr.innerHTML=`
-      <span class="eq-group-icon${isCollapsed?' collapsed':''}">▾</span>
-      <span class="eq-group-title">${esc(unit)}</span>
-      <div class="eq-group-meta">
-        ${groupBadges}
-        <span class="eq-group-count">${eqs.length} unit</span>
-        ${groupFailTotal>0?`<span class="eq-group-count" style="color:var(--red);border-color:rgba(220,38,38,.25);">${groupFailTotal} failure</span>`:''}
-      </div>`;
-    group.appendChild(hdr);
+      <span class="master-group-chevron${isCollapsed?' collapsed':''}">▾</span>
+      <span class="master-group-title">${esc(unit)}</span>
+      <span style="font-size:10px;color:var(--muted);margin-left:4px;">${eqs.length} unit</span>
+      ${groupOpenTotal>0?`<span class="mr-pill open">⚠ ${groupOpenTotal} open</span>`:''}
+      ${groupFailTotal>0?`<span class="mr-pill fail">${groupFailTotal}×</span>`:''}`;
+    grpEl.appendChild(hdr);
 
-    // Cards grid
-    const cardsWrap = document.createElement('div');
-    cardsWrap.className = 'eq-group-cards' + (isCollapsed?' collapsed':'');
-    // Sort cards within group: open issues first, then by criticality
-    const sortedEqs = [...eqs].sort((a,b)=>{
+    // Items wrap (collapsible)
+    const itemsWrap=document.createElement('div');
+    itemsWrap.className='master-group-items';
+    itemsWrap.style.maxHeight=isCollapsed?'0':'9999px';
+    itemsWrap.style.overflow='hidden';
+
+    const sortedEqs=[...eqs].sort((a,b)=>{
       if((b._open||0)!==(a._open||0)) return (b._open||0)-(a._open||0);
       const co={critical:0,major:1,minor:2};
       return (co[a.criticality]||1)-(co[b.criticality]||1);
     });
-    sortedEqs.forEach(eq=>cardsWrap.appendChild(buildEqCard(eq)));
-    group.appendChild(cardsWrap);
-    grid.appendChild(group);
+
+    sortedEqs.forEach(eq=>itemsWrap.appendChild(buildMasterRow(eq)));
+    grpEl.appendChild(itemsWrap);
+    grid.appendChild(grpEl);
   });
+
+  if(currentEqId) highlightMasterRow(currentEqId);
 }
 
 function setEqFilter(f,el){
