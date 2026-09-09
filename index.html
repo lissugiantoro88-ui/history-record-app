@@ -624,12 +624,13 @@ canvas{width:100%;max-height:260px;}
 
 
 /* ══ MASTER-DETAIL LAYOUT ══ */
-.master-detail{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 218px);overflow:hidden;min-height:400px;}
-.master-detail.sidebar-collapsed{grid-template-columns:0px 1fr;}
-.master-panel{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;background:var(--panel);transition:all .2s;min-width:0;}
+.master-detail{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 218px);overflow:hidden;min-height:400px;transition:grid-template-columns .22s ease;}
+.master-detail.sidebar-collapsed{grid-template-columns:36px 1fr;}
+.master-panel{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;background:var(--panel);transition:all .22s ease;min-width:0;}
+.master-panel.collapsed{overflow:hidden;}
 .master-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--panel);}
 .master-search{flex:1;padding:6px 10px 6px 28px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);font-size:12px;outline:none;}
-.master-list{overflow-y:auto;flex:1;}
+.master-list{overflow-y:auto;flex:1;min-height:0;}
 .master-group-header{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg);border-bottom:1px solid var(--border);cursor:pointer;position:sticky;top:0;z-index:2;user-select:none;}
 .master-group-header:hover{background:rgba(0,0,0,.04);}
 .master-group-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);flex:1;}
@@ -654,10 +655,11 @@ canvas{width:100%;max-height:260px;}
 .mr-status{flex-shrink:0;}
 .detail-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);min-width:0;}
 .detail-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:8px;}
+#master-normal-content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
 .detail-placeholder-icon{font-size:40px;opacity:.3;}
 .detail-placeholder-text{font-size:13px;font-weight:500;}
-.collapse-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:5px;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);flex-shrink:0;transition:background .15s;}
-.collapse-btn:hover{background:var(--border);}
+.collapse-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:5px;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);flex-shrink:0;transition:background .15s;z-index:10;}
+.collapse-btn:hover{background:var(--amber);color:#fff;border-color:var(--amber);}
 </style>
 </head>
 <body>
@@ -820,14 +822,22 @@ canvas{width:100%;max-height:260px;}
 
         <!-- ── LEFT: Master Panel ── -->
         <div class="master-panel" id="master-panel">
-          <!-- Master header: search + collapse btn -->
-          <div class="master-header" style="gap:8px;">
-            <div style="position:relative;flex:1;">
-              <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);">🔍</span>
-              <input class="master-search" id="eq-search" placeholder="Cari nama / tag / unit..." oninput="renderDashboard()" autocomplete="off">
-            </div>
-            <button class="collapse-btn" onclick="toggleMasterPanel()" title="Collapse/Expand list" id="master-collapse-btn">◀</button>
+          <!-- Collapsed strip — shown only when panel is collapsed -->
+          <div id="master-collapsed-strip" style="display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:12px;gap:8px;height:100%;width:36px;">
+            <button class="collapse-btn" onclick="toggleMasterPanel()" title="Expand list" style="writing-mode:initial;">▶</button>
+            <div style="writing-mode:vertical-rl;text-orientation:mixed;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:8px;user-select:none;">Equipment List</div>
           </div>
+
+          <!-- Normal header — hidden when collapsed -->
+          <div id="master-normal-content" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;">
+            <!-- Master header: search + collapse btn -->
+            <div class="master-header" style="gap:8px;">
+              <div style="position:relative;flex:1;">
+                <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);">🔍</span>
+                <input class="master-search" id="eq-search" placeholder="Cari nama / tag / unit..." oninput="renderDashboard()" autocomplete="off">
+              </div>
+              <button class="collapse-btn" onclick="toggleMasterPanel()" title="Collapse list" id="master-collapse-btn">◀</button>
+            </div>
 
           <!-- Filter chips — compact -->
           <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:5px;flex-wrap:wrap;align-items:center;background:var(--panel);">
@@ -857,6 +867,7 @@ canvas{width:100%;max-height:260px;}
               <div class="ba-set-item"><div class="ba-set-label">Min. Downtime (j)</div><input type="number" class="ba-set-input" id="ba-min-down" value="100" min="0" onchange="renderDashboard()"></div>
             </div>
           </div>
+          </div><!-- end master-normal-content -->
         </div>
 
         <!-- ── RIGHT: Detail Panel ── -->
@@ -1860,10 +1871,10 @@ function renderEqDetailPanel(eq, container){
       </div>
       <!-- Action buttons -->
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-        <button class="btn btn-amber btn-sm" onclick="openEquipment('${eq.id}')">📋 Full Detail & Event History</button>
-        ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="openEditEquipment('${eq.id}')">✎ Edit</button>`:''}
-        ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="currentEqId='${eq.id}';g('f-type').value='failure';onTypeChange();g('view-detail')?.scrollIntoView()">＋ Tambah Event</button>`:''}
-        ${canDel?`<button class="btn btn-red btn-sm" onclick="confirmDeleteEquipment('${eq.id}')">✕ Hapus</button>`:''}
+        <button class="btn btn-amber btn-sm" id="panel-btn-detail">📋 Full Detail & History</button>
+        ${canEdit?'<button class="btn btn-ghost btn-sm" id="panel-btn-edit">✎ Edit Equipment</button>':''}
+        ${canEdit?'<button class="btn btn-teal btn-sm" id="panel-btn-addEvent">＋ Tambah Event</button>':''}
+        ${canDel?'<button class="btn btn-red btn-sm" id="panel-btn-del">✕ Hapus</button>':''}
       </div>
     </div>
     <!-- Mini event timeline -->
@@ -1873,6 +1884,23 @@ function renderEqDetailPanel(eq, container){
         <div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;"><div class="lspin"></div>Memuat...</div>
       </div>
     </div>`;
+
+  // Wire up action buttons (use addEventListener to avoid inline-onclick issues)
+  const _btnDetail = g('panel-btn-detail');
+  const _btnEdit   = g('panel-btn-edit');
+  const _btnAdd    = g('panel-btn-addEvent');
+  const _btnDel    = g('panel-btn-del');
+  if(_btnDetail) _btnDetail.onclick = ()=> openEquipment(eq.id);
+  if(_btnEdit)   _btnEdit.onclick   = ()=> openEditEquipment(eq.id);
+  if(_btnAdd)    _btnAdd.onclick    = ()=>{
+    // Navigate to full detail view and pre-select failure type
+    openEquipment(eq.id);
+    setTimeout(()=>{
+      const ft=g('f-type'); if(ft){ ft.value='failure'; onTypeChange(); }
+      const fd=g('f-date'); if(fd) fd.focus();
+    }, 300);
+  };
+  if(_btnDel)    _btnDel.onclick    = ()=> confirmDeleteEquipment(eq.id);
 
   // Load recent events for this equipment
   loadPanelEvents(eq.id);
@@ -1918,13 +1946,12 @@ function loadPanelEvents(eqId){
 
 function toggleMasterPanel(){
   const wrap=g('master-detail-wrap');
-  const btn=g('master-collapse-btn');
-  const panel=g('master-panel');
+  const strip=g('master-collapsed-strip');
+  const normal=g('master-normal-content');
   const isCollapsed=wrap.classList.toggle('sidebar-collapsed');
-  btn.textContent=isCollapsed?'▶':'◀';
-  panel.style.overflow=isCollapsed?'hidden':'';
-  panel.style.width=isCollapsed?'0':'';
-  panel.style.minWidth=isCollapsed?'0':'';
+  // Show/hide collapsed strip vs normal content
+  if(strip){ strip.style.display=isCollapsed?'flex':'none'; }
+  if(normal){ normal.style.display=isCollapsed?'none':'flex'; }
 }
 
 
