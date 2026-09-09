@@ -1,3 +1,106 @@
+function renderDashboard(){
+  const search=(g('eq-search')?.value||'').toLowerCase().trim();
+
+  if(allEventsCache.length>0){
+    equipments.forEach(eq=>{
+      const isStartupEq=(eq.phase||'operational')==='startup';
+      eq._isBadActor=isStartupEq
+        ?isStartupBadActor(eq,allEventsCache)
+        :isBadActor(eq,allEventsCache.filter(e=>e.type==='failure'&&e.equipment_id===eq.id));
+    });
+  }
+
+  // Phase filter
+  const phaseEqs = equipments.filter(eq=>(eq.phase||'operational')===currentPhase);
+
+  let filtered=[...phaseEqs];
+  if(search) filtered=filtered.filter(eq=>(eq.name||'').toLowerCase().includes(search)||(eq.tag_no||'').toLowerCase().includes(search)||(eq.unit||'').toLowerCase().includes(search));
+  if(eqFilter==='critical') filtered=filtered.filter(eq=>eq.criticality==='critical');
+  else if(eqFilter==='major') filtered=filtered.filter(eq=>eq.criticality==='major');
+  else if(eqFilter==='minor') filtered=filtered.filter(eq=>eq.criticality==='minor');
+  else if(eqFilter==='active') filtered=filtered.filter(eq=>eq.status==='active');
+  else if(eqFilter==='standby') filtered=filtered.filter(eq=>eq.status==='standby');
+  else if(eqFilter==='maintenance') filtered=filtered.filter(eq=>eq.status==='maintenance');
+  else if(eqFilter==='badactor') filtered=filtered.filter(eq=>eq._isBadActor);
+  else if(eqFilter==='open') filtered=filtered.filter(eq=>(eq._open||0)>0);
+
+  // KPI update
+  g('ds-total').textContent=phaseEqs.length;
+  g('ds-bad-actor').textContent=phaseEqs.filter(e=>e._isBadActor).length;
+  g('ds-failures').textContent=phaseEqs.reduce((s,e)=>s+(e._failures||0),0);
+  g('ds-open').textContent=phaseEqs.reduce((s,e)=>s+(e._open||0),0);
+  g('ds-downtime').textContent=phaseEqs.reduce((s,e)=>s+(e._downtime||0),0);
+  g('eq-filter-count').textContent=filtered.length+' equipment';
+
+  const grid=g('eq-grid');
+  grid.innerHTML='';
+
+  if(filtered.length===0){
+    grid.innerHTML=`<div class="dash-empty" style="padding:40px 20px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:8px;">${phaseEqs.length===0?'🏭':'🔍'}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);">${phaseEqs.length===0?'Belum Ada Equipment':'Tidak Ditemukan'}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">${phaseEqs.length===0?'Tambah equipment untuk mulai.':'Coba kata kunci lain.'}</div>
+    </div>`;
+    return;
+  }
+
+  // Group by unit
+  const groupMap=new Map();
+  filtered.forEach(eq=>{
+    const unit=(eq.unit||'Tanpa Unit').trim();
+    if(!groupMap.has(unit)) groupMap.set(unit,[]);
+    groupMap.get(unit).push(eq);
+  });
+
+  const sortedGroups=[...groupMap.entries()].sort((a,b)=>{
+    const aOpen=a[1].reduce((s,e)=>s+(e._open||0),0);
+    const bOpen=b[1].reduce((s,e)=>s+(e._open||0),0);
+    if(bOpen!==aOpen) return bOpen-aOpen;
+    return a[0].localeCompare(b[0]);
+  });
+
+  const isSearching=search.length>0;
+
+  sortedGroups.forEach(([unit,eqs])=>{
+    const unitKey=unit.replace(/\s+/g,'_');
+    const isCollapsed=!isSearching&&collapsedGroups.has(unitKey);
+    const groupOpenTotal=eqs.reduce((s,e)=>s+(e._open||0),0);
+
+    // Group header
+    const grpEl=document.createElement('div');
+
+    const hdr=document.createElement('div');
+    hdr.className='master-group-header';
+    hdr.onclick=()=>toggleGroup(unitKey);
+    hdr.innerHTML=`
+      <span class="master-group-chevron${isCollapsed?' collapsed':''}">▾</span>
+      <span class="master-group-title">${esc(unit)}</span>
+      <span style="font-size:10px;color:var(--muted);">${eqs.length} unit</span>
+      ${groupOpenTotal>0?`<span class="mr-pill open">⚠ ${groupOpenTotal} open</span>`:''}`;
+    grpEl.appendChild(hdr);
+
+    // Items wrap (collapse/expand)
+    const itemsWrap=document.createElement('div');
+    itemsWrap.className='master-group-items';
+    itemsWrap.style.maxHeight=isCollapsed?'0':'9999px';
+    itemsWrap.style.overflow='hidden';
+
+    // Sort: open first, then criticality
+    const sortedEqs=[...eqs].sort((a,b)=>{
+      if((b._open||0)!==(a._open||0)) return (b._open||0)-(a._open||0);
+      const co={critical:0,major:1,minor:2};
+      return (co[a.criticality]||1)-(co[b.criticality]||1);
+    });
+
+    sortedEqs.forEach(eq=>itemsWrap.appendChild(buildMasterRow(eq)));
+    grpEl.appendChild(itemsWrap);
+    grid.appendChild(grpEl);
+  });
+
+  // Highlight active row if any
+  if(currentEqId) highlightMasterRow(currentEqId);
+}
+
 <!DOCTYPE html>
 <html lang="id" data-theme="dark">
 <head>
@@ -622,6 +725,42 @@ canvas{width:100%;max-height:260px;}
 .tl-item.ev-corrective .tl-dot { background:var(--teal); }
 .tl-item.ev-closed .tl-dot { background:var(--green); }
 
+
+/* ══ MASTER-DETAIL LAYOUT ══ */
+.master-detail{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 218px);overflow:hidden;min-height:400px;}
+.master-detail.sidebar-collapsed{grid-template-columns:0px 1fr;}
+.master-panel{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;background:var(--panel);transition:all .2s;min-width:0;}
+.master-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--panel);}
+.master-search{flex:1;padding:6px 10px 6px 28px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);font-size:12px;outline:none;}
+.master-list{overflow-y:auto;flex:1;}
+.master-group-header{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg);border-bottom:1px solid var(--border);cursor:pointer;position:sticky;top:0;z-index:2;user-select:none;}
+.master-group-header:hover{background:rgba(0,0,0,.04);}
+.master-group-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);flex:1;}
+.master-group-chevron{font-size:10px;color:var(--muted);transition:transform .15s;}
+.master-group-chevron.collapsed{transform:rotate(-90deg);}
+.master-group-items{overflow:hidden;transition:max-height .2s ease;}
+.master-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;position:relative;}
+.master-row:hover{background:rgba(0,0,0,.04);}
+.master-row.active{background:rgba(232,162,23,.08);border-left:3px solid var(--amber);}
+.master-row.active .mr-name{color:var(--amber);}
+.mr-crit-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.mr-main{flex:1;min-width:0;}
+.mr-tag{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--muted);font-weight:600;letter-spacing:.5px;}
+.mr-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:1px 0;}
+.mr-meta{display:flex;align-items:center;gap:6px;margin-top:2px;}
+.mr-pill{font-size:9px;font-weight:600;padding:1px 6px;border-radius:3px;white-space:nowrap;}
+.mr-pill.fail{background:rgba(220,38,38,.1);color:var(--red);}
+.mr-pill.open{background:rgba(220,38,38,.12);color:var(--red);border:1px solid rgba(220,38,38,.2);}
+.mr-pill.ok{background:rgba(22,163,74,.1);color:var(--green);}
+.mr-pill.down{background:rgba(232,162,23,.1);color:var(--amber);}
+.mr-pill.ba{background:rgba(220,38,38,.08);color:var(--red);border:1px solid rgba(220,38,38,.15);}
+.mr-status{flex-shrink:0;}
+.detail-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);min-width:0;}
+.detail-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:8px;}
+.detail-placeholder-icon{font-size:40px;opacity:.3;}
+.detail-placeholder-text{font-size:13px;font-weight:500;}
+.collapse-btn{width:28px;height:28px;border:1px solid var(--border);border-radius:5px;background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);flex-shrink:0;transition:background .15s;}
+.collapse-btn:hover{background:var(--border);}
 </style>
 </head>
 <body>
@@ -780,47 +919,59 @@ canvas{width:100%;max-height:260px;}
 
     <!-- TAB: Equipment List -->
     <div class="tab-content active" id="tab-equipment">
-      <!-- Bad Actor Settings -->
-      <div class="ba-settings">
-        <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);font-weight:700;">⚙ Kriteria Bad Actor:</span>
-        <div class="ba-set-item">
-          <div class="ba-set-label">Min. Failure</div>
-          <input type="number" class="ba-set-input" id="ba-min-fail" value="3" min="1" max="99" onchange="renderDashboard()">
-        </div>
-        <div class="ba-set-sep">dalam</div>
-        <div class="ba-set-item">
-          <div class="ba-set-label">Periode (Bulan)</div>
-          <input type="number" class="ba-set-input" id="ba-months" value="12" min="1" max="60" onchange="renderDashboard()">
-        </div>
-        <span style="font-size:11px;color:var(--textDim);">bulan terakhir — atau —</span>
-        <div class="ba-set-item">
-          <div class="ba-set-label">Min. Downtime (Jam)</div>
-          <input type="number" class="ba-set-input" id="ba-min-down" value="100" min="0" onchange="renderDashboard()">
-        </div>
-        <span style="font-size:11px;color:var(--textDim);margin-left:4px;">jam kumulatif</span>
-      </div>
+      <div class="master-detail" id="master-detail-wrap">
 
-      <!-- Filters -->
-      <div class="filter-row">
-        <span style="font-size:10px;color:var(--textDim);letter-spacing:1px;text-transform:uppercase;margin-right:2px;">Status:</span>
-        <button class="fchip active" onclick="setEqFilter('all',this)">Semua</button>
-        <button class="fchip" onclick="setEqFilter('active',this)">Active</button>
-        <button class="fchip" onclick="setEqFilter('standby',this)">Standby</button>
-        <button class="fchip" onclick="setEqFilter('maintenance',this)">Maintenance</button>
-        <div class="tsep"></div>
-        <span style="font-size:10px;color:var(--textDim);letter-spacing:1px;text-transform:uppercase;margin-right:2px;">Level:</span>
-        <button class="fchip" onclick="setEqFilter('critical',this)" style="--chip-active-color:var(--red)">Critical</button>
-        <button class="fchip" onclick="setEqFilter('major',this)">Major</button>
-        <button class="fchip" onclick="setEqFilter('minor',this)" style="--chip-active-color:var(--green)">Minor</button>
-        <div class="tsep"></div>
-        <button class="fchip" onclick="setEqFilter('badactor',this)" style="--chip-active-color:var(--red)">🔴 Bad Actor</button>
-        <button class="fchip" onclick="setEqFilter('open',this)" style="--chip-active-color:var(--red)">⚠ Open Issue</button>
-        <span class="filter-count" id="eq-filter-count"></span>
-      </div>
+        <!-- ── LEFT: Master Panel ── -->
+        <div class="master-panel" id="master-panel">
+          <!-- Master header: search + collapse btn -->
+          <div class="master-header" style="gap:8px;">
+            <div style="position:relative;flex:1;">
+              <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);">🔍</span>
+              <input class="master-search" id="eq-search" placeholder="Cari nama / tag / unit..." oninput="renderDashboard()" autocomplete="off">
+            </div>
+            <button class="collapse-btn" onclick="toggleMasterPanel()" title="Collapse/Expand list" id="master-collapse-btn">◀</button>
+          </div>
 
-      <!-- Grid -->
-      <div id="eq-grid" class="eq-grid">
-        <div class="loading-row" id="dash-loading"><div class="lspin"></div>Memuat equipment...</div>
+          <!-- Filter chips — compact -->
+          <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:5px;flex-wrap:wrap;align-items:center;background:var(--panel);">
+            <button class="fchip active" onclick="setEqFilter('all',this)" style="font-size:10px;padding:3px 8px;">Semua</button>
+            <button class="fchip" onclick="setEqFilter('critical',this)" style="font-size:10px;padding:3px 8px;--chip-active-color:var(--red)">Critical</button>
+            <button class="fchip" onclick="setEqFilter('badactor',this)" style="font-size:10px;padding:3px 8px;--chip-active-color:var(--red)">Bad Actor</button>
+            <button class="fchip" onclick="setEqFilter('open',this)" style="font-size:10px;padding:3px 8px;--chip-active-color:var(--red)">Open</button>
+            <button class="fchip" onclick="setEqFilter('maintenance',this)" style="font-size:10px;padding:3px 8px;">Maintenance</button>
+            <span class="filter-count" id="eq-filter-count" style="font-size:10px;margin-left:auto;"></span>
+          </div>
+
+          <!-- Master list -->
+          <div class="master-list" id="eq-grid">
+            <div class="loading-row" id="dash-loading"><div class="lspin"></div>Memuat...</div>
+          </div>
+
+          <!-- Bad Actor settings — collapsible at bottom -->
+          <div style="border-top:1px solid var(--border);background:var(--panel);">
+            <div style="padding:6px 14px;display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'flex':'none';">
+              <span style="font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:1px;">⚙ Bad Actor Criteria</span>
+              <span style="font-size:9px;color:var(--muted);margin-left:auto;">▾</span>
+            </div>
+            <div class="ba-settings" style="display:none;padding:8px 14px;flex-wrap:wrap;gap:8px;">
+              <div class="ba-set-item"><div class="ba-set-label">Min. Failure</div><input type="number" class="ba-set-input" id="ba-min-fail" value="3" min="1" max="99" onchange="renderDashboard()"></div>
+              <div class="ba-set-sep">dalam</div>
+              <div class="ba-set-item"><div class="ba-set-label">Periode (Bln)</div><input type="number" class="ba-set-input" id="ba-months" value="12" min="1" max="60" onchange="renderDashboard()"></div>
+              <div class="ba-set-item"><div class="ba-set-label">Min. Downtime (j)</div><input type="number" class="ba-set-input" id="ba-min-down" value="100" min="0" onchange="renderDashboard()"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── RIGHT: Detail Panel ── -->
+        <div class="detail-panel" id="eq-detail-panel">
+          <div class="detail-placeholder" id="eq-detail-placeholder">
+            <div class="detail-placeholder-icon">🏭</div>
+            <div class="detail-placeholder-text">Pilih equipment dari daftar</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">Klik salah satu equipment di sebelah kiri</div>
+          </div>
+          <div id="eq-detail-content" style="display:none;flex:1;overflow-y:auto;"></div>
+        </div>
+
       </div>
     </div>
 
@@ -1689,98 +1840,197 @@ const collapsedGroups = new Set(JSON.parse(localStorage.getItem('hr_collapsed_gr
 function toggleGroup(unitKey){
   if(collapsedGroups.has(unitKey)) collapsedGroups.delete(unitKey);
   else collapsedGroups.add(unitKey);
-  localStorage.setItem('hr_collapsed_groups', JSON.stringify([...collapsedGroups]));
-  renderDashboard();
+  // Toggle chevron + items height
+  document.querySelectorAll('.master-group-header').forEach(hdr=>{
+    const chevron=hdr.querySelector('.master-group-chevron');
+    const items=hdr.nextElementSibling;
+    if(!items||!chevron) return;
+    // Identify which group this is by its title
+    const title=hdr.querySelector('.master-group-title')?.textContent?.trim()||'';
+    const key=title.replace(/\s+/g,'_');
+    const collapsed=collapsedGroups.has(key);
+    chevron.classList.toggle('collapsed',collapsed);
+    items.style.maxHeight=collapsed?'0':'9999px';
+  });
 }
 
-function buildEqCard(eq){
-  const critClass={critical:'crit-critical',major:'crit-major',minor:'crit-minor'}[eq.criticality]||'crit-unknown';
+
+function buildMasterRow(eq){
+  const critColor={critical:'var(--red)',major:'var(--amber)',minor:'var(--green)'}[eq.criticality]||'var(--muted)';
   const stClass={active:'es-active',standby:'es-standby',maintenance:'es-maintenance'}[eq.status]||'es-active';
   const failures=eq._failures||0, openN=eq._open||0;
-  const canEdit=window._canEdit, canDel=window._canDelete;
-  const _bcIsStartup = (eq.phase||'operational')==='startup';
-  const _bcDefects   = _bcIsStartup ? allEventsCache.filter(e=>e.equipment_id===eq.id&&e.type==='defect') : [];
-  const _bcClosed    = _bcDefects.filter(e=>e.status==='CLOSED').length;
-  const _bcClosure   = _bcDefects.length>0 ? Math.round(_bcClosed/_bcDefects.length*100) : 100;
+  const isStartup=(eq.phase||'operational')==='startup';
+  const _bcDefects=isStartup?allEventsCache.filter(e=>e.equipment_id===eq.id&&e.type==='defect'):[];
+  const _bcClosed=_bcDefects.filter(e=>e.status==='CLOSED').length;
+  const _bcClosure=_bcDefects.length>0?Math.round(_bcClosed/_bcDefects.length*100):100;
+  const downStr=eq._downtime?eq._downtime+' j':'—';
 
-  // Build action buttons HTML - placed in footer, always visible for authorized roles
-  const actBtns = canEdit ? `
-    <div class="eq-card-btns" onclick="event.stopPropagation()">
-      ${canEdit?`<button class="btn btn-ghost btn-xs" onclick="openEditEquipment('${eq.id}')" title="Edit Equipment">✎ Edit</button>`:''}
-      ${canDel?`<button class="btn btn-red btn-xs" onclick="confirmDeleteEquipment('${eq.id}')" title="Hapus Equipment">✕ Hapus</button>`:''}
-    </div>` : '';
+  const row=document.createElement('div');
+  row.className='master-row';
+  row.dataset.eqId=eq.id;
 
-  // Derived display values
-  const critColor = eq.criticality==='critical'?'var(--red)':eq.criticality==='major'?'var(--amber)':'var(--green)';
-  const downStr   = eq._downtime ? eq._downtime+' j' : '—';
-  const unitStr   = eq.unit ? `<span style="font-size:10px;color:var(--muted);font-weight:400;">${esc(eq.unit)}</span>` : '';
-
-  const card=document.createElement('div');
-  card.className='eq-card';
-  card.innerHTML=`
-    <div class="eq-card-top ${critClass}" style="height:3px;"></div>
-    <div class="eq-card-body">
-
-      <!-- Row 1: TAG + Status badge -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <span class="eq-tag">${esc(eq.tag_no||'—')}</span>
-        <span class="eq-status-badge ${stClass}">${statusLabel(eq.status)}</span>
+  row.innerHTML=`
+    <div class="mr-crit-dot" style="background:${critColor};"></div>
+    <div class="mr-main">
+      <div class="mr-tag">${esc(eq.tag_no||'—')}</div>
+      <div class="mr-name">${esc(eq.name)}</div>
+      <div class="mr-meta">
+        ${eq._isBadActor?'<span class="mr-pill ba">● Bad Actor</span>':''}
+        ${failures>0?`<span class="mr-pill fail">${failures}× ${isStartup?'defect':'fail'}</span>`:''}
+        ${openN>0?`<span class="mr-pill open">⚠ ${openN} open</span>`:`<span class="mr-pill ok">✓ clear</span>`}
+        ${!isStartup&&eq._downtime?`<span class="mr-pill down">${downStr}</span>`:''}
+        ${isStartup?`<span class="mr-pill${_bcClosure>=80?' ok':_bcClosure>=50?' down':' fail'}">${_bcClosure}%</span>`:''}
       </div>
+    </div>
+    <span class="eq-status-badge ${stClass}" style="font-size:8px;flex-shrink:0;">${statusLabel(eq.status)}</span>`;
 
-      <!-- Row 2: Equipment name + bad actor -->
-      <div class="eq-name" style="margin-bottom:2px;">${esc(eq.name)}</div>
-      ${unitStr ? `<div style="font-size:10px;color:var(--muted);margin-bottom:8px;">${unitStr}</div>` : '<div style="margin-bottom:8px;"></div>'}
-      ${eq._isBadActor ? `<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);border-radius:4px;padding:3px 8px;margin-bottom:8px;">
-        <span style="font-size:9px;font-weight:800;color:var(--red);letter-spacing:.5px;">● BAD ACTOR</span>
-      </div>` : ''}
-
-      <!-- Row 3: Metrics grid -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;">
-        <div style="background:var(--bg);border-radius:5px;padding:6px 8px;text-align:center;">
-          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;">${_bcIsStartup?'Defect':'Failure'}</div>
-          <div style="font-size:16px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:${failures>0?'var(--red)':'var(--textDim)'};">${failures}</div>
-        </div>
-        ${_bcIsStartup
-          ? `<div style="background:var(--bg);border-radius:5px;padding:6px 8px;text-align:center;">
-              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;">Closure</div>
-              <div style="font-size:16px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:${_bcClosure>=80?'var(--green)':_bcClosure>=50?'var(--amber)':'var(--red)'};">${_bcClosure}%</div>
-            </div>`
-          : `<div style="background:var(--bg);border-radius:5px;padding:6px 8px;text-align:center;">
-              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;">Downtime</div>
-              <div style="font-size:16px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:var(--amber);">${downStr}</div>
-            </div>`
-        }
-        <div style="background:var(--bg);border-radius:5px;padding:6px 8px;text-align:center;">
-          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;">Crit.</div>
-          <div style="font-size:11px;font-weight:700;color:${critColor};margin-top:3px;">${critLabel(eq.criticality)}</div>
-        </div>
-      </div>
-
-      <!-- Row 4: Footer — open status + edit buttons -->
-      <div class="eq-footer">
-        ${openN>0
-          ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--red);"><span>⚠</span>${openN} ${_bcIsStartup?'defect':'issue'} open</span>`
-          : `<span style="font-size:10px;font-weight:600;color:var(--green);">✓ ${_bcIsStartup?'All closed':'No open issues'}</span>`
-        }
-        <span style="font-size:10px;color:var(--muted);">${eq._total||0} events</span>
-      </div>
-      ${actBtns}
-    </div>`;
-  // Support both click and touch for mobile
-  card.addEventListener('click',(e)=>{
-    if(!e.target.closest('.eq-card-btns') && !e.target.closest('button')) openEquipment(eq.id);
-  });
-  // Mobile touch support
-  card.addEventListener('touchend',(e)=>{
-    if(!e.target.closest('.eq-card-btns') && !e.target.closest('button')){
-      e.preventDefault();
-      openEquipment(eq.id);
-    }
-  },{passive:false});
-  card.style.cursor='pointer';
-  card.style.webkitTapHighlightColor='rgba(0,0,0,0)';
-  return card;
+  row.addEventListener('click',()=>selectEquipmentInPanel(eq.id));
+  return row;
 }
+
+// Keep buildEqCard for backward compat (not used in dashboard anymore)
+function buildEqCard(eq){ return buildMasterRow(eq); }
+
+// ── Master-Detail: select equipment, load detail in right panel ──────────────
+function highlightMasterRow(eqId){
+  document.querySelectorAll('.master-row').forEach(r=>{
+    r.classList.toggle('active', r.dataset.eqId===eqId);
+  });
+}
+
+function selectEquipmentInPanel(eqId){
+  const eq=equipments.find(e=>e.id===eqId);
+  if(!eq) return;
+
+  currentEqId=eqId;
+  highlightMasterRow(eqId);
+
+  // Show detail panel, hide placeholder
+  const placeholder=g('eq-detail-placeholder');
+  const detailContent=g('eq-detail-content');
+  if(placeholder) placeholder.style.display='none';
+  if(detailContent){ detailContent.style.display='flex'; detailContent.style.flexDirection='column'; }
+
+  // Render equipment detail inside right panel
+  renderEqDetailPanel(eq, detailContent);
+}
+
+function renderEqDetailPanel(eq, container){
+  if(!container) return;
+  const critColor={critical:'var(--red)',major:'var(--amber)',minor:'var(--green)'}[eq.criticality]||'var(--muted)';
+  const stClass={active:'es-active',standby:'es-standby',maintenance:'es-maintenance'}[eq.status]||'es-active';
+  const isStartup=(eq.phase||'operational')==='startup';
+  const canEdit=window._canEdit, canDel=window._canDelete;
+  const failures=eq._failures||0, openN=eq._open||0;
+  const downStr=eq._downtime?eq._downtime+' j':'—';
+  const _bcDefects=isStartup?allEventsCache.filter(e=>e.equipment_id===eq.id&&e.type==='defect'):[];
+  const _bcClosed=_bcDefects.filter(e=>e.status==='CLOSED').length;
+  const _bcClosure=_bcDefects.length>0?Math.round(_bcClosed/_bcDefects.length*100):100;
+
+  container.innerHTML=`
+    <!-- Detail Header -->
+    <div style="padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+        <div style="min-width:0;">
+          <div style="font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--amber);font-weight:700;letter-spacing:1px;margin-bottom:3px;">${esc(eq.tag_no||'—')}</div>
+          <div style="font-size:18px;font-weight:800;color:var(--text);line-height:1.2;">${esc(eq.name)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${esc(eq.unit||'')}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <span class="eq-status-badge ${stClass}">${statusLabel(eq.status)}</span>
+          <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;border:1px solid ${critColor};color:${critColor};">${critLabel(eq.criticality)}</span>
+          ${eq._isBadActor?'<span style="font-size:9px;font-weight:800;padding:3px 8px;border-radius:4px;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.25);color:var(--red);">● BAD ACTOR</span>':''}
+        </div>
+      </div>
+      <!-- Metric strip -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;">
+        <div style="background:var(--bg);border-radius:6px;padding:8px 10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">${isStartup?'Total Defect':'Total Failure'}</div>
+          <div style="font-size:22px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:${failures>0?'var(--red)':'var(--textDim)'};">${failures}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:6px;padding:8px 10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">Open Issues</div>
+          <div style="font-size:22px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:${openN>0?'var(--red)':'var(--green)'};">${openN}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:6px;padding:8px 10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">${isStartup?'Closure Rate':'Downtime'}</div>
+          <div style="font-size:22px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:${isStartup?(_bcClosure>=80?'var(--green)':_bcClosure>=50?'var(--amber)':'var(--red)'):'var(--amber)'};">${isStartup?_bcClosure+'%':downStr}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:6px;padding:8px 10px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">Total Events</div>
+          <div style="font-size:22px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:var(--text);">${eq._total||0}</div>
+        </div>
+      </div>
+      <!-- Action buttons -->
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn btn-amber btn-sm" onclick="openEquipment('${eq.id}')">📋 Full Detail & Event History</button>
+        ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="openEditEquipment('${eq.id}')">✎ Edit</button>`:''}
+        ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="currentEqId='${eq.id}';g('f-type').value='failure';onTypeChange();g('view-detail')?.scrollIntoView()">＋ Tambah Event</button>`:''}
+        ${canDel?`<button class="btn btn-red btn-sm" onclick="confirmDeleteEquipment('${eq.id}')">✕ Hapus</button>`:''}
+      </div>
+    </div>
+    <!-- Mini event timeline -->
+    <div style="flex:1;overflow-y:auto;padding:16px 20px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px;">Event Terbaru</div>
+      <div id="panel-mini-events">
+        <div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;"><div class="lspin"></div>Memuat...</div>
+      </div>
+    </div>`;
+
+  // Load recent events for this equipment
+  loadPanelEvents(eq.id);
+}
+
+function loadPanelEvents(eqId){
+  const container=g('panel-mini-events');
+  if(!container) return;
+  const evs=allEventsCache
+    .filter(e=>e.equipment_id===eqId)
+    .sort((a,b)=>new Date(b.date)-new Date(a.date))
+    .slice(0,10);
+
+  if(evs.length===0){
+    container.innerHTML='<div style="font-size:12px;color:var(--muted);font-style:italic;">Belum ada event.</div>';
+    return;
+  }
+
+  const typeColor={failure:'var(--red)',defect:'var(--red)',action:'var(--teal)',corrective:'var(--teal)',repair:'var(--amber)',resolved:'var(--green)',closed:'var(--green)'}
+  const typeLabel2={failure:'FAILURE',defect:'DEFECT',action:'ACTION',corrective:'CORRECTIVE',repair:'REPAIR',resolved:'RESOLVED',closed:'CLOSED'}
+
+  container.innerHTML=evs.map(ev=>{
+    const tc=typeColor[ev.type]||'var(--muted)';
+    const tl=typeLabel2[ev.type]||ev.type.toUpperCase();
+    const dStr=ev.date?new Date(ev.date).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}):'—';
+    return `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:${tc};margin-top:3px;"></div>
+        <div style="width:1px;flex:1;background:var(--border);"></div>
+      </div>
+      <div style="flex:1;min-width:0;padding-bottom:4px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span style="font-size:8px;font-weight:800;color:${tc};letter-spacing:.5px;">${tl}</span>
+          <span style="font-size:10px;color:var(--muted);">${dStr}</span>
+          ${ev.status?`<span style="font-size:8px;padding:1px 5px;border-radius:3px;background:rgba(0,0,0,.05);color:var(--muted);">${ev.status}</span>`:''}
+        </div>
+        <div style="font-size:12px;color:var(--text);font-weight:500;line-height:1.3;">${esc(ev.title||'—')}</div>
+        ${ev.mode?`<div style="font-size:10px;color:var(--muted);margin-top:1px;">Mode: ${esc(ev.mode)}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMasterPanel(){
+  const wrap=g('master-detail-wrap');
+  const btn=g('master-collapse-btn');
+  const panel=g('master-panel');
+  const isCollapsed=wrap.classList.toggle('sidebar-collapsed');
+  btn.textContent=isCollapsed?'▶':'◀';
+  panel.style.overflow=isCollapsed?'hidden':'';
+  panel.style.width=isCollapsed?'0':'';
+  panel.style.minWidth=isCollapsed?'0':'';
+}
+
+
 
 function renderDashboard(){
   const search=(g('eq-search')?.value||'').toLowerCase().trim();
