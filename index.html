@@ -226,38 +226,39 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 #view-dashboard.active,#view-detail.active{display:block;}
 
 /* ══ DASHBOARD ══ */
-.dash-wrap{max-width:1400px;margin:0 auto;padding:24px 28px;}
-.dash-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
-.dash-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);font-weight:600;}
-.dash-subtitle{font-size:22px;font-weight:700;color:var(--text);margin-top:3px;}
+.dash-wrap{max-width:1400px;margin:0 auto;padding:0;}
+.dash-top{display:flex;align-items:center;justify-content:space-between;padding:18px 28px 16px;background:var(--panel);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px;}
+.dash-title{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--amber);font-weight:700;}
+.dash-subtitle{font-size:20px;font-weight:700;color:var(--text);margin-top:2px;line-height:1.2;}
 .dash-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 .search-box{position:relative;}
-.search-box input{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:7px 12px 7px 32px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;border-radius:3px;outline:none;width:260px;transition:border-color .15s;}
+.search-box input{border:1px solid var(--border);background:var(--bg);color:var(--text);padding:7px 10px 7px 30px;border-radius:6px;font-size:12px;width:200px;outline:none;transition:border-color .15s;}
 .search-box input:focus{border-color:var(--amber);}
 .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--textDim);}
 
 /* Summary stats */
-.dash-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
-.ds-box{background:var(--panel);border:1px solid var(--border);padding:12px 16px;border-radius:4px;text-align:center;border-top:3px solid;}
-.ds-val{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;}
-.ds-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);margin-top:3px;}
+.dash-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-bottom:0;border-bottom:1px solid var(--border);}
+.ds-box{background:var(--panel);border-right:1px solid var(--border);padding:16px 20px;text-align:center;border-top:3px solid;position:relative;}
+.ds-box:last-child{border-right:none;}
+.ds-val{font-size:26px;font-weight:800;font-family:'IBM Plex Mono',monospace;line-height:1;margin-bottom:4px;}
+.ds-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--textDim);}
 
 /* Filter chips */
-.filter-row{display:flex;gap:7px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+.filter-row{display:flex;gap:7px;align-items:center;margin-bottom:16px;flex-wrap:wrap;padding:16px 28px 0;}
 .fchip{padding:4px 12px;font-size:10px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--textDim);cursor:pointer;border-radius:20px;font-family:'IBM Plex Sans',sans-serif;transition:all .15s;}
 .fchip:hover,.fchip.active{border-color:var(--chip-active-color,var(--amber));color:var(--chip-active-color,var(--amber));background:color-mix(in srgb, var(--chip-active-color,var(--amber)) 10%, transparent);}
 .filter-count{font-size:10px;color:var(--textDim);margin-left:4px;}
 
 /* Equipment grid */
-.eq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
-.eq-card{background:var(--panel);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;position:relative;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.eq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;padding:0 28px 24px;}
+.eq-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:transform .12s,box-shadow .15s,border-color .15s;position:relative;touch-action:manipulation;-webkit-tap-highlight-color:transparent;overflow:hidden;}
 .eq-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--shadow);border-color:var(--borderL);}
 .eq-card-top{height:4px;border-radius:4px 4px 0 0;}
 .crit-critical{background:var(--red);}
 .crit-major{background:var(--amber);}
 .crit-minor{background:var(--green);}
 .crit-unknown{background:var(--muted);}
-.eq-card-body{padding:14px 16px;}
+.eq-card-body{padding:14px 16px 12px;}
 .eq-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
 .eq-tag{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--amber);font-weight:600;letter-spacing:1px;background:rgba(232,162,23,.08);border:1px solid rgba(232,162,23,.2);padding:2px 7px;border-radius:2px;}
 .eq-status-badge{font-size:8px;font-weight:600;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:2px;border:1px solid;text-transform:uppercase;}
@@ -439,12 +440,15 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .xmsg{font-size:14px;color:var(--text);}
 
 /* ══ TABS (Dashboard) ══ */
-.dash-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;}
-.dash-tab{padding:9px 20px;font-size:12px;font-weight:600;color:var(--textDim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'IBM Plex Sans',sans-serif;}
+.dash-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:0;padding:0 28px;background:var(--panel);}
+.dash-tab{padding:12px 20px;font-size:12px;font-weight:600;color:var(--textDim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'IBM Plex Sans',sans-serif;}
 .dash-tab:hover{color:var(--text);}
 .dash-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
+.dash-body{padding:20px 28px;}
+.phase-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 28px;background:var(--panel);border-bottom:1px solid var(--border);}
+.filter-bar{display:flex;align-items:center;gap:8px;padding:14px 28px 12px;flex-wrap:wrap;}
 
 /* ══ BAD ACTOR SETTINGS ══ */
 .ba-settings{background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--amber);border-radius:4px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
@@ -508,16 +512,16 @@ canvas{width:100%;max-height:260px;}
 .report-check input[type=checkbox]{accent-color:var(--amber);width:14px;height:14px;cursor:pointer;}
 
 /* ══ EQUIPMENT GROUPING ══ */
-.eq-group{margin-bottom:16px;}
-.eq-group-header{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;cursor:pointer;user-select:none;transition:background .15s;}
+.eq-group{margin-bottom:20px;}
+.eq-group-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px;cursor:pointer;margin-bottom:10px;transition:background .15s;}
 .eq-group-header:hover{background:var(--hover);}
 .eq-group-icon{font-size:14px;color:var(--amber);transition:transform .2s;display:inline-block;}
 .eq-group-icon.collapsed{transform:rotate(-90deg);}
-.eq-group-title{font-weight:700;font-size:12px;color:var(--text);letter-spacing:.5px;flex:1;}
+.eq-group-title{font-size:13px;font-weight:700;color:var(--text);flex:1;}
 .eq-group-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.eq-group-count{font-size:10px;color:var(--textDim);border:1px solid var(--border);padding:1px 7px;border-radius:2px;}
+.eq-group-count{font-size:10px;font-weight:600;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 8px;}
 .eq-group-alert{font-size:9px;font-weight:700;color:var(--red);background:rgba(232,64,64,.1);border:1px solid rgba(232,64,64,.3);padding:2px 8px;border-radius:2px;}
-.eq-group-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding:12px 0 4px 0;}
+.eq-group-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;padding-bottom:4px;}
 .eq-group-cards.collapsed{display:none;}
 .score-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;width:80px;display:inline-block;vertical-align:middle;}
 .score-fill{height:100%;border-radius:3px;background:var(--red);transition:width .5s ease;}
@@ -726,28 +730,26 @@ canvas{width:100%;max-height:260px;}
       </div>
     </div>
 
-    <!-- Phase Toggle Bar — fixed between title and KPI strip, never moves -->
-    <div id="phase-toggle-bar" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:2px solid var(--border);margin-bottom:12px;">
-      <!-- Left: Phase label -->
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Phase:</span>
-        <!-- Fixed-width 240px segmented control — position never changes -->
-        <div style="flex-shrink:0;background:rgba(0,0,0,.06);border:1px solid var(--border);border-radius:9px;padding:3px;display:grid;grid-template-columns:1fr 1fr;gap:2px;min-width:320px;">
+    <!-- Phase Toggle Bar -->
+    <div id="phase-toggle-bar" class="phase-bar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">PHASE</span>
+        <div style="flex-shrink:0;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px;display:grid;grid-template-columns:1fr 1fr;gap:2px;min-width:300px;">
           <button id="btn-phase-op" onclick="setPhase('operational')"
-            style="padding:7px 12px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:700;background:var(--amber);color:#fff;transition:background .18s,color .18s,box-shadow .18s;text-align:center;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.18);">
-            ⚙️ Operational Phase
+            style="padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:700;background:var(--amber);color:#fff;transition:all .18s;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.2);">
+            ⚙ Operational
           </button>
           <button id="btn-phase-su" onclick="setPhase('startup')"
-            style="padding:7px 12px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:600;background:transparent;color:var(--muted);transition:background .18s,color .18s,box-shadow .18s;text-align:center;white-space:nowrap;">
+            style="padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600;background:transparent;color:var(--muted);transition:all .18s;white-space:nowrap;">
             🔧 Startup / Commissioning
           </button>
         </div>
       </div>
-      <!-- Right: status info -->
-      <div style="font-size:11px;color:var(--muted);">
-        Phase aktif: <strong id="phase-toggle-hint-label" style="color:var(--amber)">Operational</strong>
-        <span style="margin-left:8px;font-size:10px;color:var(--border)">|</span>
-        <span style="margin-left:8px;font-size:10px;color:var(--muted);" id="phase-eq-count"></span>
+      <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);">
+        <span>Phase aktif:</span>
+        <strong id="phase-toggle-hint-label" style="color:var(--amber);font-size:12px;">Operational</strong>
+        <span style="color:var(--border)">|</span>
+        <span id="phase-eq-count" style="font-size:11px;"></span>
       </div>
     </div>
 
@@ -823,7 +825,7 @@ canvas{width:100%;max-height:260px;}
     </div>
 
     <!-- TAB: Bad Actor Ranking -->
-    <div class="tab-content" id="tab-ranking">
+    <div class="tab-content" id="tab-ranking" style="padding:20px 28px;">
       <!-- KPI Summary Row -->
       <div id="rank-kpi-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;"></div>
       <!-- Scoring formula bar -->
@@ -888,7 +890,7 @@ canvas{width:100%;max-height:260px;}
       <div id="rank-pagination" style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px;"></div>
     </div>
 <!-- TAB: Failure Trend -->
-    <div class="tab-content" id="tab-trend">
+    <div class="tab-content" id="tab-trend" style="padding:20px 28px;">
       <!-- Controls -->
       <div class="trend-controls">
         <div class="trend-ctrl-left">
@@ -1421,8 +1423,8 @@ canvas{width:100%;max-height:260px;}
 // ══════════════════════════════════════
 // CONFIG — GANTI DENGAN MILIK ANDA
 // ══════════════════════════════════════
-const SUPABASE_URL  = 'https://mvhgccreqqkewhneamuq.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12aGdjY3JlcXFrZXdobmVhbXVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MzYwMTAsImV4cCI6MjA4NzMxMjAxMH0.Xl4K1ydP-8vHnxHCMfC7PGybV32hDY57nxSuz5FpTPk';
+const SUPABASE_URL  = 'https://YOUR_PROJECT_REF.supabase.co';
+const SUPABASE_ANON = 'YOUR_ANON_KEY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
   auth: {
     autoRefreshToken: true,
@@ -1708,28 +1710,59 @@ function buildEqCard(eq){
       ${canDel?`<button class="btn btn-red btn-xs" onclick="confirmDeleteEquipment('${eq.id}')" title="Hapus Equipment">✕ Hapus</button>`:''}
     </div>` : '';
 
+  // Derived display values
+  const critColor = eq.criticality==='critical'?'var(--red)':eq.criticality==='major'?'var(--amber)':'var(--green)';
+  const downStr   = eq._downtime ? eq._downtime+' j' : '—';
+  const unitStr   = eq.unit ? `<span style="font-size:10px;color:var(--muted);font-weight:400;">${esc(eq.unit)}</span>` : '';
+
   const card=document.createElement('div');
   card.className='eq-card';
   card.innerHTML=`
-    <div class="eq-card-top ${critClass}"></div>
+    <div class="eq-card-top ${critClass}" style="height:3px;"></div>
     <div class="eq-card-body">
-      <div class="eq-card-header">
+
+      <!-- Row 1: TAG + Status badge -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <span class="eq-tag">${esc(eq.tag_no||'—')}</span>
         <span class="eq-status-badge ${stClass}">${statusLabel(eq.status)}</span>
       </div>
-      <div class="eq-name">${esc(eq.name)}${eq._isBadActor?'<span class="ba-badge" style="margin-left:8px;vertical-align:middle;">🔴 BAD ACTOR</span>':''}</div>
-      <div class="eq-meta-row" style="margin-bottom:10px;">
-        <div class="eq-meta-item"><div class="emi-k">Criticality</div><div class="emi-v" style="color:${eq.criticality==='critical'?'var(--red)':eq.criticality==='major'?'var(--amber)':'var(--green)'}">${critLabel(eq.criticality)}</div></div>
+
+      <!-- Row 2: Equipment name + bad actor -->
+      <div class="eq-name" style="margin-bottom:2px;">${esc(eq.name)}</div>
+      ${unitStr ? `<div style="font-size:10px;color:var(--muted);margin-bottom:8px;">${unitStr}</div>` : '<div style="margin-bottom:8px;"></div>'}
+      ${eq._isBadActor ? `<div style="display:inline-flex;align-items:center;gap:5px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);border-radius:4px;padding:3px 8px;margin-bottom:8px;">
+        <span style="font-size:9px;font-weight:800;color:var(--red);letter-spacing:.5px;">● BAD ACTOR</span>
+      </div>` : ''}
+
+      <!-- Row 3: Metrics grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;">
+        <div style="background:var(--bg);border-radius:5px;padding:6px 8px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;">${_bcIsStartup?'Defect':'Failure'}</div>
+          <div style="font-size:16px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:${failures>0?'var(--red)':'var(--textDim)'};">${failures}</div>
+        </div>
         ${_bcIsStartup
-          ? `<div class="eq-meta-item"><div class="emi-k">Total Defect</div><div class="emi-v" style="color:${failures>0?'var(--red)':'var(--textDim)'}">${failures}×</div></div>
-             <div class="eq-meta-item"><div class="emi-k">Closure Rate</div><div class="emi-v" style="color:${_bcClosure>=80?'var(--green)':_bcClosure>=50?'var(--amber)':'var(--red)'}">${_bcClosure}%</div></div>`
-          : `<div class="eq-meta-item"><div class="emi-k">Total Failure</div><div class="emi-v" style="color:${failures>0?'var(--red)':'var(--textDim)'}">${failures}×</div></div>
-             <div class="eq-meta-item"><div class="emi-k">Downtime</div><div class="emi-v" style="color:var(--amber)">${eq._downtime||0} Jam</div></div>`
+          ? `<div style="background:var(--bg);border-radius:5px;padding:6px 8px;text-align:center;">
+              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;">Closure</div>
+              <div style="font-size:16px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:${_bcClosure>=80?'var(--green)':_bcClosure>=50?'var(--amber)':'var(--red)'};">${_bcClosure}%</div>
+            </div>`
+          : `<div style="background:var(--bg);border-radius:5px;padding:6px 8px;text-align:center;">
+              <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;">Downtime</div>
+              <div style="font-size:16px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:var(--amber);">${downStr}</div>
+            </div>`
         }
+        <div style="background:var(--bg);border-radius:5px;padding:6px 8px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;">Crit.</div>
+          <div style="font-size:11px;font-weight:700;color:${critColor};margin-top:3px;">${critLabel(eq.criticality)}</div>
+        </div>
       </div>
+
+      <!-- Row 4: Footer — open status + edit buttons -->
       <div class="eq-footer">
-        <div style="font-size:10px;color:var(--textDim);">${_bcIsStartup ? `${eq._total||0} commissioning events` : `${eq._total||0} events recorded`}</div>
-        ${openN>0?`<span class="eq-open-badge">⚠ ${openN} ${_bcIsStartup?'Defect Open':'Open Issue'}${openN>1?'s':''}</span>`:`<span class="eq-open-none">${_bcIsStartup?'✓ All Defects Closed':'✓ No Open Issues'}</span>`}
+        ${openN>0
+          ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--red);"><span>⚠</span>${openN} ${_bcIsStartup?'defect':'issue'} open</span>`
+          : `<span style="font-size:10px;font-weight:600;color:var(--green);">✓ ${_bcIsStartup?'All closed':'No open issues'}</span>`
+        }
+        <span style="font-size:10px;color:var(--muted);">${eq._total||0} events</span>
       </div>
       ${actBtns}
     </div>`;
@@ -1836,8 +1869,8 @@ function renderDashboard(){
       <span class="eq-group-title">${esc(unit)}</span>
       <div class="eq-group-meta">
         ${groupBadges}
-        <span class="eq-group-count">${eqs.length} equipment</span>
-        <span class="eq-group-count" style="color:var(--red)">${groupFailTotal}× failure</span>
+        <span class="eq-group-count">${eqs.length} unit</span>
+        ${groupFailTotal>0?`<span class="eq-group-count" style="color:var(--red);border-color:rgba(220,38,38,.25);">${groupFailTotal} failure</span>`:''}
       </div>`;
     group.appendChild(hdr);
 
