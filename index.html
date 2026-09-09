@@ -446,6 +446,7 @@ body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-ser
 .dash-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
+#tab-equipment.active{display:flex;flex-direction:column;}
 .dash-body{padding:20px 28px;}
 .phase-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 28px;background:var(--panel);border-bottom:1px solid var(--border);}
 .filter-bar{display:flex;align-items:center;gap:8px;padding:14px 28px 12px;flex-wrap:wrap;}
@@ -624,7 +625,7 @@ canvas{width:100%;max-height:260px;}
 
 
 /* ══ MASTER-DETAIL LAYOUT ══ */
-.master-detail{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 218px);overflow:hidden;min-height:400px;transition:grid-template-columns .22s ease;}
+.master-detail{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 290px);overflow:hidden;min-height:400px;transition:grid-template-columns .22s ease;}
 .master-detail.sidebar-collapsed{grid-template-columns:36px 1fr;}
 .master-panel{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;background:var(--panel);transition:all .22s ease;min-width:0;}
 .master-panel.collapsed{overflow:hidden;}
@@ -791,22 +792,6 @@ canvas{width:100%;max-height:260px;}
       </div>
     </div>
 
-    <!-- Summary Stats — OPERATIONAL (default) -->
-    <div class="dash-stats" id="kpi-operational">
-      <div class="ds-box" style="border-top-color:var(--text)"><div class="ds-val" id="ds-total" style="color:var(--text)">0</div><div class="ds-lbl">Total Equipment</div></div>
-      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-bad-actor">0</div><div class="ds-lbl">Bad Actor</div></div>
-      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-failures">0</div><div class="ds-lbl">Total Failure</div></div>
-      <div class="ds-box" style="border-top-color:var(--amber)"><div class="ds-val c-amber" id="ds-open">0</div><div class="ds-lbl">Status Open</div></div>
-      <div class="ds-box" style="border-top-color:var(--amber)"><div class="ds-val c-amber" id="ds-downtime">0</div><div class="ds-lbl">Total Downtime (Jam)</div></div>
-    </div>
-    <!-- Summary Stats — STARTUP (hidden by default) -->
-    <div class="dash-stats" id="kpi-startup" style="display:none;">
-      <div class="ds-box" style="border-top-color:var(--text)"><div class="ds-val" id="su-total" style="color:var(--text)">0</div><div class="ds-lbl">Total Equipment</div></div>
-      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="su-bad-actor">0</div><div class="ds-lbl">Startup Bad Actor</div></div>
-      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="su-defects">0</div><div class="ds-lbl">Total Defect</div></div>
-      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="su-cat-a">0</div><div class="ds-lbl">Cat A Open</div></div>
-      <div class="ds-box" style="border-top-color:var(--green)"><div class="ds-val c-green" id="su-closure">0%</div><div class="ds-lbl">Closure Rate</div></div>
-    </div>
 
     <!-- TABS -->
     <div class="dash-tabs">
@@ -818,6 +803,24 @@ canvas{width:100%;max-height:260px;}
 
     <!-- TAB: Equipment List -->
     <div class="tab-content active" id="tab-equipment">
+      <!-- KPI Strip — only shown in Equipment List tab -->
+      <div class="dash-stats" style="border-bottom:1px solid var(--border);margin-bottom:0;" id="kpi-operational">
+      <div class="ds-box" style="border-top-color:var(--text)"><div class="ds-val" id="ds-total" style="color:var(--text)">0</div><div class="ds-lbl">Total Equipment</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-bad-actor">0</div><div class="ds-lbl">Bad Actor</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="ds-failures">0</div><div class="ds-lbl">Total Failure</div></div>
+      <div class="ds-box" style="border-top-color:var(--amber)"><div class="ds-val c-amber" id="ds-open">0</div><div class="ds-lbl">Status Open</div></div>
+      <div class="ds-box" style="border-top-color:var(--amber)"><div class="ds-val c-amber" id="ds-downtime">0</div><div class="ds-lbl">Total Downtime (Jam)</div></div>
+      </div>
+      <!-- Summary Stats — STARTUP (hidden by default) -->
+      <div class="dash-stats" style="border-bottom:1px solid var(--border);" id="kpi-startup" style="display:none;">
+      <div class="ds-box" style="border-top-color:var(--text)"><div class="ds-val" id="su-total" style="color:var(--text)">0</div><div class="ds-lbl">Total Equipment</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="su-bad-actor">0</div><div class="ds-lbl">Startup Bad Actor</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="su-defects">0</div><div class="ds-lbl">Total Defect</div></div>
+      <div class="ds-box" style="border-top-color:var(--red)"><div class="ds-val c-red" id="su-cat-a">0</div><div class="ds-lbl">Cat A Open</div></div>
+      <div class="ds-box" style="border-top-color:var(--green)"><div class="ds-val c-green" id="su-closure">0%</div><div class="ds-lbl">Closure Rate</div></div>
+    </div>
+
+
       <div class="master-detail" id="master-detail-wrap">
 
         <!-- ── LEFT: Master Panel ── -->
@@ -830,13 +833,10 @@ canvas{width:100%;max-height:260px;}
 
           <!-- Normal header — hidden when collapsed -->
           <div id="master-normal-content" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;">
-            <!-- Master header: search + collapse btn -->
-            <div class="master-header" style="gap:8px;">
-              <div style="position:relative;flex:1;">
-                <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--muted);">🔍</span>
-                <input class="master-search" id="eq-search" placeholder="Cari nama / tag / unit..." oninput="renderDashboard()" autocomplete="off">
-              </div>
-              <button class="collapse-btn" onclick="toggleMasterPanel()" title="Collapse list" id="master-collapse-btn">◀</button>
+            <!-- Master header: filter count + collapse btn only (search is in top header) -->
+            <div class="master-header" style="gap:8px;padding:8px 12px;">
+              <span style="font-size:11px;font-weight:600;color:var(--muted);" id="master-eq-count"></span>
+              <button class="collapse-btn" onclick="toggleMasterPanel()" title="Collapse list" id="master-collapse-btn" style="margin-left:auto;">◀</button>
             </div>
 
           <!-- Filter chips — compact -->
@@ -1992,6 +1992,7 @@ function renderDashboard(){
   g('ds-open').textContent=phaseEqs.reduce((s,e)=>s+(e._open||0),0);
   g('ds-downtime').textContent=phaseEqs.reduce((s,e)=>s+(e._downtime||0),0);
   if(g('eq-filter-count')) g('eq-filter-count').textContent=filtered.length+' equipment';
+  if(g('master-eq-count')) g('master-eq-count').textContent=filtered.length+' equipment ditampilkan';
 
   const grid=g('eq-grid');
   if(!grid) return;
